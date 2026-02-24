@@ -1,0 +1,16 @@
+/*ESTILOS HEADER/HERO*/
+.hero-section {
+    background-color: var(--white);
+    text-align: center;
+    padding: 20px 20px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.hero-title {
+    color: var(--primary);
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+
+/*FIN ESTILOS HEADER/HERO*/
