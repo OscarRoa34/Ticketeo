@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Administración</title>
+    <link rel="stylesheet" href="../static/css/styles.css"> 
+</head>
+
+<body>
+    
+    <main class="container admin-container">
+        
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">Gestión de Eventos</h1>
+                <p class="admin-subtitle">Administra el catálogo de eventos y categorías.</p>
+            </div>
+            <button class="btn-primary">+ Nuevo Evento</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th class="text-center">Imagen</th>
+                        <th>Nombre del Evento</th>
+                        <th>Categoría</th>
+                        <th>Fecha</th>
+                        <th>Valor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="col-id">1</td>
+                        <td class="col-img">
+                            <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=500" alt="Póster Rock" class="table-thumbnail cursor-pointer">
+                        </td>
+                        <td class="col-name">Concierto de Rock Local</td>
+                        <td><span class="category-badge table-badge">Música</span></td>
+                        <td>15 Mar 2026</td>
+                        <td class="col-price">$45.000</td>
+                        <td class="col-actions">
+                            <button class="btn-action btn-edit">Editar</button>
+                            <button class="btn-action btn-delete">Eliminar</button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="col-id">2</td>
+                        <td class="col-img">
+                            <img src="https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=500" alt="Comedia" class="table-thumbnail cursor-pointer">
+                        </td>
+                        <td class="col-name">Comedia: Stand Up</td>
+                        <td><span class="category-badge info-badge table-badge">Teatro</span></td>
+                        <td>22 Abr 2026</td>
+                        <td class="col-price">$25.000</td>
+                        <td class="col-actions">
+                            <button class="btn-action btn-edit">Editar</button>
+                            <button class="btn-action btn-delete">Eliminar</button>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="col-id">3</td>
+                        <td class="col-img">
+                            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=500" alt="Póster Maratón" class="table-thumbnail cursor-pointer">
+                        </td>
+                        <td class="col-name">Maratón de la Libertad</td>
+                        <td><span class="category-badge error-badge table-badge">Deportes</span></td>
+                        <td>07 Ago 2026</td>
+                        <td class="col-price">$60.000</td>
+                        <td class="col-actions">
+                            <button class="btn-action btn-edit">Editar</button>
+                            <button class="btn-action btn-delete">Eliminar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <div id="imageViewer" class="modal-overlay">
+        <span class="close-btn">&times;</span>
+        <img class="modal-content" id="fullImage">
+    </div>
+
+    <script>
+        const modal = document.getElementById('imageViewer');
+        const modalImg = document.getElementById("fullImage");
+        const thumbnails = document.querySelectorAll('.table-thumbnail');
+        const closeBtn = document.getElementsByClassName("close-btn")[0];
+
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                modal.style.display = "flex"; 
+                modalImg.src = this.src;
+            });
+        });
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+</body>
+</html>

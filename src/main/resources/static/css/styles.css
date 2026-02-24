@@ -279,3 +279,262 @@ a {
     padding: 0 5px;
 }
 /*FIN ESTILOS DE PAGINACIÓN*/
+
+/*ESTILOS FOOTER*/
+.site-footer {
+    background-color: var(--black-2);
+    color: var(--white);
+    padding: 40px 0 20px 0;
+    margin-top: 60px;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gray-1);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.footer-brand h2 {
+    color: var(--secondary);
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.footer-brand p {
+    color: var(--gray-4);
+    font-size: 0.9rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+}
+
+.footer-links a {
+    color: var(--gray-4);
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--secondary);
+}
+
+.footer-bottom {
+    text-align: center;
+    color: var(--gray-4);
+    font-size: 0.8rem;
+}
+/*FIN ESTILOS FOOTER*/
+
+
+/*ESTILOS PANEL ADMIN Y TABLA*/
+.admin-container {
+    margin-top: 40px;
+    min-height: 60vh;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    background-color: var(--white);
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.admin-title {
+    color: var(--primary);
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.admin-subtitle {
+    color: var(--gray-1);
+    font-size: 0.9rem;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th, .admin-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--gray-5);
+}
+
+.admin-table th {
+    background-color: var(--primary);
+    color: var(--white);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Efecto hover en las filas de la tabla */
+.admin-table tbody tr:hover {
+    background-color: #F8F9FA; 
+}
+
+.col-id {
+    font-weight: bold;
+    color: var(--gray-1);
+}
+
+.col-name {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.col-price {
+    font-weight: bold;
+    color: var(--success);
+}
+
+/* Ajuste de badges para que se vean bien dentro de la tabla */
+.table-badge {
+    margin-bottom: 0; 
+    padding: 4px 10px;
+    font-size: 0.7rem;
+}
+/*FIN ESTILOS PANEL ADMIN Y TABLA*/
+
+
+/*ESTILOS BOTONES ACCIÓN (CRUD)*/
+.col-actions {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: var(--white);
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.btn-action:last-child {
+    margin-right: 0;
+}
+
+.btn-edit {
+    background-color: var(--warning);
+}
+
+.btn-edit:hover {
+    background-color: #cda32b; 
+}
+
+.btn-delete {
+    background-color: var(--error);
+}
+
+.btn-delete:hover {
+    background-color: #d14040; 
+}
+/*FIN ESTILOS BOTONES ACCIÓN*/
+
+/*ESTILOS IMAGEN TABLA ADMIN Y VISOR MODAL*/
+.text-center {
+    text-align: center !important;
+}
+
+.col-img {
+    text-align: center;
+    width: 80px;
+}
+
+.table-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+.cursor-pointer {
+    cursor: pointer; 
+}
+
+.table-thumbnail:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+
+.modal-overlay {
+    display: none; 
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s; 
+}
+
+/* Estilos de la imagen grande dentro del visor */
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90vh; 
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    animation: zoomIn 0.3s;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+    z-index: 10000;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: var(--secondary);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;} 
+    to {opacity: 1;}
+}
+
+@keyframes zoomIn {
+    from {transform: scale(0.8);} 
+    to {transform: scale(1);}
+}
+/*FIN ESTILOS IMAGEN TABLA ADMIN Y VISOR MODAL*/
