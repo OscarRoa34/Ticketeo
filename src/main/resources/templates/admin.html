@@ -5,11 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketeo | Administración</title>
-    <link rel="stylesheet" href="../static/css/styles.css"> 
+    <link rel="stylesheet" th:href="@{/css/styles.css}"> 
 </head>
 
 <body>
     
+    <div th:replace="~{fragments/navbar :: menu-principal}"></div>
+
     <main class="container admin-container">
         
         <div class="admin-header">
@@ -17,7 +19,7 @@
                 <h1 class="admin-title">Gestión de Eventos</h1>
                 <p class="admin-subtitle">Administra el catálogo de eventos y categorías.</p>
             </div>
-            <button class="btn-primary"><a href="eventForm.html" class="btn-primary">+ Nuevo Evento</a></button>
+            <a th:href="@{/admin/evento/nuevo}" class="btn-primary" style="text-decoration: none; display: inline-block;">+ Nuevo Evento</a>
         </div>
 
         <div class="table-responsive">
@@ -34,48 +36,34 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="col-id">1</td>
+                    <tr th:each="evento : ${eventos}">
+                        
+                        <td class="col-id" th:text="${evento.id}">1</td>
+                        
                         <td class="col-img">
-                            <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=500" alt="Póster Rock" class="table-thumbnail cursor-pointer">
+                            <img th:src="${evento.urlImagen}" th:alt="${evento.nombre}" class="table-thumbnail cursor-pointer">
                         </td>
-                        <td class="col-name">Concierto de Rock Local</td>
-                        <td><span class="category-badge table-badge">Música</span></td>
-                        <td>15 Mar 2026</td>
-                        <td class="col-price">$45.000</td>
+                        
+                        <td class="col-name" th:text="${evento.nombre}">Nombre del Evento</td>
+                        
+                        <td>
+                            <span class="category-badge table-badge" th:text="${evento.categoria}">Categoría</span>
+                        </td>
+                        
+                        <td th:text="${evento.fecha}">15 Mar 2026</td>
+                        
+                        <td class="col-price" th:text="${evento.valor == 0 ? 'Gratis' : '$' + evento.valor}">$0</td>
+                        
                         <td class="col-actions">
-                            <button class="btn-action btn-edit">Editar</button>
-                            <button class="btn-action btn-delete">Eliminar</button>
+                            <a th:href="@{/admin/evento/editar/{id}(id=${evento.id})}" class="btn-action btn-edit" style="text-decoration: none; display: inline-block;">Editar</a>
+                            <a th:href="@{/admin/evento/eliminar/{id}(id=${evento.id})}" class="btn-action btn-delete" style="text-decoration: none; display: inline-block;" onclick="return confirm('¿Estás seguro de que deseas eliminar este evento?');">Eliminar</a>
                         </td>
-                    </tr>
-
-                    <tr>
-                        <td class="col-id">2</td>
-                        <td class="col-img">
-                            <img src="https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=500" alt="Comedia" class="table-thumbnail cursor-pointer">
-                        </td>
-                        <td class="col-name">Comedia: Stand Up</td>
-                        <td><span class="category-badge info-badge table-badge">Teatro</span></td>
-                        <td>22 Abr 2026</td>
-                        <td class="col-price">$25.000</td>
-                        <td class="col-actions">
-                            <button class="btn-action btn-edit">Editar</button>
-                            <button class="btn-action btn-delete">Eliminar</button>
-                        </td>
+                        
                     </tr>
                     
-                    <tr>
-                        <td class="col-id">3</td>
-                        <td class="col-img">
-                            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=500" alt="Póster Maratón" class="table-thumbnail cursor-pointer">
-                        </td>
-                        <td class="col-name">Maratón de la Libertad</td>
-                        <td><span class="category-badge error-badge table-badge">Deportes</span></td>
-                        <td>07 Ago 2026</td>
-                        <td class="col-price">$60.000</td>
-                        <td class="col-actions">
-                            <button class="btn-action btn-edit">Editar</button>
-                            <button class="btn-action btn-delete">Eliminar</button>
+                    <tr th:if="${#lists.isEmpty(eventos)}">
+                        <td colspan="7" style="text-align: center; padding: 30px;">
+                            No hay eventos registrados en el sistema. ¡Empieza creando uno!
                         </td>
                     </tr>
                 </tbody>
@@ -88,6 +76,8 @@
         <span class="close-btn">&times;</span>
         <img class="modal-content" id="fullImage">
     </div>
+
+    <div th:replace="~{fragments/footer :: pie-pagina}"></div>
 
     <script>
         const modal = document.getElementById('imageViewer');

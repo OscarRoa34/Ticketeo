@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketeo | Nuevo Evento</title>
-    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 
 <body>
+
+    <div th:replace="~{fragments/navbar :: menu-principal}"></div>
 
     <main class="container admin-container">
 
@@ -20,33 +22,32 @@
                 </div>
             </div>
 
-            <form class="custom-form" action="#" method="POST" enctype="multipart/form-data">
+            <form class="custom-form" th:action="@{/admin/evento/guardar}" th:object="${evento}" method="POST" enctype="multipart/form-data">
 
                 <div class="form-grid">
                     <div class="form-group span-2">
                         <label for="nombre" class="form-label">Nombre del Evento</label>
-                        <input type="text" id="nombre" class="form-control" placeholder="Ej: Concierto de Rock Local"
-                            required>
+                        <input type="text" id="nombre" th:field="*{nombre}" class="form-control" placeholder="Ej: Concierto de Rock Local" required>
                     </div>
 
                     <div class="form-group">
                         <label for="categoria" class="form-label">Categoría</label>
-                        <select id="categoria" class="form-select" required>
+                        <select id="categoria" th:field="*{categoria}" class="form-select" required>
                             <option value="" disabled selected>Selecciona una categoría</option>
-                            <option value="1">Música</option>
-                            <option value="2">Teatro</option>
-                            <option value="3">Deportes</option>
+                            <option value="Música">Música</option>
+                            <option value="Teatro">Teatro</option>
+                            <option value="Deportes">Deportes</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="fecha" class="form-label">Fecha del Evento</label>
-                        <input type="date" id="fecha" class="form-control" required>
+                        <input type="date" id="fecha" th:field="*{fecha}" class="form-control" required>
                     </div>
 
                     <div class="form-group">
                         <label for="valor" class="form-label">Valor de la Entrada ($)</label>
-                        <input type="number" id="valor" class="form-control" placeholder="Ej: 45000" min="0" required>
+                        <input type="number" id="valor" th:field="*{valor}" class="form-control" placeholder="Ej: 45000" min="0" required>
                     </div>
 
                     <div class="form-group span-2">
@@ -59,8 +60,10 @@
                             <img id="imagePreview" src="" alt="Vista previa" style="display: none;">
                         </div>
                     </div>
-                </div> <div class="form-actions">
-                    <a href="admin.html" class="btn-secondary">Cancelar</a>
+                </div> 
+                
+                <div class="form-actions">
+                    <a th:href="@{/admin}" class="btn-secondary">Cancelar</a>
                     <button type="submit" class="btn-primary">Guardar Evento</button>
                 </div>
 
@@ -68,6 +71,8 @@
         </div>
 
     </main>
+
+    <div th:replace="~{fragments/footer :: pie-pagina}"></div>
 
     <script>
         const fileInput = document.getElementById('imagen');
