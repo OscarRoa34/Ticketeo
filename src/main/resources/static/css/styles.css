@@ -1,0 +1,281 @@
+/*ESTILOS GENERALES*/
+:root {
+    --primary: #0F3057;
+    --secondary: #8B5CF6;
+    --info: #38BDF8;
+    --success: #27AE60;
+    --warning: #E2B93B;
+    --error: #EB5757;
+    --black-1: #000000;
+    --black-2: #1D1D1D;
+    --gray-1: #333333;
+    --gray-4: #BDBDBD;
+    --gray-5: #E0E0E0;
+    --white: #FFFFFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--gray-5);
+    font-family: 'Inter', sans-serif;
+    color: var(--black-2);
+}
+
+a {
+    text-decoration: none;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+/*FIN ESTILOS GENERALES*/
+
+
+/*ESTILOS NAVBAR*/
+.navbar {
+    background-color: var(--primary);
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-logo {
+    color: var(--white);
+    font-weight: bold;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.nav-item {
+    color: var(--white);
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-item:hover {
+    color: var(--secondary); 
+}
+
+.admin-btn {
+    padding: 6px 16px;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.logo-svg {
+    width: 64px;
+    height: 64px;
+}
+
+.brand-text {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+/*FIN ESTILOS NAVBAR*/
+
+
+/*ESTILOS HEADER/HERO*/
+.hero-section {
+    background-color: var(--white);
+    text-align: center;
+    padding: 20px 20px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.hero-title {
+    color: var(--primary);
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+/*FIN ESTILOS HEADER/HERO*/
+
+
+/*ESTILOS GRILLA Y CARDS*/
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.event-card {
+    background-color: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 20px rgba(15, 48, 87, 0.15);
+}
+
+.card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--black-2);
+}
+
+.card-description {
+    color: var(--gray-1);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    flex-grow: 1; 
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.price-tag {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+/*FIN ESTILOS GRILLA Y CARDS*/
+
+
+/*ESTILOS BADGES (ETIQUETAS)*/
+.category-badge {
+    background-color: var(--secondary);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 5px 12px;
+    border-radius: 50px;
+    display: inline-block;
+    align-self: flex-start;
+    margin-bottom: 12px;
+}
+
+/* Colores dinámicos para las etiquetas */
+.info-badge { background-color: var(--info); }
+.success-badge { background-color: var(--success); }
+.warning-badge { background-color: var(--warning); }
+.error-badge { background-color: var(--error); }
+.primary-badge { background-color: var(--primary); }
+.secondary-badge { background-color: var(--secondary); }
+/*FIN ESTILOS BADGES*/
+
+
+/*ESTILOS BOTONES*/
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--white);
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: var(--black-2);
+    color: var(--white);
+}
+/*FIN ESTILOS BOTONES*/
+
+
+/*ESTILOS DE PAGINACIÓN*/
+.pagination-container {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    display: flex;
+    justify-content: center; 
+}
+
+.pagination {
+    display: flex;
+    list-style: none;
+    gap: 8px;
+    align-items: center;
+}
+
+.page-link {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--white);
+    color: var(--primary);
+    border-radius: 6px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.page-link:hover:not(.disabled) {
+    background-color: var(--primary);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.page-link.active {
+    background-color: var(--secondary);
+    color: var(--white);
+    pointer-events: none; 
+}
+
+.page-link.disabled {
+    background-color: var(--gray-5);
+    color: var(--gray-1);
+    opacity: 0.6;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+.page-dots {
+    color: var(--gray-1);
+    font-weight: bold;
+    padding: 0 5px;
+}
+/*FIN ESTILOS DE PAGINACIÓN*/

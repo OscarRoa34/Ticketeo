@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Descubre Eventos</title>
+    <link rel="stylesheet" href="../static/css/styles.css"> 
+</head>
+
+<body>
+    
+    <nav th:fragment="menu-principal" class="navbar">
+        <div class="container navbar-content">
+            <a class="brand-logo" th:href="@{/}">
+    <img src="../static/images/logo.svg" alt="Ticketeo" class="logo-svg">
+    <span class="brand-text">TICKETEO</span>
+</a>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-item">Inicio</a></li>
+                <li><a href="#" class="nav-item">Categorías</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero-section">
+        <h1 class="hero-title">Encuentra tu próximo evento</h1>
+    </header>
+
+    <main class="container main-content">
+        
+        <div class="events-grid">
+
+            <article class="event-card">
+                <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=500" class="card-image" alt="Concierto">
+                <div class="card-body">
+                    <span class="category-badge">Música</span>
+                    <h2 class="card-title">Concierto de Rock Local</h2>
+                    <p class="card-description">Plaza de Bolívar, Tunja. Vive una noche inolvidable con las mejores bandas de la región.</p>
+                    <div class="card-footer">
+                        <span class="price-tag">$45.000</span>
+                        <a href="#" class="btn-primary">Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="event-card">
+                <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500" class="card-image" alt="Gastronomía">
+                <div class="card-body">
+                    <span class="category-badge success-badge">Gastronomía</span>
+                    <h2 class="card-title">Festival de la Arepa</h2>
+                    <p class="card-description">Parque Principal, Ventaquemada. Degustación de platos típicos y música en vivo.</p>
+                    <div class="card-footer">
+                        <span class="price-tag">Gratis</span>
+                        <a href="#" class="btn-primary">Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="event-card">
+                <img src="https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=500" class="card-image" alt="Fotografía">
+                <div class="card-body">
+                    <span class="category-badge warning-badge">Taller</span>
+                    <h2 class="card-title">Taller de Fotografía</h2>
+                    <p class="card-description">Centro Histórico de Villa de Leyva. Aprende a capturar la magia colonial.</p>
+                    <div class="card-footer">
+                        <span class="price-tag">$80.000</span>
+                        <a href="#" class="btn-primary">Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="event-card">
+                <img src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=500" class="card-image" alt="Arte">
+                <div class="card-body">
+                    <span class="category-badge secondary-badge">Arte</span>
+                    <h2 class="card-title">Exposición de Acuarelas</h2>
+                    <p class="card-description">Banco de la República, Tunja. Obras de artistas emergentes boyacenses.</p>
+                    <div class="card-footer">
+                        <span class="price-tag">Gratis</span>
+                        <a href="#" class="btn-primary">Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="event-card">
+                <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=500" class="card-image" alt="Conferencia">
+                <div class="card-body">
+                    <span class="category-badge primary-badge">Tecnología</span>
+                    <h2 class="card-title">Meetup Desarrolladores</h2>
+                    <p class="card-description">UPTC. Encuentro anual de tecnología, innovación y networking.</p>
+                    <div class="card-footer">
+                        <span class="price-tag">$15.000</span>
+                        <a href="#" class="btn-primary">Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="event-card">
+                <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=500" class="card-image" alt="Deportes">
+                <div class="card-body">
+                    <span class="category-badge error-badge">Deportes</span>
+                    <h2 class="card-title">Maratón de la Libertad</h2>
+                    <p class="card-description">Puente de Boyacá. Corre 10k o 21k en un recorrido histórico.</p>
+                    <div class="card-footer">
+                        <span class="price-tag">$60.000</span>
+                        <a href="#" class="btn-primary">Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="event-card">
+                <img src="https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=500" class="card-image" alt="Comedia">
+                <div class="card-body">
+                    <span class="category-badge info-badge">Comedia</span>
+                    <h2 class="card-title">Noche de Stand-Up</h2>
+                    <p class="card-description">Café Mocca, Duitama. Risas aseguradas con comediantes nacionales.</p>
+                    <div class="card-footer">
+                        <span class="price-tag">$30.000</span>
+                        <a href="#" class="btn-primary">Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+        <div class="pagination-container">
+            <ul class="pagination">
+                <li><a href="#" class="page-link disabled">&laquo; Anterior</a></li>
+                <li><a href="#" class="page-link active">1</a></li>
+                <li><a href="#" class="page-link">2</a></li>
+                <li><a href="#" class="page-link">3</a></li>
+                <li><span class="page-dots">...</span></li>
+                <li><a href="#" class="page-link">10</a></li>
+                <li><a href="#" class="page-link">Siguiente &raquo;</a></li>
+            </ul>
+        </div>
+
+    </main>
+
+</body>
+</html>
