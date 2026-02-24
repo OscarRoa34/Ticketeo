@@ -1,0 +1,128 @@
+/*FINAL ESTILOS FORMULARIO*/
+
+.form-wrapper {
+    background-color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.custom-form {
+    margin-top: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.span-2 {
+    grid-column: span 2;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.95rem;
+}
+
+.form-control, .form-select {
+    padding: 12px 15px;
+    border: 1px solid var(--gray-4);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: var(--black-2);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background-color: #FAFAFA;
+}
+
+.form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background-color: var(--white);
+}
+
+.form-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    border-top: 1px solid var(--gray-5);
+    padding-top: 20px;
+}
+
+.btn-secondary {
+    background-color: var(--gray-5);
+    color: var(--gray-1);
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    background-color: var(--gray-4);
+    color: var(--black-2);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .span-2 {
+        grid-column: span 1;
+    }
+    .form-wrapper {
+        padding: 20px;
+    }
+}
+
+/* --- ESTILOS PARA EL VISOR DE IMAGEN DEL FORMULARIO --- */
+.image-preview-box {
+    margin-top: 10px;
+    width: 100%;
+    height: 250px;
+    border: 2px dashed var(--gray-4);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FAFAFA;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.image-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 'contain' evita que la imagen se recorte */
+    animation: fadeIn 0.3s ease;
+}
+
+.preview-text {
+    color: var(--gray-4);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 20px;
+}
+
+
+/*FINAL ESTILOS FORMULARIO*/
