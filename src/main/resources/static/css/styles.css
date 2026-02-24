@@ -1,0 +1,8 @@
+/* Este archivo importa todos los módulos de la carpeta css */
+
+@import url('variables.css');
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('home.css');
+@import url('admin.css');

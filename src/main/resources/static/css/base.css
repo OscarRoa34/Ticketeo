@@ -1,0 +1,23 @@
+/*INICIO ESTILOS GENERALES*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--gray-5);
+    font-family: 'Inter', sans-serif;
+    color: var(--black-2);
+}
+
+a {
+    text-decoration: none;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+/*FIN ESTILOS GENERALES*/

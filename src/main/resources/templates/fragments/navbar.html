@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <nav th:fragment="menu-principal" class="navbar">
+        <div class="container navbar-content">
+            <a class="brand-logo" th:href="@{/}">TICKETEO</a>
+            
+            <ul class="nav-links">
+                <li><a href="#" class="nav-item">Inicio</a></li>
+                <li><a href="#" class="nav-item">Categorías</a></li>
+                <li><a th:href="@{/admin}" class="btn-primary" style="padding: 5px 15px;">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+</body>
+</html>

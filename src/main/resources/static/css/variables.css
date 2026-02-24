@@ -1,0 +1,15 @@
+/*ESTILOS GENERALES*/
+:root {
+    --primary: #0F3057;
+    --secondary: #8B5CF6;
+    --info: #38BDF8;
+    --success: #27AE60;
+    --warning: #E2B93B;
+    --error: #EB5757;
+    --black-1: #000000;
+    --black-2: #1D1D1D;
+    --gray-1: #333333;
+    --gray-4: #BDBDBD;
+    --gray-5: #E0E0E0;
+    --white: #FFFFFF;
+}
