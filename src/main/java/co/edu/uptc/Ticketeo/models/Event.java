@@ -2,15 +2,7 @@ package co.edu.uptc.Ticketeo.models;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,30 +16,34 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EventModel {
+public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "evento_seq")
     @SequenceGenerator(name = "evento_seq", sequenceName = "evento_seq", allocationSize = 1)
     @Column(name = "id_evento")
-    private Integer idEvento;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "id_categoria", nullable = false)
-    private EventCategoryModel categoria;
+    private EventCategory categoria;
 
     @Column(name = "nombre_evento", nullable = false, length = 150)
-    private String nombreEvento;
+    private String nombre;
 
     @Column(name = "fecha_evento")
-    private LocalDate fechaEvento;
+    private LocalDate fecha;
 
     @Column(name = "valor_evento")
-    private Double valorEvento;
+    private Double valor;
 
     @Column(name = "descripcion_evento", length = 500)
-    private String descripcionEvento;
+    private String descripcion;
 
     @Column(name = "imagen_evento")
-    private String imagenEvento;
+    private String urlImagen;
+
+    @Column(name = "estado")
+    @Builder.Default
+    private Boolean estado = true;
 }
