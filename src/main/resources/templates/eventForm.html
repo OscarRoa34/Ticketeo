@@ -49,6 +49,11 @@
                     </div>
 
                     <div class="form-group span-2">
+                        <label for="descripcion" class="form-label">Descripción del Evento</label>
+                        <textarea id="descripcion" th:field="*{descripcion}" class="form-control" rows="4" placeholder="Escribe los detalles del evento aquí..." required></textarea>
+                    </div>
+
+                    <div class="form-group span-2">
                         <label for="imagen" class="form-label">Subir Póster (Imagen desde el PC)</label>
                         <input type="file" id="imagen" name="archivoImagen" class="form-control"
                             accept="image/png, image/jpeg, image/webp" required>
