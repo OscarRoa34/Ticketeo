@@ -11,15 +11,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import co.edu.uptc.Ticketeo.services.EventCategoryService;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminPageController {
 
     private final EventService eventService;
+    private final EventCategoryService eventCategoryService;
 
-    public AdminPageController(EventService eventService) {
+    public AdminPageController(EventService eventService, EventCategoryService eventCategoryService) {
         this.eventService = eventService;
+        this.eventCategoryService = eventCategoryService;
     }
 
     @GetMapping
@@ -31,6 +34,7 @@ public class AdminPageController {
     @GetMapping("/evento/nuevo")
     public String showEventForm(Model model) {
         model.addAttribute("evento", new Event());
+        model.addAttribute("categorias", eventCategoryService.getAllCategories());
         return "eventForm";
     }
 
