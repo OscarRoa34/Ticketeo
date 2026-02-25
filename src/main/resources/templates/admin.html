@@ -69,39 +69,12 @@
                 </tbody>
             </table>
         </div>
-        <button class="btn-primary"><a th:href="@{/admin/nuevo-evento}" class="btn-primary" style="color: white; text-decoration: none;">+ Nuevo Evento</a></button>
-    </div>
 
-    <div class="table-responsive">
-        <table class="admin-table">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th class="text-center">Imagen</th>
-                <th>Nombre del Evento</th>
-                <th>Categoría</th>
-                <th>Fecha</th>
-                <th>Valor</th>
-                <th>Acciones</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="evento : ${eventos}">
-                <td class="col-id" th:text="${evento.idEvento}"></td>
-                <td class="col-img">
-                    <img th:src="@{'/uploads/' + ${evento.imagenEvento}}" class="table-thumbnail cursor-pointer">
-                </td>
-                <td class="col-name" th:text="${evento.nombreEvento}"></td>
-                <td><span class="category-badge table-badge" th:text="${evento.categoria.nombreCategoria}"></span></td>
-                <td th:text="${evento.fechaEvento}"></td>
-                <td class="col-price" th:text="'$' + ${evento.valorEvento}"></td>
-                <td class="col-actions">
-                    <button class="btn-action btn-edit">Editar</button>
-                    <button class="btn-action btn-delete">Eliminar</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+    </main>
+
+    <div id="imageViewer" class="modal-overlay">
+        <span class="close-btn">&times;</span>
+        <img class="modal-content" id="fullImage">
     </div>
 
     <div th:replace="~{fragments/footer :: pie-pagina}"></div>
@@ -112,29 +85,23 @@
         const thumbnails = document.querySelectorAll('.table-thumbnail');
         const closeBtn = document.getElementsByClassName("close-btn")[0];
 
-<script>
-    const modal = document.getElementById('imageViewer');
-    const modalImg = document.getElementById("fullImage");
-    const thumbnails = document.querySelectorAll('.table-thumbnail');
-    const closeBtn = document.getElementsByClassName("close-btn")[0];
-
-    thumbnails.forEach(thumb => {
-        thumb.addEventListener('click', function() {
-            modal.style.display = "flex";
-            modalImg.src = this.src;
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                modal.style.display = "flex"; 
+                modalImg.src = this.src;
+            });
         });
-    });
 
-    closeBtn.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    modal.onclick = function(event) {
-        if (event.target === modal) {
+        closeBtn.onclick = function() {
             modal.style.display = "none";
         }
-    }
-</script>
+
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 
 </body>
 </html>
