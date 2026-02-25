@@ -20,7 +20,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EventCategoryModel {
+public class EventCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "categoria_seq")
@@ -31,8 +31,8 @@ public class EventCategoryModel {
     )
 
     @Column(name = "id_categoria")
-    private Integer idCategoria;
+    private Integer id;
 
     @Column(name = "nombre_categoria", nullable = false, length = 100)
-    private String nombreCategoria;
+    private String nombre;
 }

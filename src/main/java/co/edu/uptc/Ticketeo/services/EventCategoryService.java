@@ -1,6 +1,6 @@
 package co.edu.uptc.Ticketeo.services;
 
-import co.edu.uptc.Ticketeo.models.EventCategoryModel;
+import co.edu.uptc.Ticketeo.models.EventCategory;
 import co.edu.uptc.Ticketeo.repository.EventCategoryModelRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +15,11 @@ public class EventCategoryService {
         this.eventCategoryRepository = eventCategoryRepository;
     }
 
-    public EventCategoryModel saveCategory(EventCategoryModel category) {
+    public EventCategory saveCategory(EventCategory category) {
         return eventCategoryRepository.save(category);
     }
 
-    public List<EventCategoryModel> getAllCategories() {
+    public List<EventCategory> getAllCategories() {
         return eventCategoryRepository.findAll();
     }
 

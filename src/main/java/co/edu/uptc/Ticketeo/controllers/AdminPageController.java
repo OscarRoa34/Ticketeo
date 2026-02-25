@@ -1,6 +1,6 @@
 package co.edu.uptc.Ticketeo.controllers;
 
-import co.edu.uptc.Ticketeo.models.EventModel;
+import co.edu.uptc.Ticketeo.models.Event;
 import co.edu.uptc.Ticketeo.services.EventService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,12 +30,12 @@ public class AdminPageController {
 
     @GetMapping("/evento/nuevo")
     public String showEventForm(Model model) {
-        model.addAttribute("evento", new EventModel());
+        model.addAttribute("evento", new Event());
         return "eventForm";
     }
 
     @PostMapping("/evento/guardar")
-    public String saveEvent(@ModelAttribute EventModel evento,
+    public String saveEvent(@ModelAttribute Event evento,
                             @RequestParam("archivoImagen") MultipartFile imagen) {
 
         if (!imagen.isEmpty()) {
@@ -51,16 +51,16 @@ public class AdminPageController {
                 Path rutaCompleta = Paths.get(rutaAbsoluta + "/" + imagen.getOriginalFilename());
                 Files.write(rutaCompleta, bytesImg);
 
-                evento.setImagenEvento("/uploads/" + imagen.getOriginalFilename());
+                evento.setUrlImagen("/uploads/" + imagen.getOriginalFilename());
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            if (evento.getIdEvento() != null) {
-                EventModel existingEvent = eventService.getEventById(evento.getIdEvento());
+            if (evento.getId() != null) {
+                Event existingEvent = eventService.getEventById(evento.getId());
                 if (existingEvent != null) {
-                    evento.setImagenEvento(existingEvent.getImagenEvento());
+                    evento.setUrlImagen(existingEvent.getUrlImagen());
                 }
             }
         }

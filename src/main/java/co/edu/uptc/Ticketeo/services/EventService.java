@@ -1,7 +1,7 @@
 package co.edu.uptc.Ticketeo.services;
 
 
-import co.edu.uptc.Ticketeo.models.EventModel;
+import co.edu.uptc.Ticketeo.models.Event;
 import co.edu.uptc.Ticketeo.repository.EventRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +16,15 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
-    public EventModel saveEvent(EventModel event) {
+    public Event saveEvent(Event event) {
         return eventRepository.save(event);
     }
 
-    public List<EventModel> getAllEvents() {
+    public List<Event> getAllEvents() {
         return eventRepository.findAll();
     }
 
-    public EventModel getEventById(Integer id) {
+    public Event getEventById(Integer id) {
         return eventRepository.findById(id).orElse(null);
     }
 
