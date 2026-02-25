@@ -17,12 +17,14 @@
         <div class="form-wrapper">
             <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
                 <div>
-                    <h1 class="admin-title">Registrar Evento</h1>
+                    <h2 class="form-title" th:text="${evento.id == null ? 'Crear Nuevo Evento' : 'Editar Evento'}">Crear/Editar Evento</h2>
                     <p class="admin-subtitle">Completa los datos para añadir un nuevo evento al catálogo.</p>
                 </div>
             </div>
 
             <form class="custom-form" th:action="@{/admin/evento/guardar}" th:object="${evento}" method="POST" enctype="multipart/form-data">
+
+                <input type="hidden" th:field="*{id}" />
 
                 <div class="form-grid">
                     <div class="form-group span-2">
@@ -56,11 +58,11 @@
                     <div class="form-group span-2">
                         <label for="imagen" class="form-label">Subir Póster (Imagen desde el PC)</label>
                         <input type="file" id="imagen" name="archivoImagen" class="form-control"
-                            accept="image/png, image/jpeg, image/webp" required>
+                               accept="image/png, image/jpeg, image/webp" th:required="${evento.id == null}">
 
                         <div class="image-preview-box">
-                            <span id="previewText" class="preview-text">La vista previa aparecerá aquí</span>
-                            <img id="imagePreview" src="" alt="Vista previa" style="display: none;">
+                            <span id="previewText" class="preview-text" th:style="${evento.urlImagen != null ? 'display:none;' : 'display:block;'}">La vista previa aparecerá aquí</span>
+                            <img id="imagePreview" th:src="${evento.urlImagen}" alt="Vista previa" th:style="${evento.urlImagen != null ? 'display:block;' : 'display:none;'}">
                         </div>
                     </div>
                 </div> 

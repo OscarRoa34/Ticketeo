@@ -1,7 +1,7 @@
 package co.edu.uptc.Ticketeo.models;
 
 import java.time.LocalDate;
-
+import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,6 +32,7 @@ public class Event {
     private String nombre;
 
     @Column(name = "fecha_evento")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate fecha;
 
     @Column(name = "valor_evento")
