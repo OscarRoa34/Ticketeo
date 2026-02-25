@@ -14,13 +14,13 @@
 
     <main class="container admin-container">
 
-        <div class="form-wrapper">
-            <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
-                <div>
-                    <h1 class="admin-title">Registrar Evento</h1>
-                    <p class="admin-subtitle">Completa los datos para añadir un nuevo evento al catálogo.</p>
-                </div>
+    <div class="form-wrapper">
+        <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
+            <div>
+                <h1 class="admin-title">Registrar Evento</h1>
+                <p class="admin-subtitle">Completa los datos para añadir un nuevo evento al catálogo.</p>
             </div>
+        </div>
 
             <form class="custom-form" th:action="@{/admin/evento/guardar}" th:object="${evento}" method="POST" enctype="multipart/form-data">
 
@@ -50,15 +50,13 @@
                         <input type="number" id="valor" th:field="*{valor}" class="form-control" placeholder="Ej: 45000" min="0" required>
                     </div>
 
-                    <div class="form-group span-2">
-                        <label for="imagen" class="form-label">Subir Póster (Imagen desde el PC)</label>
-                        <input type="file" id="imagen" name="archivoImagen" class="form-control"
-                            accept="image/png, image/jpeg, image/webp" required>
+                <div class="form-group span-2">
+                    <label for="imagen" class="form-label">Subir Póster (Imagen desde el PC)</label>
+                    <input type="file" id="imagen" name="archivoImagen" class="form-control" accept="image/png, image/jpeg, image/webp" required>
 
-                        <div class="image-preview-box">
-                            <span id="previewText" class="preview-text">La vista previa aparecerá aquí</span>
-                            <img id="imagePreview" src="" alt="Vista previa" style="display: none;">
-                        </div>
+                    <div class="image-preview-box">
+                        <span id="previewText" class="preview-text">La vista previa aparecerá aquí</span>
+                        <img id="imagePreview" src="" alt="Vista previa" style="display: none;">
                     </div>
                 </div> 
                 
@@ -66,11 +64,15 @@
                     <a th:href="@{/admin}" class="btn-secondary">Cancelar</a>
                     <button type="submit" class="btn-primary">Guardar Evento</button>
                 </div>
+            </div>
 
-            </form>
-        </div>
+            <div class="form-actions">
+                <a th:href="@{/admin}" class="btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-primary">Guardar Evento</button>
+            </div>
 
-    </main>
+        </form>
+    </div>
 
     <div th:replace="~{fragments/footer :: pie-pagina}"></div>
 
@@ -79,28 +81,33 @@
         const imgPreview = document.getElementById('imagePreview');
         const previewText = document.getElementById('previewText');
 
-        fileInput.addEventListener('change', function (event) {
-            const file = event.target.files[0];
+<script>
+    const fileInput = document.getElementById('imagen');
+    const imgPreview = document.getElementById('imagePreview');
+    const previewText = document.getElementById('previewText');
 
-            if (file) {
-                const reader = new FileReader();
+    fileInput.addEventListener('change', function (event) {
+        const file = event.target.files[0];
 
-                reader.onload = function (e) {
-                    imgPreview.src = e.target.result;
-                    imgPreview.style.display = 'block';
-                    previewText.style.display = 'none';
-                }
+        if (file) {
+            const reader = new FileReader();
 
-                reader.readAsDataURL(file);
-            } else {
-                imgPreview.src = '';
-                imgPreview.style.display = 'none';
-                previewText.style.display = 'block';
-                previewText.innerText = 'La vista previa aparecerá aquí';
-                previewText.style.color = 'var(--gray-4)';
+            reader.onload = function (e) {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = 'block';
+                previewText.style.display = 'none';
             }
-        });
-    </script>
+
+            reader.readAsDataURL(file);
+        } else {
+            imgPreview.src = '';
+            imgPreview.style.display = 'none';
+            previewText.style.display = 'block';
+            previewText.innerText = 'La vista previa aparecerá aquí';
+            previewText.style.color = 'var(--gray-4)';
+        }
+    });
+</script>
 </body>
 
 </html>
