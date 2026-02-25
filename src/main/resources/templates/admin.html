@@ -5,17 +5,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketeo | Administración</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}"> 
 </head>
 
 <body>
+    
+    <div th:replace="~{fragments/navbar :: menu-principal}"></div>
 
-<main class="container admin-container">
+    <main class="container admin-container">
+        
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">Gestión de Eventos</h1>
+                <p class="admin-subtitle">Administra el catálogo de eventos y categorías.</p>
+            </div>
+            <a th:href="@{/admin/evento/nuevo}" class="btn-primary" style="text-decoration: none; display: inline-block;">+ Nuevo Evento</a>
+        </div>
 
-    <div class="admin-header">
-        <div>
-            <h1 class="admin-title">Gestión de Eventos</h1>
-            <p class="admin-subtitle">Administra el catálogo de eventos y categorías.</p>
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th class="text-center">Imagen</th>
+                        <th>Nombre del Evento</th>
+                        <th>Categoría</th>
+                        <th>Fecha</th>
+                        <th>Valor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="evento : ${eventos}">
+                        
+                        <td class="col-id" th:text="${evento.id}">1</td>
+                        
+                        <td class="col-img">
+                            <img th:src="${evento.urlImagen}" th:alt="${evento.nombre}" class="table-thumbnail cursor-pointer">
+                        </td>
+                        
+                        <td class="col-name" th:text="${evento.nombre}">Nombre del Evento</td>
+                        
+                        <td>
+                            <span class="category-badge table-badge" th:text="${evento.categoria}">Categoría</span>
+                        </td>
+                        
+                        <td th:text="${evento.fecha}">15 Mar 2026</td>
+                        
+                        <td class="col-price" th:text="${evento.valor == 0 ? 'Gratis' : '$' + evento.valor}">$0</td>
+                        
+                        <td class="col-actions">
+                            <a th:href="@{/admin/evento/editar/{id}(id=${evento.id})}" class="btn-action btn-edit" style="text-decoration: none; display: inline-block;">Editar</a>
+                            <a th:href="@{/admin/evento/eliminar/{id}(id=${evento.id})}" class="btn-action btn-delete" style="text-decoration: none; display: inline-block;" onclick="return confirm('¿Estás seguro de que deseas eliminar este evento?');">Eliminar</a>
+                        </td>
+                        
+                    </tr>
+                    
+                    <tr th:if="${#lists.isEmpty(eventos)}">
+                        <td colspan="7" style="text-align: center; padding: 30px;">
+                            No hay eventos registrados en el sistema. ¡Empieza creando uno!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         <button class="btn-primary"><a th:href="@{/admin/nuevo-evento}" class="btn-primary" style="color: white; text-decoration: none;">+ Nuevo Evento</a></button>
     </div>
@@ -52,12 +104,13 @@
         </table>
     </div>
 
-</main>
+    <div th:replace="~{fragments/footer :: pie-pagina}"></div>
 
-<div id="imageViewer" class="modal-overlay">
-    <span class="close-btn">&times;</span>
-    <img class="modal-content" id="fullImage">
-</div>
+    <script>
+        const modal = document.getElementById('imageViewer');
+        const modalImg = document.getElementById("fullImage");
+        const thumbnails = document.querySelectorAll('.table-thumbnail');
+        const closeBtn = document.getElementsByClassName("close-btn")[0];
 
 <script>
     const modal = document.getElementById('imageViewer');

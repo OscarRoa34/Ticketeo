@@ -10,7 +10,9 @@
 
 <body>
 
-<main class="container admin-container">
+    <div th:replace="~{fragments/navbar :: menu-principal}"></div>
+
+    <main class="container admin-container">
 
     <div class="form-wrapper">
         <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
@@ -20,31 +22,33 @@
             </div>
         </div>
 
-        <form class="custom-form" th:action="@{/admin/guardar-evento}" th:object="${evento}" method="POST" enctype="multipart/form-data">
+            <form class="custom-form" th:action="@{/admin/evento/guardar}" th:object="${evento}" method="POST" enctype="multipart/form-data">
 
-            <div class="form-grid">
-                <div class="form-group span-2">
-                    <label for="nombreEvento" class="form-label">Nombre del Evento</label>
-                    <input type="text" id="nombreEvento" th:field="*{nombreEvento}" class="form-control" placeholder="Ej: Concierto de Rock Local" required>
-                </div>
+                <div class="form-grid">
+                    <div class="form-group span-2">
+                        <label for="nombre" class="form-label">Nombre del Evento</label>
+                        <input type="text" id="nombre" th:field="*{nombre}" class="form-control" placeholder="Ej: Concierto de Rock Local" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="categoria" class="form-label">Categoría</label>
-                    <select id="categoria" th:field="*{categoria}" class="form-select" required>
-                        <option value="" disabled selected>Selecciona una categoría</option>
-                        <option th:each="cat : ${categorias}" th:value="${cat.idCategoria}" th:text="${cat.nombreCategoria}"></option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="categoria" class="form-label">Categoría</label>
+                        <select id="categoria" th:field="*{categoria}" class="form-select" required>
+                            <option value="" disabled selected>Selecciona una categoría</option>
+                            <option value="Música">Música</option>
+                            <option value="Teatro">Teatro</option>
+                            <option value="Deportes">Deportes</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="fechaEvento" class="form-label">Fecha del Evento</label>
-                    <input type="date" id="fechaEvento" th:field="*{fechaEvento}" class="form-control" required>
-                </div>
+                    <div class="form-group">
+                        <label for="fecha" class="form-label">Fecha del Evento</label>
+                        <input type="date" id="fecha" th:field="*{fecha}" class="form-control" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="valorEvento" class="form-label">Valor de la Entrada ($)</label>
-                    <input type="number" id="valorEvento" th:field="*{valorEvento}" class="form-control" placeholder="Ej: 45000" min="0" required>
-                </div>
+                    <div class="form-group">
+                        <label for="valor" class="form-label">Valor de la Entrada ($)</label>
+                        <input type="number" id="valor" th:field="*{valor}" class="form-control" placeholder="Ej: 45000" min="0" required>
+                    </div>
 
                 <div class="form-group span-2">
                     <label for="imagen" class="form-label">Subir Póster (Imagen desde el PC)</label>
@@ -54,6 +58,11 @@
                         <span id="previewText" class="preview-text">La vista previa aparecerá aquí</span>
                         <img id="imagePreview" src="" alt="Vista previa" style="display: none;">
                     </div>
+                </div> 
+                
+                <div class="form-actions">
+                    <a th:href="@{/admin}" class="btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn-primary">Guardar Evento</button>
                 </div>
             </div>
 
@@ -65,7 +74,12 @@
         </form>
     </div>
 
-</main>
+    <div th:replace="~{fragments/footer :: pie-pagina}"></div>
+
+    <script>
+        const fileInput = document.getElementById('imagen');
+        const imgPreview = document.getElementById('imagePreview');
+        const previewText = document.getElementById('previewText');
 
 <script>
     const fileInput = document.getElementById('imagen');
