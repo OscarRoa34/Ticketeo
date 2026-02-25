@@ -24,7 +24,11 @@ public class EventService {
         return eventRepository.findAll();
     }
 
-    public void deleteEvent(Long id) {
+    public EventModel getEventById(Integer id) {
+        return eventRepository.findById(id).orElse(null);
+    }
+
+    public void deleteEvent(Integer id) {
         eventRepository.deleteById(id);
     }
 }
