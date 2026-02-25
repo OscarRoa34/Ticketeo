@@ -1,10 +1,11 @@
 package co.edu.uptc.Ticketeo.services;
 
-import co.edu.uptc.Ticketeo.models.EventCategory;
-import co.edu.uptc.Ticketeo.repository.EventCategoryModelRepository;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import co.edu.uptc.Ticketeo.models.EventCategory;
+import co.edu.uptc.Ticketeo.repository.EventCategoryModelRepository;
 
 @Service
 public class EventCategoryService {
@@ -21,6 +22,10 @@ public class EventCategoryService {
 
     public List<EventCategory> getAllCategories() {
         return eventCategoryRepository.findAll();
+    }
+
+    public EventCategory getEventCategoryById(Integer id) {
+        return eventCategoryRepository.findById(id).orElse(null);
     }
 
     public void deleteCategory(Integer id) {
