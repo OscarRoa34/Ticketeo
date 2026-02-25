@@ -2,20 +2,34 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-    <nav th:fragment="menu-principal" class="navbar">
-        <div class="container navbar-content">
-            <a class="brand-logo" th:href="@{/}">
-                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg" style="height: 30px; vertical-align: middle; margin-right: 10px;">
-                TICKETEO
-            </a>
-            
-            <ul class="nav-links">
-                <li><a href="#" class="nav-item">Inicio</a></li>
-                <li><a href="#" class="nav-item">Categorías</a></li>
-                <li><a th:href="@{/admin}" class="btn-primary" style="padding: 5px 15px;">Admin</a></li>
-            </ul>
-        </div>
-    </nav>
+<nav th:fragment="navbar-user" class="navbar">
+    <div class="container navbar-content">
+        <a class="brand-logo" th:href="@{/user}">
+            <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg" style="height: 45px; vertical-align: middle; margin-right: 10px;">
+            TICKETEO
+        </a>
+
+        <ul class="nav-links">
+            <li><a th:href="@{/user}" class="nav-item">Inicio</a></li>
+            <li><a href="#" class="nav-item">Categorías</a></li>
+        </ul>
+    </div>
+</nav>
+
+<nav th:fragment="navbar-admin" class="navbar">
+    <div class="container navbar-content">
+        <a class="brand-logo" th:href="@{/admin}">
+            <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg" style="height: 45px; vertical-align: middle; margin-right: 10px;">
+            TICKETEO
+        </a>
+
+        <ul class="nav-links">
+            <li><a th:href="@{/admin}" class="nav-item">Gestionar Eventos</a></li>
+            <li><a href="#" class="nav-item">Gestionar Categorías</a></li>
+            <li><a href="#" class="nav-item">Gestionar Reportes</a></li>
+        </ul>
+    </div>
+</nav>
 
 </body>
 </html>
