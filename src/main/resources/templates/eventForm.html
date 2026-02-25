@@ -34,9 +34,7 @@
                         <label for="categoria" class="form-label">Categoría</label>
                         <select id="categoria" th:field="*{categoria}" class="form-select" required>
                             <option value="" disabled selected>Selecciona una categoría</option>
-                            <option value="Música">Música</option>
-                            <option value="Teatro">Teatro</option>
-                            <option value="Deportes">Deportes</option>
+                            <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
                         </select>
                     </div>
 
