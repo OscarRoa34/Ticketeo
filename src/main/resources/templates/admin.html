@@ -29,6 +29,7 @@
                         <th>ID</th>
                         <th class="text-center">Imagen</th>
                         <th>Nombre del Evento</th>
+                        <th>Descripción</th>
                         <th>Categoría</th>
                         <th>Fecha</th>
                         <th>Valor</th>
@@ -46,6 +47,8 @@
                         
                         <td class="col-name" th:text="${evento.nombre}">Nombre del Evento</td>
 
+                        <td th:text="${evento.descripcion}">Descripción del evento</td>
+
                         <td>
                             <span class="category-badge table-badge" th:text="${evento.categoria.nombre}">Categoría</span>
                         </td>
@@ -62,7 +65,7 @@
                     </tr>
                     
                     <tr th:if="${#lists.isEmpty(eventos)}">
-                        <td colspan="7" style="text-align: center; padding: 30px;">
+                        <td colspan="8" style="text-align: center; padding: 30px;">
                             No hay eventos registrados en el sistema. ¡Empieza creando uno!
                         </td>
                     </tr>
