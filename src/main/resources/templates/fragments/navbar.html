@@ -4,7 +4,10 @@
 
     <nav th:fragment="menu-principal" class="navbar">
         <div class="container navbar-content">
-            <a class="brand-logo" th:href="@{/}">TICKETEO</a>
+            <a class="brand-logo" th:href="@{/}">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg" style="height: 30px; vertical-align: middle; margin-right: 10px;">
+                TICKETEO
+            </a>
             
             <ul class="nav-links">
                 <li><a href="#" class="nav-item">Inicio</a></li>
