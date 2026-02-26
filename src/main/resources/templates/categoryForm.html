@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Nueva Categoría</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+    <main class="container admin-container">
+
+        <div class="form-wrapper" style="max-width: 600px; margin: 0 auto;"> <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
+                <div>
+                    <h2 class="form-title" th:text="${categoria.id == null ? 'Crear Nueva Categoría' : 'Editar Categoría'}">Crear/Editar Categoría</h2>
+                    <p class="admin-subtitle">Completa el nombre para añadir una clasificación al sistema.</p>
+                </div>
+            </div>
+
+            <form class="custom-form" th:action="@{/admin/categoria/guardar}" th:object="${categoria}" method="POST">
+
+                <input type="hidden" th:field="*{id}" />
+
+                <div class="form-grid">
+                    <div class="form-group span-2">
+                        <label for="nombre" class="form-label">Nombre de la Categoría</label>
+                        <input type="text" id="nombre" th:field="*{nombre}" class="form-control" placeholder="Ej: Música, Teatro, Deportes..." required>
+                    </div>
+                </div> 
+                
+                <div class="form-actions" style="margin-top: 30px;">
+                    <a th:href="@{/admin/categoria}" class="btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn-primary">Guardar Categoría</button>
+                </div>
+
+            </form>
+        </div>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: pie-pagina}"></div>
+
+</body>
+</html>
