@@ -34,13 +34,12 @@ public class CategoriesController {
     @GetMapping("/nueva")
     public String mostrarFormularioNuevaCategoria(Model model) {
         model.addAttribute("categoria", new EventCategory());
-        return "categoria-form"; 
+        return "categoryForm";
     }
 
     @PostMapping("/guardar")
     public String guardarCategoria(@ModelAttribute EventCategory categoria) {
         categoriaService.saveCategory(categoria);
-        
         return "redirect:/admin/categoria"; 
     }
 
@@ -49,7 +48,7 @@ public class CategoriesController {
         EventCategory categoria = categoriaService.getEventCategoryById(id);
         model.addAttribute("categoria", categoria);
         
-        return "categoria-form";
+        return "categoryForm";
     }
 
     @GetMapping("/eliminar/{id}")
