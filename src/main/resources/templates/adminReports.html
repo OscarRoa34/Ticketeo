@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Reportes de Interés</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container main-content">
+    <div class="header-actions">
+        <h1 class="page-title">Reportes de Interés</h1>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Nombre del Evento</th>
+                <th>Categoría</th>
+                <th>Total de Interesados</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="report : ${interestRanking}">
+                <td class="col-name" th:text="${report.event.name}"></td>
+                <td th:text="${report.event.category.name}"></td>
+                <td th:text="${report.totalInterests}"></td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(interestRanking)}">
+                <td colspan="3" style="text-align: center; padding: 30px;">
+                    Aún no hay reportes de interés registrados.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: pie-pagina}"></div>
+
+</body>
+</html>
