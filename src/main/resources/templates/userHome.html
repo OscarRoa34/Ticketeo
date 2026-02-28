@@ -34,7 +34,7 @@
                 <div class="card-footer">
                     <span class="price-tag" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">$0</span>
 
-                    <a th:href="@{/event/{id}(id=${event.id})}" class="btn-primary">Ver Detalles</a>
+                    <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary">Ver Detalles</a>
                 </div>
             </div>
         </article>

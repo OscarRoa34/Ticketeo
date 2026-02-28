@@ -1,14 +1,22 @@
-/*INICIO ESTILOS GENERALES*/
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    height: 100%;
+}
+
 body {
     background-color: var(--gray-5);
     font-family: 'Inter', sans-serif;
     color: var(--black-2);
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    margin: 0;
 }
 
 a {
@@ -20,4 +28,3 @@ a {
     margin: 0 auto;
     padding: 0 20px;
 }
-/*FIN ESTILOS GENERALES*/

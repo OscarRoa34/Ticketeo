@@ -1,4 +1,4 @@
-/*ESTILOS NAVBAR*/
+
 .navbar {
     background-color: var(--primary);
     padding: 15px 0;
@@ -52,14 +52,16 @@
     font-size: 1.2rem;
 }
 
-/*FIN ESTILOS NAVBAR*/
 
-/*ESTILOS FOOTER*/
 .site-footer {
     background-color: var(--black-2);
     color: var(--white);
     padding: 40px 0 20px 0;
     margin-top: 60px;
+    flex-shrink: 0;
+    width: 100%;
+    outline: 1px solid var(--black-2);
+    outline-offset: -1px;
 }
 
 .footer-content {
@@ -103,4 +105,3 @@
     font-size: 0.8rem;
 }
 
-/*FIN ESTILOS FOOTER*/

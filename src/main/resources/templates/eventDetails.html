@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Detalles del Evento</title>
+    <link rel="stylesheet" th:href="@{/css/eventDetails.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-user}"></div>
+
+<main class="container event-details-container">
+    <div class="event-details-card">
+
+        <div class="event-image-wrapper">
+            <img th:src="${event.imageUrl}" th:alt="${event.name}" class="event-hero-image">
+        </div>
+
+        <div class="event-info-wrapper">
+            <span class="category-badge primary-badge" th:text="${event.category.name}">Categoría</span>
+
+            <h1 class="event-title" th:text="${event.name}">Nombre del Evento</h1>
+
+            <div class="event-meta">
+                <p class="event-date">📅 <span th:text="${event.date}">Fecha</span></p>
+                <p class="event-price">💰 <span th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">Valor</span></p>
+            </div>
+
+            <div class="event-description-box">
+                <h3>Acerca del evento</h3>
+                <p th:text="${event.description}">Descripción detallada del evento.</p>
+            </div>
+
+            <div class="event-actions">
+                <form th:action="@{/event/{id}/interest(id=${event.id})}" method="POST" style="width: 100%;">
+                    <button type="submit" class="btn-primary btn-large" style="width: 100%; display: flex; justify-content: center; gap: 10px;">
+                        ❤️ ¡Me interesa!
+                    </button>
+                </form>
+                <a th:href="@{/}" class="btn-secondary" style="text-align: center;">Volver al catálogo</a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

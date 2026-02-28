@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Ranking de Interés</title>
+
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+
+    <link rel="stylesheet" th:href="@{/css/reports.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+    <main class="container admin-container">
+    <div class="reports-header">
+        <h1 class="page-title">🏆 Ranking de Eventos</h1>
+        <p class="admin-subtitle">Eventos con mayor índice de interés por parte de los usuarios.</p>
+    </div>
+
+    <div class="reports-card">
+        <table class="reports-table">
+            <thead>
+            <tr>
+                <th>Posición</th>
+                <th>Nombre del Evento</th>
+                <th>Categoría</th>
+                <th>Interesados</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="report, iterStat : ${interestRanking}">
+                <td class="rank-col">
+                    <span th:if="${iterStat.index == 0}">🥇 1</span>
+                    <span th:if="${iterStat.index == 1}">🥈 2</span>
+                    <span th:if="${iterStat.index == 2}">🥉 3</span>
+                    <span th:if="${iterStat.index > 2}" th:text="${iterStat.count}"></span>
+                </td>
+                <td class="event-name-col">
+                    <strong th:text="${report.event.name}"></strong>
+                </td>
+                <td>
+                    <span class="category-badge" th:text="${report.event.category.name}"></span>
+                </td>
+                <td class="interest-count">
+                    <span class="count-badge" th:text="${report.totalInterests} + ' personas'"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

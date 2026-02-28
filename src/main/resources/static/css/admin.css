@@ -1,7 +1,7 @@
-/*ESTILOS PANEL ADMIN Y TABLA*/
+
 .admin-container {
     margin-top: 40px;
-    min-height: 60vh;
+    flex: 1;
 }
 
 .admin-header {
@@ -77,9 +77,6 @@
     font-size: 0.7rem;
 }
 
-/*FIN ESTILOS PANEL ADMIN Y TABLA*/
-
-/*ESTILOS BOTONES ACCIÓN (CRUD)*/
 .col-actions {
     white-space: nowrap;
     vertical-align: middle;
@@ -118,9 +115,7 @@
     background-color: #d14040;
 }
 
-/*FIN ESTILOS BOTONES ACCIÓN*/
 
-/*ESTILOS IMAGEN TABLA ADMIN Y VISOR MODAL*/
 .text-center {
     text-align: center !important;
 }
@@ -213,4 +208,3 @@
     }
 }
 
-/*FIN ESTILOS IMAGEN TABLA ADMIN Y VISOR MODAL*/
