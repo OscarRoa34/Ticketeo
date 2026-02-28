@@ -2,6 +2,7 @@ package co.edu.uptc.Ticketeo.controllers;
 
 import co.edu.uptc.Ticketeo.models.Event;
 import co.edu.uptc.Ticketeo.services.EventService;
+import co.edu.uptc.Ticketeo.services.InterestReportService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,12 @@ public class AdminPageController {
 
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
+    private final InterestReportService interestReportService;
 
-    public AdminPageController(EventService eventService, EventCategoryService eventCategoryService) {
+    public AdminPageController(EventService eventService, EventCategoryService eventCategoryService, InterestReportService interestReportService) {
         this.eventService = eventService;
         this.eventCategoryService = eventCategoryService;
+        this.interestReportService = interestReportService;
     }
 
     @GetMapping
@@ -90,5 +93,11 @@ public class AdminPageController {
     public String deleteEvent(@PathVariable Integer id) {
         eventService.deleteEvent(id);
         return "redirect:/admin";
+    }
+
+    @GetMapping("/reportes")
+    public String showReports(Model model) {
+        model.addAttribute("interestRanking", interestReportService.getEventInterestRanking());
+        return "adminReports";
     }
 }
