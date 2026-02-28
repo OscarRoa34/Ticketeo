@@ -30,11 +30,15 @@
                     <h2 class="card-title" th:text="${evento.nombre}">Nombre del Evento</h2>
                     
                     <p class="card-description" th:text="${evento.descripcion}">Descripción y detalles del evento.</p>
-                    
-                    <div class="card-footer">
+
+                    <div class="card-footer" style="display: flex; gap: 10px; align-items: center;">
                         <span class="price-tag" th:text="${evento.valor == 0 ? 'Gratis' : '$' + evento.valor}">$0</span>
-                        
-                        <a th:href="@{/evento/{id}(id=${evento.id})}" class="btn-primary">Ver Detalles</a>
+
+                        <form th:action="@{/user/interesar/{id}(id=${evento.id})}" method="post" style="margin: 0;">
+                            <button type="submit" class="btn-secondary" style="padding: 8px 12px; cursor: pointer;">Me interesa</button>
+                        </form>
+
+                        <a th:href="@{/user/evento/{id}(id=${evento.id})}" class="btn-primary">Ver Detalles</a>
                     </div>
                 </div>
             </article>
