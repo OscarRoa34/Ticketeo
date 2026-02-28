@@ -27,66 +27,66 @@ public class AdminPageController {
 
     @GetMapping
     public String showAdminPage(Model model) {
-        model.addAttribute("eventos", eventService.getAllEvents());
+        model.addAttribute("events", eventService.getAllEvents());
         return "admin";
     }
 
-    @GetMapping("/evento/nuevo")
+    @GetMapping("/event/new")
     public String showEventForm(Model model) {
-        model.addAttribute("evento", new Event());
-        model.addAttribute("categorias", eventCategoryService.getAllCategories());
+        model.addAttribute("event", new Event());
+        model.addAttribute("categories", eventCategoryService.getAllCategories());
         return "eventForm";
     }
 
-    @GetMapping("/evento/editar/{id}")
+    @GetMapping("/event/edit/{id}")
     public String showEditForm(@PathVariable("id") Integer id, Model model) {
-        Event evento = eventService.getEventById(id);
+        Event event = eventService.getEventById(id);
 
-        if (evento != null) {
-            model.addAttribute("evento", evento);
-            model.addAttribute("categorias", eventCategoryService.getAllCategories());
+        if (event != null) {
+            model.addAttribute("event", event);
+            model.addAttribute("categories", eventCategoryService.getAllCategories());
             return "eventForm";
         }
         return "redirect:/admin";
     }
 
-    @PostMapping("/evento/guardar")
-    public String saveEvent(@ModelAttribute Event evento,
-                            @RequestParam("archivoImagen") MultipartFile imagen) {
+    @PostMapping("/event/save")
+    public String saveEvent(@ModelAttribute Event event,
+                            @RequestParam("imageFile") MultipartFile image) {
 
-        if (!imagen.isEmpty()) {
-            Path directorioImagenes = Paths.get("src/main/resources/static/uploads");
-            String rutaAbsoluta = directorioImagenes.toFile().getAbsolutePath();
+        if (!image.isEmpty()) {
+            Path imageDirectory = Paths.get("src/main/resources/static/uploads");
+            String absolutePath = imageDirectory.toFile().getAbsolutePath();
 
             try {
-                if (!Files.exists(directorioImagenes)) {
-                    Files.createDirectories(directorioImagenes);
+                if (!Files.exists(imageDirectory)) {
+                    Files.createDirectories(imageDirectory);
                 }
 
-                byte[] bytesImg = imagen.getBytes();
-                Path rutaCompleta = Paths.get(rutaAbsoluta + "/" + imagen.getOriginalFilename());
-                Files.write(rutaCompleta, bytesImg);
+                byte[] imageBytes = image.getBytes();
+                Path fullPath = Paths.get(absolutePath + "/" + image.getOriginalFilename());
+                Files.write(fullPath, imageBytes);
 
-                evento.setUrlImagen("/uploads/" + imagen.getOriginalFilename());
+                event.setImageUrl("/uploads/" + image.getOriginalFilename());
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            if (evento.getId() != null) {
-                Event existingEvent = eventService.getEventById(evento.getId());
+            if (event.getId() != null) {
+                Event existingEvent = eventService.getEventById(event.getId());
                 if (existingEvent != null) {
-                    evento.setUrlImagen(existingEvent.getUrlImagen());
+                    event.setImageUrl(existingEvent.getImageUrl());
                 }
             }
         }
 
-        eventService.saveEvent(evento);
+        eventService.saveEvent(event);
 
         return "redirect:/admin";
     }
 
-    @GetMapping("/evento/eliminar/{id}")
+    @GetMapping("/event/delete/{id}")
     public String deleteEvent(@PathVariable Integer id) {
         eventService.deleteEvent(id);
         return "redirect:/admin";

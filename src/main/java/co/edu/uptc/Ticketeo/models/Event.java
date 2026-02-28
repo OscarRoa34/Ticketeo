@@ -26,25 +26,25 @@ public class Event {
 
     @ManyToOne
     @JoinColumn(name = "id_categoria", nullable = false)
-    private EventCategory categoria;
+    private EventCategory category;
 
     @Column(name = "nombre_evento", nullable = false, length = 150)
-    private String nombre;
+    private String name;
 
     @Column(name = "fecha_evento")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate fecha;
+    private LocalDate date;
 
     @Column(name = "valor_evento")
-    private Double valor;
+    private Double price;
 
     @Column(name = "descripcion_evento", length = 500)
-    private String descripcion;
+    private String description;
 
     @Column(name = "imagen_evento")
-    private String urlImagen;
+    private String imageUrl;
 
     @Column(name = "estado")
     @Builder.Default
-    private Boolean estado = true;
+    private Boolean isActive = true;
 }

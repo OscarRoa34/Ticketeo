@@ -19,7 +19,7 @@ public class UserHomeController {
 
     @GetMapping
     public String showUserHome(Model model) {
-        model.addAttribute("eventos", eventService.getAllEvents());
+        model.addAttribute("events", eventService.getAllEvents());
         return "userHome";
     }
 }

@@ -32,9 +32,9 @@ public class InterestReport {
 
     @ManyToOne
     @JoinColumn(name = "id_evento", nullable = false)
-    private Event evento;
+    private Event event;
 
     @Column(name = "fecha_registro")
     @Builder.Default
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+    private LocalDateTime registrationDate = LocalDateTime.now();
 }

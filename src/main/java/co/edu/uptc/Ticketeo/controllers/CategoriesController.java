@@ -14,46 +14,46 @@ import co.edu.uptc.Ticketeo.models.EventCategory;
 import co.edu.uptc.Ticketeo.services.EventCategoryService;
 
 @Controller
-@RequestMapping("/admin/categoria") 
+@RequestMapping("/admin/category")
 public class CategoriesController {
 
-    private final EventCategoryService categoriaService;
+    private final EventCategoryService eventCategoryService;
 
-    public CategoriesController(EventCategoryService categoriaService) {
-        this.categoriaService = categoriaService;
+    public CategoriesController(EventCategoryService eventCategoryService) {
+        this.eventCategoryService = eventCategoryService;
     }
 
     @GetMapping({"", "/"})
-    public String listarCategorias(Model model) {
-        List<EventCategory> lista = categoriaService.getAllCategories();
-        model.addAttribute("categorias", lista);
-        
+    public String listCategories(Model model) {
+        List<EventCategory> list = eventCategoryService.getAllCategories();
+        model.addAttribute("categories", list);
+
         return "categories";
     }
 
-    @GetMapping("/nueva")
-    public String mostrarFormularioNuevaCategoria(Model model) {
-        model.addAttribute("categoria", new EventCategory());
+    @GetMapping("/new")
+    public String showNewCategoryForm(Model model) {
+        model.addAttribute("category", new EventCategory());
         return "categoryForm";
     }
 
-    @PostMapping("/guardar")
-    public String guardarCategoria(@ModelAttribute EventCategory categoria) {
-        categoriaService.saveCategory(categoria);
-        return "redirect:/admin/categoria"; 
+    @PostMapping("/save")
+    public String saveCategory(@ModelAttribute EventCategory category) {
+        eventCategoryService.saveCategory(category);
+        return "redirect:/admin/category";
     }
 
-    @GetMapping("/editar/{id}")
-    public String mostrarFormularioEditarCategoria(@PathVariable("id") Integer id, Model model) {
-        EventCategory categoria = categoriaService.getEventCategoryById(id);
-        model.addAttribute("categoria", categoria);
-        
+    @GetMapping("/edit/{id}")
+    public String showEditCategoryForm(@PathVariable("id") Integer id, Model model) {
+        EventCategory category = eventCategoryService.getEventCategoryById(id);
+        model.addAttribute("category", category);
+
         return "categoryForm";
     }
 
-    @GetMapping("/eliminar/{id}")
-    public String eliminarCategoria(@PathVariable("id") Integer id) {
-        categoriaService.deleteCategory(id);
-        return "redirect:/admin/categoria";
+    @GetMapping("/delete/{id}")
+    public String deleteCategory(@PathVariable("id") Integer id) {
+        eventCategoryService.deleteCategory(id);
+        return "redirect:/admin/category";
     }
 }
