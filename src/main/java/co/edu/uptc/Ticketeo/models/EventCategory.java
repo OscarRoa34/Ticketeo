@@ -34,5 +34,5 @@ public class EventCategory {
     private Integer id;
 
     @Column(name = "nombre_categoria", nullable = false, length = 100)
-    private String nombre;
+    private String name;
 }

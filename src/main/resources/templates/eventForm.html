@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -10,102 +10,102 @@
 
 <body>
 
-    <div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
 
-    <main class="container admin-container">
+<main class="container admin-container">
 
-        <div class="form-wrapper">
-            <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
-                <div>
-                    <h2 class="form-title" th:text="${evento.id == null ? 'Crear Nuevo Evento' : 'Editar Evento'}">Crear/Editar Evento</h2>
-                    <p class="admin-subtitle">Completa los datos para añadir un nuevo evento al catálogo.</p>
+    <div class="form-wrapper">
+        <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
+            <div>
+                <h2 class="form-title" th:text="${event.id == null ? 'Crear Nuevo Evento' : 'Editar Evento'}">Crear/Editar Evento</h2>
+                <p class="admin-subtitle">Completa los datos para añadir un nuevo evento al catálogo.</p>
+            </div>
+        </div>
+
+        <form class="custom-form" th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
+
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-grid">
+                <div class="form-group span-2">
+                    <label for="name" class="form-label">Nombre del Evento</label>
+                    <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Ej: Concierto de Rock Local" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category" class="form-label">Categoría</label>
+                    <select id="category" th:field="*{category}" class="form-select" required>
+                        <option value="" disabled selected>Selecciona una categoría</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date" class="form-label">Fecha del Evento</label>
+                    <input type="date" id="date" th:field="*{date}" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="price" class="form-label">Valor de la Entrada ($)</label>
+                    <input type="number" id="price" th:field="*{price}" class="form-control" placeholder="Ej: 45000" min="0" required>
+                </div>
+
+                <div class="form-group span-2">
+                    <label for="description" class="form-label">Descripción del Evento</label>
+                    <textarea id="description" th:field="*{description}" class="form-control" rows="4" placeholder="Escribe los detalles del evento aquí..." required></textarea>
+                </div>
+
+                <div class="form-group span-2">
+                    <label for="image" class="form-label">Subir Póster (Imagen desde el PC)</label>
+                    <input type="file" id="image" name="imageFile" class="form-control"
+                           accept="image/png, image/jpeg, image/webp" th:required="${event.id == null}">
+
+                    <div class="image-preview-box">
+                        <span id="previewText" class="preview-text" th:style="${event.imageUrl != null ? 'display:none;' : 'display:block;'}">La vista previa aparecerá aquí</span>
+                        <img id="imagePreview" th:src="${event.imageUrl}" alt="Vista previa" th:style="${event.imageUrl != null ? 'display:block;' : 'display:none;'}">
+                    </div>
                 </div>
             </div>
 
-            <form class="custom-form" th:action="@{/admin/evento/guardar}" th:object="${evento}" method="POST" enctype="multipart/form-data">
+            <div class="form-actions">
+                <a th:href="@{/admin}" class="btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-primary">Guardar Evento</button>
+            </div>
 
-                <input type="hidden" th:field="*{id}" />
+        </form>
+    </div>
 
-                <div class="form-grid">
-                    <div class="form-group span-2">
-                        <label for="nombre" class="form-label">Nombre del Evento</label>
-                        <input type="text" id="nombre" th:field="*{nombre}" class="form-control" placeholder="Ej: Concierto de Rock Local" required>
-                    </div>
+</main>
 
-                    <div class="form-group">
-                        <label for="categoria" class="form-label">Categoría</label>
-                        <select id="categoria" th:field="*{categoria}" class="form-select" required>
-                            <option value="" disabled selected>Selecciona una categoría</option>
-                            <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
-                        </select>
-                    </div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 
-                    <div class="form-group">
-                        <label for="fecha" class="form-label">Fecha del Evento</label>
-                        <input type="date" id="fecha" th:field="*{fecha}" class="form-control" required>
-                    </div>
+<script>
+    const fileInput = document.getElementById('image');
+    const imgPreview = document.getElementById('imagePreview');
+    const previewText = document.getElementById('previewText');
 
-                    <div class="form-group">
-                        <label for="valor" class="form-label">Valor de la Entrada ($)</label>
-                        <input type="number" id="valor" th:field="*{valor}" class="form-control" placeholder="Ej: 45000" min="0" required>
-                    </div>
+    fileInput.addEventListener('change', function (event) {
+        const file = event.target.files[0];
 
-                    <div class="form-group span-2">
-                        <label for="descripcion" class="form-label">Descripción del Evento</label>
-                        <textarea id="descripcion" th:field="*{descripcion}" class="form-control" rows="4" placeholder="Escribe los detalles del evento aquí..." required></textarea>
-                    </div>
+        if (file) {
+            const reader = new FileReader();
 
-                    <div class="form-group span-2">
-                        <label for="imagen" class="form-label">Subir Póster (Imagen desde el PC)</label>
-                        <input type="file" id="imagen" name="archivoImagen" class="form-control"
-                               accept="image/png, image/jpeg, image/webp" th:required="${evento.id == null}">
-
-                        <div class="image-preview-box">
-                            <span id="previewText" class="preview-text" th:style="${evento.urlImagen != null ? 'display:none;' : 'display:block;'}">La vista previa aparecerá aquí</span>
-                            <img id="imagePreview" th:src="${evento.urlImagen}" alt="Vista previa" th:style="${evento.urlImagen != null ? 'display:block;' : 'display:none;'}">
-                        </div>
-                    </div>
-                </div> 
-                
-                <div class="form-actions">
-                    <a th:href="@{/admin}" class="btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn-primary">Guardar Evento</button>
-                </div>
-
-            </form>
-        </div>
-
-    </main>
-
-    <div th:replace="~{fragments/footer :: pie-pagina}"></div>
-
-    <script>
-        const fileInput = document.getElementById('imagen');
-        const imgPreview = document.getElementById('imagePreview');
-        const previewText = document.getElementById('previewText');
-
-        fileInput.addEventListener('change', function (event) {
-            const file = event.target.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-
-                reader.onload = function (e) {
-                    imgPreview.src = e.target.result;
-                    imgPreview.style.display = 'block';
-                    previewText.style.display = 'none';
-                }
-
-                reader.readAsDataURL(file);
-            } else {
-                imgPreview.src = '';
-                imgPreview.style.display = 'none';
-                previewText.style.display = 'block';
-                previewText.innerText = 'La vista previa aparecerá aquí';
-                previewText.style.color = 'var(--gray-4)';
+            reader.onload = function (e) {
+                imgPreview.src = e.target.result;
+                imgPreview.style.display = 'block';
+                previewText.style.display = 'none';
             }
-        });
-    </script>
+
+            reader.readAsDataURL(file);
+        } else {
+            imgPreview.src = '';
+            imgPreview.style.display = 'none';
+            previewText.style.display = 'block';
+            previewText.innerText = 'La vista previa aparecerá aquí';
+            previewText.style.color = 'var(--gray-4)';
+        }
+    });
+</script>
 </body>
 
 </html>

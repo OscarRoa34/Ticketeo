@@ -23,16 +23,7 @@ public class UserHomeController {
     }
     @GetMapping
     public String showUserHome(Model model) {
-        model.addAttribute("eventos", eventService.getAllEvents());
+        model.addAttribute("events", eventService.getAllEvents());
         return "userHome";
-    }
-
-    @PostMapping("/interesar/{id}")
-    public String registrarInteres(@PathVariable("id") Integer id) {
-        Event evento = eventService.getEventById(id);
-        if (evento != null) {
-            interestReportService.registrarInteres(evento);
-        }
-        return "redirect:/user";
     }
 }

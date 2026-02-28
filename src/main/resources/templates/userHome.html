@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -10,61 +10,57 @@
 
 <body>
 
-    <div th:replace="~{fragments/navbar :: navbar-user}"></div>
+<div th:replace="~{fragments/navbar :: navbar-user}"></div>
 
-    <header class="hero-section">
-        <h1 class="hero-title">Encuentra tu próximo evento</h1>
-    </header>
+<header class="hero-section">
+    <h1 class="hero-title">Encuentra tu próximo evento</h1>
+</header>
 
-    <main class="container main-content">
+<main class="container main-content">
 
-        <div class="events-grid">
+    <div class="events-grid">
 
-            <article class="event-card" th:each="evento : ${eventos}">
-                
-                <img th:src="${evento.urlImagen}" class="card-image" th:alt="${evento.nombre}">
-                
-                <div class="card-body">
-                    <span class="category-badge primary-badge" th:text="${evento.categoria.nombre}">Categoría</span>
+        <article class="event-card" th:each="event : ${events}">
 
-                    <h2 class="card-title" th:text="${evento.nombre}">Nombre del Evento</h2>
-                    
-                    <p class="card-description" th:text="${evento.descripcion}">Descripción y detalles del evento.</p>
+            <img th:src="${event.imageUrl}" class="card-image" th:alt="${event.name}">
 
-                    <div class="card-footer" style="display: flex; gap: 10px; align-items: center;">
-                        <span class="price-tag" th:text="${evento.valor == 0 ? 'Gratis' : '$' + evento.valor}">$0</span>
+            <div class="card-body">
+                <span class="category-badge primary-badge" th:text="${event.category.name}">Categoría</span>
 
-                        <form th:action="@{/user/interesar/{id}(id=${evento.id})}" method="post" style="margin: 0;">
-                            <button type="submit" class="btn-secondary" style="padding: 8px 12px; cursor: pointer;">Me interesa</button>
-                        </form>
+                <h2 class="card-title" th:text="${event.name}">Nombre del Evento</h2>
 
-                        <a th:href="@{/user/evento/{id}(id=${evento.id})}" class="btn-primary">Ver Detalles</a>
-                    </div>
+                <p class="card-description" th:text="${event.description}">Descripción y detalles del evento.</p>
+
+                <div class="card-footer">
+                    <span class="price-tag" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">$0</span>
+
+                    <a th:href="@{/event/{id}(id=${event.id})}" class="btn-primary">Ver Detalles</a>
                 </div>
-            </article>
-            
-            <div th:if="${#lists.isEmpty(eventos)}" class="no-events-message" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                <h3>No hay eventos disponibles en este momento.</h3>
-                <p>¡Vuelve pronto para descubrir nuevas experiencias!</p>
             </div>
+        </article>
 
+        <div th:if="${#lists.isEmpty(events)}" class="no-events-message" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <h3>No hay eventos disponibles en este momento.</h3>
+            <p>¡Vuelve pronto para descubrir nuevas experiencias!</p>
         </div>
 
-        <div class="pagination-container" th:if="${not #lists.isEmpty(eventos)}">
-            <ul class="pagination">
-                <li><a href="#" class="page-link disabled">&laquo; Anterior</a></li>
-                <li><a href="#" class="page-link active">1</a></li>
-                <li><a href="#" class="page-link">2</a></li>
-                <li><a href="#" class="page-link">3</a></li>
-                <li><span class="page-dots">...</span></li>
-                <li><a href="#" class="page-link">10</a></li>
-                <li><a href="#" class="page-link">Siguiente &raquo;</a></li>
-            </ul>
-        </div>
+    </div>
 
-    </main>
+    <div class="pagination-container" th:if="${not #lists.isEmpty(events)}">
+        <ul class="pagination">
+            <li><a href="#" class="page-link disabled">&laquo; Anterior</a></li>
+            <li><a href="#" class="page-link active">1</a></li>
+            <li><a href="#" class="page-link">2</a></li>
+            <li><a href="#" class="page-link">3</a></li>
+            <li><span class="page-dots">...</span></li>
+            <li><a href="#" class="page-link">10</a></li>
+            <li><a href="#" class="page-link">Siguiente &raquo;</a></li>
+        </ul>
+    </div>
 
-    <div th:replace="~{fragments/footer :: pie-pagina}"></div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>
