@@ -98,6 +98,6 @@ public class AdminPageController {
     @GetMapping("/reportes")
     public String showReports(Model model) {
         model.addAttribute("interestRanking", interestReportService.getEventInterestRanking());
-        return "adminReports";
+        return "reports";
     }
 }

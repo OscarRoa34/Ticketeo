@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface InterestReportRepository extends JpaRepository<InterestReport, Integer> {
-    @Query("SELECT r.evento AS event, COUNT(r.id) AS totalInterests FROM InterestReport r GROUP BY r.evento ORDER BY totalInterests DESC")
+
+    @Query("SELECT r.event AS event, COUNT(r.id) AS totalInterests FROM InterestReport r GROUP BY r.event ORDER BY totalInterests DESC")
     List<EventInterestDto> findEventInterestRanking();
 }

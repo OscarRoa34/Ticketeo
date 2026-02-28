@@ -1,4 +1,4 @@
-/*ESTILOS BOTONES*/
+
 .btn-primary {
     background-color: var(--primary);
     color: var(--white);
@@ -20,9 +20,7 @@
     padding: 6px 16px;
 }
 
-/*FIN ESTILOS BOTONES*/
 
-/*ESTILOS BADGES (ETIQUETAS)*/
 .category-badge {
     background-color: var(--secondary);
     color: var(--white);
@@ -59,9 +57,7 @@
     background-color: var(--secondary);
 }
 
-/*FIN ESTILOS BADGES*/
 
-/*ESTILOS GRILLA Y CARDS*/
 .events-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -124,9 +120,7 @@
     font-size: 1.3rem;
 }
 
-/*FIN ESTILOS GRILLA Y CARDS*/
 
-/*ESTILOS DE PAGINACIÓN*/
 .pagination-container {
     margin-top: 50px;
     margin-bottom: 50px;
@@ -178,4 +172,3 @@
     padding: 0 5px;
 }
 
-/*FIN ESTILOS DE PAGINACIÓN*/
