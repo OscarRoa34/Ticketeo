@@ -4,27 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketeo | Detalles del Evento</title>
-    <link rel="stylesheet" th:href="@{/css/eventDetails.css}">
+    <link rel="stylesheet" th:href="@{/css/event-details.css}">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar-user}"></div>
 
 <main class="container event-details-container">
-    <div class="event-details-card">
+    <article class="event-details-card">
 
-        <div class="event-image-wrapper">
-            <img th:src="${event.imageUrl}" th:alt="${event.name}" class="event-hero-image">
-        </div>
-
-        <div class="event-info-wrapper">
+        <header class="event-header">
             <span class="category-badge primary-badge" th:text="${event.category.name}">Categoría</span>
-
             <h1 class="event-title" th:text="${event.name}">Nombre del Evento</h1>
+        </header>
+
+        <figure class="event-image-wrapper">
+            <img th:src="${event.imageUrl}" th:alt="${event.name}" class="event-hero-image">
+        </figure>
+
+        <section class="event-info-wrapper">
 
             <div class="event-meta">
-                <p class="event-date">📅 <span th:text="${event.date}">Fecha</span></p>
-                <p class="event-price">💰 <span th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">Valor</span></p>
+                <div class="meta-item">
+                    <span class="meta-icon">📅</span>
+                    <div class="meta-text">
+                        <span class="meta-label">Fecha</span>
+                        <span class="meta-value" th:text="${event.date}">Fecha del evento</span>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-icon">💰</span>
+                    <div class="meta-text">
+                        <span class="meta-label">Entrada</span>
+                        <span class="meta-value" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">Valor</span>
+                    </div>
+                </div>
             </div>
 
             <div class="event-description-box">
@@ -34,15 +49,15 @@
 
             <div class="event-actions">
                 <form th:action="@{/event/{id}/interest(id=${event.id})}" method="POST" style="width: 100%;">
-                    <button type="submit" class="btn-primary btn-large" style="width: 100%; display: flex; justify-content: center; gap: 10px;">
+                    <button type="submit" class="btn-primary btn-large btn-block">
                         ❤️ ¡Me interesa!
                     </button>
                 </form>
-                <a th:href="@{/}" class="btn-secondary" style="text-align: center;">Volver al catálogo</a>
+                <a th:href="@{/user}" class="btn-secondary btn-large btn-block">Volver al catálogo</a>
             </div>
-        </div>
+        </section>
 
-    </div>
+    </article>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
