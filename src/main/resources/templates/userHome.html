@@ -26,11 +26,11 @@
                 <p class="carousel-description" th:text="${event.description}">Descripción del evento</p>
                 <div class="carousel-meta">
                     <span class="carousel-meta-item">
-                        <span class="carousel-meta-icon">📅</span>
+                        <span style="margin-right: 5px;">Fecha:</span>
                         <span th:text="${event.date}">Fecha</span>
                     </span>
                     <span class="carousel-meta-item">
-                        <span class="carousel-meta-icon">💰</span>
+                        <span style="margin-right: 5px;">Precio:</span>
                         <span class="price-tag" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">Precio</span>
                     </span>
                 </div>
@@ -44,6 +44,24 @@
 </div>
 
 <main class="container main-content">
+
+    <div class="filters-bar" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <h2 style="color: var(--primary); font-size: 1.8rem;">Eventos Disponibles</h2>
+
+        <form th:action="@{/user}" method="get" id="sortForm" style="display: flex; align-items: center; gap: 10px;">
+            <input type="hidden" name="search" th:value="${currentSearch}" th:if="${currentSearch != null}" />
+            <input type="hidden" name="categoryId" th:value="${currentCategory}" th:if="${currentCategory != null}" />
+
+            <label for="sort" style="font-weight: 600; color: var(--gray-1); margin-right: 10px; font-size: 1.1rem;">Ordenar por:</label>
+            <select name="sort" id="sort" onchange="this.form.submit()"
+                    style="padding: 10px 30px 10px 15px; width: auto; max-width: 200px; border-radius: 50px; border: 1px solid var(--gray-5); cursor: pointer; color: var(--black-2); font-weight: 600; background: white; outline: none; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.9rem; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;">
+                <option value="date_desc" th:selected="${currentSort == 'date_desc'}">Recién Añadidos</option>
+                <option value="date_asc" th:selected="${currentSort == 'date_asc'}">Próximos Eventos</option>
+                <option value="price_asc" th:selected="${currentSort == 'price_asc'}">$ Menor - Mayor</option>
+                <option value="price_desc" th:selected="${currentSort == 'price_desc'}">$ Mayor - Menor</option>
+            </select>
+        </form>
+    </div>
 
     <div class="events-grid">
 
@@ -76,7 +94,7 @@
     <div class="pagination-container" th:if="${totalPages > 1}">
         <ul class="pagination">
             <li>
-                <a th:href="@{/user(page=${currentPage > 0 ? currentPage - 1 : 0})}"
+                <a th:href="@{/user(page=${currentPage > 0 ? currentPage - 1 : 0}, search=${currentSearch}, categoryId=${currentCategory}, sort=${currentSort})}"
                    class="page-link"
                    th:classappend="${currentPage == 0} ? 'disabled' : ''">
                     &laquo; Anterior
@@ -84,7 +102,7 @@
             </li>
 
             <li th:if="${currentPage > 2}">
-                <a th:href="@{/user(page=0)}" class="page-link">1</a>
+                <a th:href="@{/user(page=0, search=${currentSearch}, categoryId=${currentCategory}, sort=${currentSort})}" class="page-link">1</a>
             </li>
 
             <li th:if="${currentPage > 3}">
@@ -92,7 +110,7 @@
             </li>
 
             <li th:if="${currentPage > 1}">
-                <a th:href="@{/user(page=${currentPage - 1})}" class="page-link" th:text="${currentPage}">Prev</a>
+                <a th:href="@{/user(page=${currentPage - 1}, search=${currentSearch}, categoryId=${currentCategory}, sort=${currentSort})}" class="page-link" th:text="${currentPage}">Prev</a>
             </li>
 
             <li>
@@ -100,7 +118,7 @@
             </li>
 
             <li th:if="${currentPage < totalPages - 2}">
-                <a th:href="@{/user(page=${currentPage + 1})}" class="page-link" th:text="${currentPage + 2}">Next</a>
+                <a th:href="@{/user(page=${currentPage + 1}, search=${currentSearch}, categoryId=${currentCategory}, sort=${currentSort})}" class="page-link" th:text="${currentPage + 2}">Next</a>
             </li>
 
             <li th:if="${currentPage < totalPages - 4}">
@@ -108,11 +126,11 @@
             </li>
 
             <li th:if="${currentPage < totalPages - 3}">
-                <a th:href="@{/user(page=${totalPages - 1})}" class="page-link" th:text="${totalPages}">Last</a>
+                <a th:href="@{/user(page=${totalPages - 1}, search=${currentSearch}, categoryId=${currentCategory}, sort=${currentSort})}" class="page-link" th:text="${totalPages}">Last</a>
             </li>
 
             <li>
-                <a th:href="@{/user(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}"
+                <a th:href="@{/user(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage}, search=${currentSearch}, categoryId=${currentCategory}, sort=${currentSort})}"
                    class="page-link"
                    th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
                     Siguiente &raquo;
