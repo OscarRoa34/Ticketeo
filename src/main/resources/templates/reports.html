@@ -4,52 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketeo | Ranking de Interés</title>
-
     <link rel="stylesheet" th:href="@{/css/styles.css}">
-
     <link rel="stylesheet" th:href="@{/css/reports.css}">
 </head>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar-admin}"></div>
 
-    <main class="container admin-container">
-    <div class="reports-header">
-        <h1 class="page-title">🏆 Ranking de Eventos</h1>
-        <p class="admin-subtitle">Eventos con mayor índice de interés por parte de los usuarios.</p>
+<main class="container admin-container">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Ranking de Interés</h1>
+            <p class="admin-subtitle">Eventos con mayor índice de interés por parte de los usuarios.</p>
+        </div>
+        <a th:href="@{/admin/reports}" class="btn-secondary">Volver a Reportes</a>
     </div>
 
     <div class="reports-card">
         <table class="reports-table">
             <thead>
             <tr>
-                <th>Posición</th>
+                <th class="text-center">#</th>
                 <th>Nombre del Evento</th>
                 <th>Categoría</th>
-                <th>Interesados</th>
+                <th class="text-center">Interesados</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="report, iterStat : ${interestRanking}">
-                <td class="rank-col">
-                    <span th:if="${iterStat.index == 0}">🥇 1</span>
-                    <span th:if="${iterStat.index == 1}">🥈 2</span>
-                    <span th:if="${iterStat.index == 2}">🥉 3</span>
-                    <span th:if="${iterStat.index > 2}" th:text="${iterStat.count}"></span>
+
+                <td class="rank-col" th:classappend="${iterStat.index < 3} ? 'rank-top'">
+                    <span class="rank-number" th:text="${iterStat.count}"></span>
                 </td>
+
                 <td class="event-name-col">
                     <strong th:text="${report.event.name}"></strong>
                 </td>
+
                 <td>
-                    <span class="category-badge" th:text="${report.event.category.name}" th:style="'background-color:' + ${report.event.category.color} + ';'"></span>
+                    <span class="category-badge" th:text="${report.event.category.name}"
+                          th:style="'background-color:' + ${report.event.category.color} + ';'"></span>
                 </td>
-                <td class="interest-count">
-                    <span class="count-badge" th:text="${report.totalInterests} + ' personas'"></span>
+
+                <td class="text-center">
+                    <span class="count-badge" th:text="${report.totalInterests}"></span>
+                    <span class="count-label">Usuarios</span>
                 </td>
+
+            </tr>
+            <tr th:if="${#lists.isEmpty(interestRanking)}">
+                <td colspan="4" class="empty-state">No hay datos de interés registrados aún.</td>
             </tr>
             </tbody>
         </table>
     </div>
+
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>

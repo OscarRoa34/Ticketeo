@@ -16,8 +16,13 @@ public class ReportController {
         this.interestReportService = interestReportService;
     }
 
-    @GetMapping
-    public String showReports(Model model) {
+    @GetMapping({"", "/"})
+    public String showReportsMenu() {
+        return "reportsMenu";
+    }
+
+    @GetMapping("/interest")
+    public String showInterestReport(Model model) {
         model.addAttribute("interestRanking", interestReportService.getEventInterestRanking());
         return "reports";
     }
