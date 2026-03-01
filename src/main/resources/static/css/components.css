@@ -22,7 +22,6 @@
 
 
 .category-badge {
-    background-color: var(--secondary);
     color: var(--white);
     font-size: 0.75rem;
     font-weight: bold;

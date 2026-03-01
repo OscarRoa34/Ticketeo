@@ -21,7 +21,7 @@
         <div class="carousel-slide" th:each="event, iterStat : ${carouselEvents}" th:classappend="${iterStat.index == 0} ? 'active' : ''">
             <img th:src="${event.imageUrl}" th:alt="${event.name}" class="carousel-image">
             <div class="carousel-content">
-                <span class="category-badge primary-badge carousel-category" th:text="${event.category.name}">Categoría</span>
+                <span class="category-badge carousel-category" th:text="${event.category.name}" th:style="'background-color:' + ${event.category.color} + ';'">Categoría</span>
                 <h2 class="carousel-title" th:text="${event.name}">Nombre del Evento</h2>
                 <p class="carousel-description" th:text="${event.description}">Descripción del evento</p>
                 <div class="carousel-meta">
@@ -70,7 +70,7 @@
             <img th:src="${event.imageUrl}" class="card-image" th:alt="${event.name}">
 
             <div class="card-body">
-                <span class="category-badge primary-badge" th:text="${event.category.name}">Categoría</span>
+                <span class="category-badge" th:text="${event.category.name}" th:style="'background-color:' + ${event.category.color} + ';'">Categoría</span>
 
                 <h2 class="card-title" th:text="${event.name}">Nombre del Evento</h2>
 

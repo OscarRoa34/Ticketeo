@@ -15,7 +15,7 @@
     <article class="event-details-card">
 
         <header class="event-header">
-            <span class="category-badge primary-badge" th:text="${event.category.name}">Categoría</span>
+            <span class="category-badge" th:text="${event.category.name}" th:style="'background-color:' + ${event.category.color} + ';'">Categoría</span>
             <h1 class="event-title" th:text="${event.name}">Nombre del Evento</h1>
         </header>
 

@@ -41,7 +41,7 @@
                     <strong th:text="${report.event.name}"></strong>
                 </td>
                 <td>
-                    <span class="category-badge" th:text="${report.event.category.name}"></span>
+                    <span class="category-badge" th:text="${report.event.category.name}" th:style="'background-color:' + ${report.event.category.color} + ';'"></span>
                 </td>
                 <td class="interest-count">
                     <span class="count-badge" th:text="${report.totalInterests} + ' personas'"></span>

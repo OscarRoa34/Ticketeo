@@ -158,6 +158,20 @@
 }
 
 
+.categories-table-wrapper {
+    max-width: 600px;
+}
+
+.color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border: 2px solid rgba(255,255,255,0.8);
+    vertical-align: middle;
+}
+
 .text-center {
     text-align: center !important;
 }

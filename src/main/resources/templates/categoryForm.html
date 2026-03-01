@@ -30,6 +30,13 @@
                     <label for="name" class="form-label">Nombre de la Categoría</label>
                     <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Ej: Música, Teatro, Deportes..." required>
                 </div>
+                <div class="form-group" th:if="${category.id != null}">
+                    <label for="color" class="form-label">Color</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input type="color" id="color" th:field="*{color}" class="form-control" style="width: 60px; height: 42px; padding: 2px; cursor: pointer; border-radius: 8px;">
+                        <span style="font-size: 0.9rem; color: var(--gray-1);">Selecciona el color de la categoría</span>
+                    </div>
+                </div>
             </div>
 
             <div class="form-actions" style="margin-top: 30px;">
