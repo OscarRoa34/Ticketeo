@@ -15,6 +15,23 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+.admin-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-actions .btn-action {
+    text-decoration: none;
+    display: inline-block;
+    padding: 8px 18px;
+}
+
+.admin-actions .btn-primary {
+    text-decoration: none;
+    display: inline-block;
+}
+
 .admin-title {
     color: var(--primary);
     font-size: 1.8rem;
@@ -54,6 +71,30 @@
 
 .admin-table tbody tr:hover {
     background-color: #F8F9FA;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+    background-color: #F0F4FF !important;
+}
+
+.selected-row {
+    background-color: #E3E9FD !important;
+    border-left: 4px solid var(--primary);
+}
+
+.selected-row:hover {
+    background-color: #D6DFFB !important;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: auto;
 }
 
 .col-id {

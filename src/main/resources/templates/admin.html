@@ -19,7 +19,11 @@
             <h1 class="admin-title">Gestión de Eventos</h1>
             <p class="admin-subtitle">Administra el catálogo de eventos y categorías.</p>
         </div>
-        <a th:href="@{/admin/event/new}" class="btn-primary" style="text-decoration: none; display: inline-block;">+ Nuevo Evento</a>
+        <div class="admin-actions">
+            <a href="#" id="btnEdit" class="btn-action btn-edit btn-disabled">Editar</a>
+            <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Eliminar</a>
+            <a th:href="@{/admin/event/new}" class="btn-primary">+ Nuevo Evento</a>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -33,11 +37,10 @@
                 <th>Categoría</th>
                 <th>Fecha</th>
                 <th>Valor</th>
-                <th>Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="event : ${events}">
+            <tr th:each="event : ${events}" th:data-id="${event.id}" class="clickable-row">
 
                 <td class="col-id" th:text="${event.id}">1</td>
 
@@ -57,15 +60,10 @@
 
                 <td class="col-price" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">$0</td>
 
-                <td class="col-actions">
-                    <a th:href="@{/admin/event/edit/{id}(id=${event.id})}" class="btn-action btn-edit" style="text-decoration: none; display: inline-block;">Editar</a>
-                    <a th:href="@{/admin/event/delete/{id}(id=${event.id})}" class="btn-action btn-delete" style="text-decoration: none; display: inline-block;" onclick="return confirm('¿Estás seguro de que deseas eliminar este evento?');">Eliminar</a>
-                </td>
-
             </tr>
 
             <tr th:if="${#lists.isEmpty(events)}">
-                <td colspan="8" style="text-align: center; padding: 30px;">
+                <td colspan="7" style="text-align: center; padding: 30px;">
                     No hay eventos registrados en el sistema. ¡Empieza creando uno!
                 </td>
             </tr>
@@ -83,6 +81,71 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
+    // Variables globales
+    let selectedEventId = null;
+    const btnEdit = document.getElementById('btnEdit');
+    const btnDelete = document.getElementById('btnDelete');
+    const rows = document.querySelectorAll('.clickable-row');
+
+    // Selección de filas
+    rows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Evitar selección al hacer clic en la imagen (para el modal)
+            if (e.target.classList.contains('table-thumbnail')) return;
+
+            const id = this.getAttribute('data-id');
+
+            // Si ya está seleccionada, deseleccionar
+            if (selectedEventId === id) {
+                this.classList.remove('selected-row');
+                selectedEventId = null;
+                disableButtons();
+                return;
+            }
+
+            // Deseleccionar otras filas
+            rows.forEach(r => r.classList.remove('selected-row'));
+
+            // Seleccionar esta fila
+            this.classList.add('selected-row');
+            selectedEventId = id;
+            enableButtons(id);
+        });
+    });
+
+    function enableButtons(id) {
+        btnEdit.classList.remove('btn-disabled');
+        btnDelete.classList.remove('btn-disabled');
+        btnEdit.href = '/admin/event/edit/' + id;
+        btnDelete.href = '/admin/event/delete/' + id;
+    }
+
+    function disableButtons() {
+        btnEdit.classList.add('btn-disabled');
+        btnDelete.classList.add('btn-disabled');
+        btnEdit.href = '#';
+        btnDelete.href = '#';
+    }
+
+    // Confirmación de eliminación
+    btnDelete.addEventListener('click', function(e) {
+        if (this.classList.contains('btn-disabled')) {
+            e.preventDefault();
+            return;
+        }
+        if (!confirm('¿Estás seguro de que deseas eliminar este evento?')) {
+            e.preventDefault();
+        }
+    });
+
+    // Prevenir clic en botón editar deshabilitado
+    btnEdit.addEventListener('click', function(e) {
+        if (this.classList.contains('btn-disabled')) {
+            e.preventDefault();
+        }
+    });
+
+    // Modal de imágenes
     const modal = document.getElementById('imageViewer');
     const modalImg = document.getElementById("fullImage");
     const thumbnails = document.querySelectorAll('.table-thumbnail');
@@ -105,6 +168,7 @@
         }
     }
 
+    // Formato de precios
     function formatPrice() {
         const priceElements = document.querySelectorAll('.col-price');
         priceElements.forEach(el => {
