@@ -4,79 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketeo | Detalles del Evento</title>
-    <link rel="stylesheet" th:href="@{/css/event-details.css}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/event-details.css}">
 </head>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar-user}"></div>
 
-<main class="container event-details-container">
+<main class="event-details-container">
     <article class="event-details-card">
 
-        <header class="event-header">
-            <span class="category-badge" th:text="${event.category.name}" th:style="'background-color:' + ${event.category.color} + ';'">Categoría</span>
+        <div class="event-image-col">
+            <img th:src="${event.imageUrl}" th:alt="${event.name}" class="event-hero-image" id="eventImage">
+            <span class="zoom-hint">Ver imagen</span>
+        </div>
+
+        <div class="event-info-col">
+
+            <span class="event-category-label"
+                  th:text="${event.category.name}"
+                  th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">
+                Categoría
+            </span>
+
             <h1 class="event-title" th:text="${event.name}">Nombre del Evento</h1>
-        </header>
 
-        <figure class="event-image-wrapper">
-            <img th:src="${event.imageUrl}" th:alt="${event.name}" class="event-hero-image">
-        </figure>
-
-        <section class="event-info-wrapper">
-
-            <div class="event-meta">
-                <div class="meta-item">
-                    <span class="meta-icon">📅</span>
-                    <div class="meta-text">
-                        <span class="meta-label">Fecha</span>
-                        <span class="meta-value" th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">Fecha del evento</span>
-                    </div>
+            <div class="event-meta-row">
+                <div class="event-meta-item">
+                    <span class="event-meta-label">Fecha</span>
+                    <span class="event-meta-value" th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">01/01/2026</span>
                 </div>
-                <div class="meta-item">
-                    <span class="meta-icon">💰</span>
-                    <div class="meta-text">
-                        <span class="meta-label">Entrada</span>
-                        <span class="meta-value price-tag" th:data-price="${event.price}" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">Valor</span>
-                    </div>
+                <div class="event-meta-item">
+                    <span class="event-meta-label">Precio</span>
+                    <span class="event-meta-value price-tag" th:data-price="${event.price}" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">$0</span>
                 </div>
             </div>
 
-            <div class="event-description-box">
-                <h3>Acerca del evento</h3>
-                <p th:text="${event.description}">Descripción detallada del evento.</p>
+            <div class="event-divider"></div>
+
+            <div class="event-description-section">
+                <span class="event-description-label">Acerca del evento</span>
+                <p class="event-description-text" th:text="${event.description}">Descripción del evento.</p>
             </div>
 
             <div class="event-actions">
-                <form th:action="@{/event/{id}/interest(id=${event.id})}" method="POST" style="width: 100%;">
-                    <button type="submit" class="btn-primary btn-large btn-block">
-                        ❤️ ¡Me interesa!
-                    </button>
+                <form th:action="@{/event/{id}/interest(id=${event.id})}" method="POST">
+                    <button type="submit" class="btn-primary btn-action-full">Me interesa</button>
                 </form>
-                <a th:href="@{/user}" class="btn-secondary btn-large btn-block">Volver al catálogo</a>
+                <a th:href="@{/user}" class="btn-secondary btn-action-full">Volver al catálogo</a>
             </div>
-        </section>
+
+        </div>
 
     </article>
 </main>
+
+<div class="image-modal" id="imageModal">
+    <span class="image-modal-close" id="modalClose">&times;</span>
+    <img class="image-modal-img" id="modalImg">
+</div>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
     function formatPrice() {
-        const priceElements = document.querySelectorAll('.price-tag');
-        priceElements.forEach(el => {
-            const price = el.getAttribute('data-price');
-            if (price && parseFloat(price) !== 0) {
-                const formattedPrice = new Intl.NumberFormat('es-CO', {
-                    style: 'currency',
-                    currency: 'COP',
-                    minimumFractionDigits: 0
-                }).format(parseFloat(price));
-                el.textContent = formattedPrice;
+        document.querySelectorAll('.price-tag').forEach(el => {
+            const price = parseFloat(el.getAttribute('data-price'));
+            if (price && price !== 0) {
+                el.textContent = new Intl.NumberFormat('es-CO', {
+                    style: 'currency', currency: 'COP', minimumFractionDigits: 0
+                }).format(price);
             }
         });
     }
+
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    const eventImage = document.getElementById('eventImage');
+    const modalClose = document.getElementById('modalClose');
+
+    eventImage.addEventListener('click', () => {
+        modal.classList.add('active');
+        modalImg.src = eventImage.src;
+    });
+
+    modalClose.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
 
     document.addEventListener('DOMContentLoaded', formatPrice);
 </script>
