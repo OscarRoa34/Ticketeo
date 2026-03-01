@@ -1,17 +1,17 @@
 package co.edu.uptc.Ticketeo.services;
 
 
-import co.edu.uptc.Ticketeo.models.Event;
-import co.edu.uptc.Ticketeo.repository.EventRepository;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
+import co.edu.uptc.Ticketeo.models.Event;
+import co.edu.uptc.Ticketeo.repository.EventRepository;
 
 @Service
 public class EventService {
