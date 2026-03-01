@@ -60,8 +60,27 @@
 
 .events-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 30px;
+    row-gap: 40px;
+    width: 100%;
+    margin-bottom: 40px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+    .events-grid {
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: 20px;
+        row-gap: 30px;
+    }
+}
+
+@media (max-width: 600px) {
+    .events-grid {
+        grid-template-columns: 1fr;
+        row-gap: 20px;
+    }
 }
 
 .event-card {
@@ -72,6 +91,9 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
+    height: 100%;
+    width: 100%;
+    position: relative;
 }
 
 .event-card:hover {
@@ -83,6 +105,7 @@
     width: 100%;
     height: 200px;
     object-fit: cover;
+    display: block;
 }
 
 .card-body {

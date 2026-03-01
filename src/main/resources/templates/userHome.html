@@ -16,6 +16,33 @@
     <h1 class="hero-title">Encuentra tu próximo evento</h1>
 </header>
 
+<div class="carousel-container" th:if="${not #lists.isEmpty(carouselEvents)}">
+    <div class="carousel-wrapper">
+        <div class="carousel-slide" th:each="event, iterStat : ${carouselEvents}" th:classappend="${iterStat.index == 0} ? 'active' : ''">
+            <img th:src="${event.imageUrl}" th:alt="${event.name}" class="carousel-image">
+            <div class="carousel-content">
+                <span class="category-badge primary-badge carousel-category" th:text="${event.category.name}">Categoría</span>
+                <h2 class="carousel-title" th:text="${event.name}">Nombre del Evento</h2>
+                <p class="carousel-description" th:text="${event.description}">Descripción del evento</p>
+                <div class="carousel-meta">
+                    <span class="carousel-meta-item">
+                        <span class="carousel-meta-icon">📅</span>
+                        <span th:text="${event.date}">Fecha</span>
+                    </span>
+                    <span class="carousel-meta-item">
+                        <span class="carousel-meta-icon">💰</span>
+                        <span class="price-tag" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">Precio</span>
+                    </span>
+                </div>
+                <a th:href="@{/event/{id}(id=${event.id})}" class="btn-primary carousel-btn">Ver Detalles</a>
+            </div>
+        </div>
+    </div>
+    <div class="carousel-indicators">
+        <span class="carousel-dot" th:each="event, iterStat : ${carouselEvents}" th:classappend="${iterStat.index == 0} ? 'active' : ''" th:data-index="${iterStat.index}"></span>
+    </div>
+</div>
+
 <main class="container main-content">
 
     <div class="events-grid">
@@ -46,15 +73,51 @@
 
     </div>
 
-    <div class="pagination-container" th:if="${not #lists.isEmpty(events)}">
+    <div class="pagination-container" th:if="${totalPages > 1}">
         <ul class="pagination">
-            <li><a href="#" class="page-link disabled">&laquo; Anterior</a></li>
-            <li><a href="#" class="page-link active">1</a></li>
-            <li><a href="#" class="page-link">2</a></li>
-            <li><a href="#" class="page-link">3</a></li>
-            <li><span class="page-dots">...</span></li>
-            <li><a href="#" class="page-link">10</a></li>
-            <li><a href="#" class="page-link">Siguiente &raquo;</a></li>
+            <li>
+                <a th:href="@{/user(page=${currentPage > 0 ? currentPage - 1 : 0})}"
+                   class="page-link"
+                   th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                    &laquo; Anterior
+                </a>
+            </li>
+
+            <li th:if="${currentPage > 2}">
+                <a th:href="@{/user(page=0)}" class="page-link">1</a>
+            </li>
+
+            <li th:if="${currentPage > 3}">
+                <span class="page-dots">...</span>
+            </li>
+
+            <li th:if="${currentPage > 1}">
+                <a th:href="@{/user(page=${currentPage - 1})}" class="page-link" th:text="${currentPage}">Prev</a>
+            </li>
+
+            <li>
+                <a href="#" class="page-link active" th:text="${currentPage + 1}">Current</a>
+            </li>
+
+            <li th:if="${currentPage < totalPages - 2}">
+                <a th:href="@{/user(page=${currentPage + 1})}" class="page-link" th:text="${currentPage + 2}">Next</a>
+            </li>
+
+            <li th:if="${currentPage < totalPages - 4}">
+                <span class="page-dots">...</span>
+            </li>
+
+            <li th:if="${currentPage < totalPages - 3}">
+                <a th:href="@{/user(page=${totalPages - 1})}" class="page-link" th:text="${totalPages}">Last</a>
+            </li>
+
+            <li>
+                <a th:href="@{/user(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}"
+                   class="page-link"
+                   th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+                    Siguiente &raquo;
+                </a>
+            </li>
         </ul>
     </div>
 
@@ -78,7 +141,52 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', formatPrice);
+    let currentSlide = 0;
+    let carouselInterval;
+
+    function initCarousel() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+
+        if (slides.length === 0) return;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active');
+                if (i === index) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSlide = index;
+                showSlide(currentSlide);
+                clearInterval(carouselInterval);
+                carouselInterval = setInterval(nextSlide, 7000);
+            });
+        });
+
+        carouselInterval = setInterval(nextSlide, 7000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        formatPrice();
+        initCarousel();
+    });
 </script>
 </body>
 </html>
