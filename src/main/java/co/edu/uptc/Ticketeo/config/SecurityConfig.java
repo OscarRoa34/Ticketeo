@@ -12,32 +12,31 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/css/**", "/images/**", "/js/**", "/uploads/**").permitAll()
+                .requestMatchers("/admin/**", "/categories/**", "/reports/**").hasRole("ADMIN")
+                .requestMatchers("/event/interest/**").hasAnyRole("USER", "ADMIN")
+                .anyRequest().permitAll()
+                )
+                .formLogin(login -> login
+                .loginPage("/login")
+                .defaultSuccessUrl("/", false)
+                .permitAll()
+                )
+                .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/")
+                .permitAll()
+                );
+
+        return http.build();
+    }
 
     @Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/css/**", "/images/**", "/js/**", "/uploads/**").permitAll()
-            .requestMatchers("/admin/**", "/categories/**", "/reports/**").hasRole("ADMIN")
-            // Quitamos o modificamos la restricción de /user/** para que invitados puedan ver la pagina principal de usuario
-            .requestMatchers("/event/interest/**").hasAnyRole("USER", "ADMIN")
-            .anyRequest().permitAll()
-        )
-        .formLogin(login -> login
-            .loginPage("/login")
-            .defaultSuccessUrl("/", false)
-            .permitAll()
-        )
-        .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessUrl("/")
-            .permitAll()
-        );
-
-    return http.build();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
-
-@Bean
-public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-}}
