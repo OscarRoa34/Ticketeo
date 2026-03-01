@@ -47,7 +47,7 @@
 
                 <div class="form-group">
                     <label for="price" class="form-label">Valor de la Entrada ($)</label>
-                    <input type="number" id="price" th:field="*{price}" class="form-control" placeholder="Ej: 45000" min="0" required>
+                    <input type="number" id="price" th:field="*{price}" class="form-control" placeholder="Ej: 45.000" min="0" required>
                 </div>
 
                 <div class="form-group span-2">
@@ -83,6 +83,7 @@
     const fileInput = document.getElementById('image');
     const imgPreview = document.getElementById('imagePreview');
     const previewText = document.getElementById('previewText');
+    const priceInput = document.getElementById('price');
 
     fileInput.addEventListener('change', function (event) {
         const file = event.target.files[0];
@@ -104,6 +105,21 @@
             previewText.innerText = 'La vista previa aparecerá aquí';
             previewText.style.color = 'var(--gray-4)';
         }
+    });
+
+    priceInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+
+        if (value) {
+            value = parseInt(value, 10).toLocaleString('es-CO');
+        }
+
+        this.value = value;
+    });
+
+    priceInput.addEventListener('blur', function() {
+        let value = this.value.replace(/\./g, '');
+        this.value = value;
     });
 </script>
 </body>

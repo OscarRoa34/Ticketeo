@@ -55,7 +55,7 @@
 
                 <td th:text="${event.date}">15 Mar 2026</td>
 
-                <td class="col-price" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">$0</td>
+                <td class="col-price" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">$0</td>
 
                 <td class="col-actions">
                     <a th:href="@{/admin/event/edit/{id}(id=${event.id})}" class="btn-action btn-edit" style="text-decoration: none; display: inline-block;">Editar</a>
@@ -104,6 +104,23 @@
             modal.style.display = "none";
         }
     }
+
+    function formatPrice() {
+        const priceElements = document.querySelectorAll('.col-price');
+        priceElements.forEach(el => {
+            const price = el.getAttribute('data-price');
+            if (price && price !== '0.0') {
+                const formattedPrice = new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0
+                }).format(price);
+                el.textContent = formattedPrice;
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', formatPrice);
 </script>
 
 </body>

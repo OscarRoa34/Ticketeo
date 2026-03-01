@@ -32,7 +32,7 @@
                 <p class="card-description" th:text="${event.description}">Descripción y detalles del evento.</p>
 
                 <div class="card-footer">
-                    <span class="price-tag" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">$0</span>
+                    <span class="price-tag" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">$0</span>
 
                     <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary">Ver Detalles</a>
                 </div>
@@ -62,5 +62,23 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<script>
+    function formatPrice() {
+        const priceElements = document.querySelectorAll('.price-tag');
+        priceElements.forEach(el => {
+            const price = el.getAttribute('data-price');
+            if (price && parseFloat(price) !== 0) {
+                const formattedPrice = new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0
+                }).format(parseFloat(price));
+                el.textContent = formattedPrice;
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', formatPrice);
+</script>
 </body>
 </html>
