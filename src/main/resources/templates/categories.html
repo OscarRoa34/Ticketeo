@@ -19,7 +19,11 @@
             <h1 class="admin-title">Gestión de Categorías</h1>
             <p class="admin-subtitle">Administra los géneros y clasificaciones disponibles para los eventos.</p>
         </div>
-        <a th:href="@{/admin/category/new}" class="btn-primary" style="text-decoration: none; display: inline-block;">+ Nueva Categoría</a>
+        <div class="admin-actions">
+            <a href="#" id="btnEdit" class="btn-action btn-edit btn-disabled">Editar</a>
+            <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Eliminar</a>
+            <a th:href="@{/admin/category/new}" class="btn-primary">+ Nueva Categoría</a>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -28,11 +32,10 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre de la Categoría</th>
-                <th>Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="category : ${categories}">
+            <tr th:each="category : ${categories}" th:data-id="${category.id}" class="clickable-row">
 
                 <td class="col-id" th:text="${category.id}">1</td>
 
@@ -40,15 +43,10 @@
                     <span class="category-badge table-badge" th:text="${category.name}">Música</span>
                 </td>
 
-                <td class="col-actions">
-                    <a th:href="@{/admin/category/edit/{id}(id=${category.id})}" class="btn-action btn-edit" style="text-decoration: none; display: inline-block;">Editar</a>
-                    <a th:href="@{/admin/category/delete/{id}(id=${category.id})}" class="btn-action btn-delete" style="text-decoration: none; display: inline-block;" onclick="return confirm('¿Estás seguro de que deseas eliminar esta categoría? Si tiene eventos asociados podría haber problemas.');">Eliminar</a>
-                </td>
-
             </tr>
 
             <tr th:if="${#lists.isEmpty(categories)}">
-                <td colspan="3" style="text-align: center; padding: 30px;">
+                <td colspan="2" style="text-align: center; padding: 30px;">
                     No hay categorías registradas en el sistema. ¡Crea la primera para organizar tus eventos!
                 </td>
             </tr>
@@ -59,6 +57,61 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    let selectedCategoryId = null;
+    const btnEdit = document.getElementById('btnEdit');
+    const btnDelete = document.getElementById('btnDelete');
+    const rows = document.querySelectorAll('.clickable-row');
+
+    rows.forEach(row => {
+        row.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+
+            if (selectedCategoryId === id) {
+                this.classList.remove('selected-row');
+                selectedCategoryId = null;
+                disableButtons();
+                return;
+            }
+
+            rows.forEach(r => r.classList.remove('selected-row'));
+            this.classList.add('selected-row');
+            selectedCategoryId = id;
+            enableButtons(id);
+        });
+    });
+
+    function enableButtons(id) {
+        btnEdit.classList.remove('btn-disabled');
+        btnDelete.classList.remove('btn-disabled');
+        btnEdit.href = '/admin/category/edit/' + id;
+        btnDelete.href = '/admin/category/delete/' + id;
+    }
+
+    function disableButtons() {
+        btnEdit.classList.add('btn-disabled');
+        btnDelete.classList.add('btn-disabled');
+        btnEdit.href = '#';
+        btnDelete.href = '#';
+    }
+
+    btnDelete.addEventListener('click', function(e) {
+        if (this.classList.contains('btn-disabled')) {
+            e.preventDefault();
+            return;
+        }
+        if (!confirm('¿Estás seguro de que deseas eliminar esta categoría? Si tiene eventos asociados podría haber problemas.')) {
+            e.preventDefault();
+        }
+    });
+
+    btnEdit.addEventListener('click', function(e) {
+        if (this.classList.contains('btn-disabled')) {
+            e.preventDefault();
+        }
+    });
+</script>
 
 </body>
 </html>
