@@ -56,7 +56,7 @@
                     <span class="category-badge table-badge" th:text="${event.category.name}" th:style="'background-color:' + ${event.category.color} + ';'">Categoría</span>
                 </td>
 
-                <td th:text="${event.date}">15 Mar 2026</td>
+                <td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">15/03/2026</td>
 
                 <td class="col-price" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">$0</td>
 

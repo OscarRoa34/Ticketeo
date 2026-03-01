@@ -27,7 +27,7 @@
                 <div class="carousel-meta">
                     <span class="carousel-meta-item">
                         <span style="margin-right: 5px;">Fecha:</span>
-                        <span th:text="${event.date}">Fecha</span>
+                        <span th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">Fecha</span>
                     </span>
                     <span class="carousel-meta-item">
                         <span style="margin-right: 5px;">Precio:</span>

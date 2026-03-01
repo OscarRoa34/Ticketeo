@@ -30,7 +30,7 @@
                     <span class="meta-icon">📅</span>
                     <div class="meta-text">
                         <span class="meta-label">Fecha</span>
-                        <span class="meta-value" th:text="${event.date}">Fecha del evento</span>
+                        <span class="meta-value" th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">Fecha del evento</span>
                     </div>
                 </div>
                 <div class="meta-item">
