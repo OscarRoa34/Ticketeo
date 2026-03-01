@@ -1,11 +1,14 @@
 
 .navbar {
-    background-color: var(--primary);
+    background: rgba(88, 28, 180, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     padding: 15px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 20px rgba(139, 92, 246, 0.2), 0 1px 0 rgba(139,92,246,0.15);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.18);
 }
 
 .navbar-content {
@@ -130,14 +133,32 @@
 
 
 .site-footer {
-    background-color: var(--black-2);
+    background-color: #0A0A14;
     color: var(--white);
     padding: 40px 0 20px 0;
     margin-top: 60px;
     flex-shrink: 0;
     width: 100%;
-    outline: 1px solid var(--black-2);
-    outline-offset: -1px;
+    border-top: 1px solid rgba(139, 92, 246, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 60%, rgba(74,222,128,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 75%, rgba(139,92,246,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 35%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 55%, rgba(74,222,128,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(2px 2px at 60% 50%, rgba(139,92,246,0.9) 0%, transparent 100%),
+        radial-gradient(2px 2px at 15% 80%, rgba(74,222,128,0.8) 0%, transparent 100%);
+    pointer-events: none;
 }
 
 .footer-content {
