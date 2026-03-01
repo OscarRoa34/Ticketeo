@@ -1,7 +1,6 @@
 package co.edu.uptc.Ticketeo.controllers;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import co.edu.uptc.Ticketeo.models.EventCategory;
 import co.edu.uptc.Ticketeo.services.EventCategoryService;
@@ -24,10 +24,12 @@ public class CategoriesController {
     }
 
     @GetMapping({"", "/"})
-    public String listCategories(Model model) {
-        List<EventCategory> list = eventCategoryService.getAllCategories();
-        model.addAttribute("categories", list);
-
+    public String listCategories(@RequestParam(defaultValue = "0") int page, Model model) {
+        int pageSize = 6;
+        Page<EventCategory> categoryPage = eventCategoryService.getCategoriesPaginated(page, pageSize);
+        model.addAttribute("categories", categoryPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", categoryPage.getTotalPages());
         return "categories";
     }
 

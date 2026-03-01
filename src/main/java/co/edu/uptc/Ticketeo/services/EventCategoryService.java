@@ -2,6 +2,10 @@ package co.edu.uptc.Ticketeo.services;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import co.edu.uptc.Ticketeo.models.EventCategory;
@@ -43,6 +47,11 @@ public class EventCategoryService {
 
     public List<EventCategory> getAllCategories() {
         return eventCategoryRepository.findAll();
+    }
+
+    public Page<EventCategory> getCategoriesPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        return eventCategoryRepository.findAll(pageable);
     }
 
     public EventCategory getEventCategoryById(Integer id) {
