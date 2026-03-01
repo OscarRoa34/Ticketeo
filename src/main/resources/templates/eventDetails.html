@@ -37,7 +37,7 @@
                     <span class="meta-icon">💰</span>
                     <div class="meta-text">
                         <span class="meta-label">Entrada</span>
-                        <span class="meta-value" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">Valor</span>
+                        <span class="meta-value price-tag" th:data-price="${event.price}" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">Valor</span>
                     </div>
                 </div>
             </div>
@@ -61,6 +61,25 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    function formatPrice() {
+        const priceElements = document.querySelectorAll('.price-tag');
+        priceElements.forEach(el => {
+            const price = el.getAttribute('data-price');
+            if (price && parseFloat(price) !== 0) {
+                const formattedPrice = new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0
+                }).format(parseFloat(price));
+                el.textContent = formattedPrice;
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', formatPrice);
+</script>
 
 </body>
 </html>
