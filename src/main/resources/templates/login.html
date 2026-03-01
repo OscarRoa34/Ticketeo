@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Ticketeo</title>
+    <!-- Agrega aquí tus estilos, por ejemplo, los mismos que usas en el resto de la app -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+        }
+        .logout-message {
+            color: green;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Iniciar Sesión</h2>
+
+    <!-- Mensaje de error, Spring Security añade 'error' a la URL si falla -->
+    <div th:if="${param.error}" class="error-message">
+        Usuario o contraseña inválidos.
+    </div>
+
+    <!-- Mensaje de desconexión, Spring Security añade 'logout' a la URL al salir -->
+    <div th:if="${param.logout}" class="logout-message">
+        Has cerrado sesión correctamente.
+    </div>
+
+    <!-- El formulario debe enviar un POST a /login -->
+    <form action="/login" method="post">
+        <div class="form-group">
+            <label for="username">Nombre de usuario:</label>
+            <input type="text" id="username" name="username" required autofocus />
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required />
+        </div>
+
+        <!-- Si no tienes CSRF deshabilitado en SecurityConfig, es bueno incluirlo explícitamente a veces en Thymeleaf,
+             aunque Thymeleaf + Spring Security lo hacen automático si usas th:action. Usaremos la forma nativa -->
+        
+        <button type="submit">Entrar</button>
+    </form>
+    
+    <p style="margin-top: 15px; font-size: 0.9em;">
+        ¿No tienes cuenta? <a th:href="@{/register}">Regístrate aquí</a>
+    </p>
+</div>
+
+</body>
+</html>
