@@ -46,13 +46,13 @@
 <main class="container main-content">
 
     <div class="filters-bar" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-        <h2 style="color: var(--primary); font-size: 1.8rem;">Eventos Disponibles</h2>
+        <h2 style="color: var(--white); font-size: 1.8rem; text-shadow: 0 0 20px rgba(139,92,246,0.4);">Eventos Disponibles</h2>
 
         <form th:action="@{/user}" method="get" id="sortForm" style="display: flex; align-items: center; gap: 10px;">
             <input type="hidden" name="search" th:value="${currentSearch}" th:if="${currentSearch != null}" />
             <input type="hidden" name="categoryId" th:value="${currentCategory}" th:if="${currentCategory != null}" />
 
-            <label for="sort" style="font-weight: 600; color: var(--gray-1); margin-right: 10px; font-size: 1.1rem;">Ordenar por:</label>
+            <label for="sort" style="font-weight: 600; color: var(--white); margin-right: 15px; font-size: 1.1rem;">Ordenar por:</label>
             <select name="sort" id="sort" onchange="this.form.submit()"
                     style="padding: 10px 30px 10px 15px; width: auto; max-width: 200px; border-radius: 50px; border: 1px solid var(--gray-5); cursor: pointer; color: var(--black-2); font-weight: 600; background: white; outline: none; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 0.9rem; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;">
                 <option value="date_desc" th:selected="${currentSort == 'date_desc'}">Recién Añadidos</option>

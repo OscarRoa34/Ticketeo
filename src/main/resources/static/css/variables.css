@@ -1,7 +1,8 @@
 
 :root {
-    --primary: #0F3057;
+    --primary: #1A0A4A;
     --secondary: #8B5CF6;
+    --accent-green: #4ADE80;
     --info: #38BDF8;
     --success: #27AE60;
     --warning: #E2B93B;
@@ -12,4 +13,10 @@
     --gray-4: #BDBDBD;
     --gray-5: #E0E0E0;
     --white: #FFFFFF;
+
+    --sky-deep:    #060B18;
+    --sky-mid:     #0C1A35;
+    --sky-top:     #0F2347;
+    --nebula-purple: rgba(139, 92, 246, 0.12);
+    --nebula-green:  rgba(74, 222, 128, 0.07);
 }
