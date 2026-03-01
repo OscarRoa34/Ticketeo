@@ -35,4 +35,8 @@ public class EventCategory {
 
     @Column(name = "nombre_categoria", nullable = false, length = 100)
     private String name;
+
+    @Column(name = "color_categoria", length = 7)
+    @Builder.Default
+    private String color = "#8B5CF6";
 }

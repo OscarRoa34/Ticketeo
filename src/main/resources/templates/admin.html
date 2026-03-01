@@ -53,7 +53,7 @@
                 <td th:text="${event.description}">Descripción del evento</td>
 
                 <td>
-                    <span class="category-badge table-badge" th:text="${event.category.name}">Categoría</span>
+                    <span class="category-badge table-badge" th:text="${event.category.name}" th:style="'background-color:' + ${event.category.color} + ';'">Categoría</span>
                 </td>
 
                 <td th:text="${event.date}">15 Mar 2026</td>
