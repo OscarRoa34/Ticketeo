@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
+
 import co.edu.uptc.Ticketeo.services.EventCategoryService;
 
 @Controller
@@ -58,24 +61,23 @@ public class AdminPageController {
                             @RequestParam("imageFile") MultipartFile image) {
 
         if (!image.isEmpty()) {
-            Path imageDirectory = Paths.get("src/main/resources/static/uploads");
-            String absolutePath = imageDirectory.toFile().getAbsolutePath();
+            Path imageDirectory = Paths.get("uploads");
 
             try {
                 if (!Files.exists(imageDirectory)) {
                     Files.createDirectories(imageDirectory);
                 }
-
-                byte[] imageBytes = image.getBytes();
-                Path fullPath = Paths.get(absolutePath + "/" + image.getOriginalFilename());
-                Files.write(fullPath, imageBytes);
-
-                event.setImageUrl("/uploads/" + image.getOriginalFilename());
+                String uniqueFilename = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+                Path fullPath = imageDirectory.resolve(uniqueFilename);
+                Files.copy(image.getInputStream(), fullPath, StandardCopyOption.REPLACE_EXISTING);
+                event.setImageUrl("/uploads/" + uniqueFilename);
 
             } catch (IOException e) {
                 e.printStackTrace();
+
             }
         } else {
+
             if (event.getId() != null) {
                 Event existingEvent = eventService.getEventById(event.getId());
                 if (existingEvent != null) {
