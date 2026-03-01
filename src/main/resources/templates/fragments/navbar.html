@@ -11,8 +11,20 @@
 
         <ul class="nav-links">
             <li><a th:href="@{/user}" class="nav-item">Inicio</a></li>
-            <li><a href="#" class="nav-item">Categorías</a></li>
         </ul>
+
+        <form th:action="@{/user}" method="get" class="search-form" style="padding: 5px 15px;">
+            <select name="categoryId" class="search-select">
+                <option value="">Todas las Categorías</option>
+                <option th:each="category : ${categories}"
+                        th:value="${category.id}"
+                        th:text="${category.name}"
+                        th:selected="${currentCategory != null && currentCategory == category.id}">
+                </option>
+            </select>
+            <input type="text" name="search" placeholder="Buscar evento..." th:value="${currentSearch}" class="search-input">
+            <button type="submit" class="search-btn">Buscar</button>
+        </form>
     </div>
 </nav>
 
