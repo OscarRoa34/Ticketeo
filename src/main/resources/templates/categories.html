@@ -61,6 +61,44 @@
         </table>
     </div>
 
+    <div class="pagination-container" th:if="${totalPages > 1}">
+        <ul class="pagination">
+            <li>
+                <a th:href="@{/admin/category(page=${currentPage > 0 ? currentPage - 1 : 0})}"
+                   class="page-link" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                    &laquo; Anterior
+                </a>
+            </li>
+            <li th:if="${currentPage > 2}">
+                <a th:href="@{/admin/category(page=0)}" class="page-link">1</a>
+            </li>
+            <li th:if="${currentPage > 3}">
+                <span class="page-dots">...</span>
+            </li>
+            <li th:if="${currentPage > 1}">
+                <a th:href="@{/admin/category(page=${currentPage - 1})}" class="page-link" th:text="${currentPage}"></a>
+            </li>
+            <li>
+                <a href="#" class="page-link active" th:text="${currentPage + 1}"></a>
+            </li>
+            <li th:if="${currentPage < totalPages - 2}">
+                <a th:href="@{/admin/category(page=${currentPage + 1})}" class="page-link" th:text="${currentPage + 2}"></a>
+            </li>
+            <li th:if="${currentPage < totalPages - 4}">
+                <span class="page-dots">...</span>
+            </li>
+            <li th:if="${currentPage < totalPages - 3}">
+                <a th:href="@{/admin/category(page=${totalPages - 1})}" class="page-link" th:text="${totalPages}"></a>
+            </li>
+            <li>
+                <a th:href="@{/admin/category(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}"
+                   class="page-link" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+                    Siguiente &raquo;
+                </a>
+            </li>
+        </ul>
+    </div>
+
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>

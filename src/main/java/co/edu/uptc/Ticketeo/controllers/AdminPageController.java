@@ -3,6 +3,7 @@ package co.edu.uptc.Ticketeo.controllers;
 import co.edu.uptc.Ticketeo.models.Event;
 import co.edu.uptc.Ticketeo.services.EventService;
 import co.edu.uptc.Ticketeo.services.InterestReportService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +33,12 @@ public class AdminPageController {
     }
 
     @GetMapping
-    public String showAdminPage(Model model) {
-        model.addAttribute("events", eventService.getAllEvents());
+    public String showAdminPage(@RequestParam(defaultValue = "0") int page, Model model) {
+        int pageSize = 6;
+        Page<Event> eventPage = eventService.getEventsPaginated(page, pageSize);
+        model.addAttribute("events", eventPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", eventPage.getTotalPages());
         return "admin";
     }
 
