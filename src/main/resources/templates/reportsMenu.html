@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Reportes</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/reports.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container admin-container">
+
+    <div class="admin-header" style="margin-bottom: 40px;">
+        <div>
+            <h1 class="admin-title">Gestión de Reportes</h1>
+            <p class="admin-subtitle">Selecciona el reporte que deseas visualizar.</p>
+        </div>
+    </div>
+
+    <div class="reports-menu-grid">
+
+        <div class="report-menu-card">
+            <div class="report-menu-card-banner">
+                <div class="report-menu-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                </div>
+            </div>
+            <div class="report-menu-card-body">
+                <h3 class="report-menu-card-title">Ranking de Interés</h3>
+                <p class="report-menu-card-description">Visualiza los eventos con mayor índice de interés registrado por los usuarios, ordenados de mayor a menor.</p>
+            </div>
+            <div class="report-menu-card-footer">
+                <a th:href="@{/admin/reports/interest}" class="btn-primary report-menu-btn">Ver Reporte</a>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
+
