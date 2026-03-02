@@ -1,47 +1,97 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
+
 <body>
 
-<nav th:fragment="navbar-user" class="navbar">
-    <div class="container navbar-content">
-        <a class="brand-logo" th:href="@{/user}">
-            <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg" style="height: 45px; vertical-align: middle; margin-right: 10px;">
-            TICKETEO
-        </a>
+    <nav th:fragment="navbar-user" class="navbar">
+        <div class="container navbar-content">
+            <a class="brand-logo" th:href="@{/user}">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg"
+                    style="height: 45px; vertical-align: middle; margin-right: 10px;">
+                TICKETEO
+            </a>
 
-        <ul class="nav-links">
-            <li><a th:href="@{/user}" class="nav-item">Inicio</a></li>
-        </ul>
+            <ul class="nav-links">
+                <li><a th:href="@{/user}" class="nav-item">Inicio</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin}" class="nav-item">Panel Admin</a></li>
+            </ul>
 
-        <form th:action="@{/user}" method="get" class="search-form" style="padding: 5px 15px;">
-            <select name="categoryId" class="search-select">
-                <option value="">Todas las Categorías</option>
-                <option th:each="category : ${categories}"
-                        th:value="${category.id}"
-                        th:text="${category.name}"
+            <form th:action="@{/user}" method="get" class="search-form" style="padding: 5px 15px;">
+                <select name="categoryId" class="search-select">
+                    <option value="">Todas las Categorías</option>
+                    <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"
                         th:selected="${currentCategory != null && currentCategory == category.id}">
-                </option>
-            </select>
-            <input type="text" name="search" placeholder="Buscar evento..." th:value="${currentSearch}" class="search-input">
-            <button type="submit" class="search-btn">Buscar</button>
-        </form>
-    </div>
-</nav>
+                    </option>
+                </select>
+                <input type="text" name="search" placeholder="Buscar evento..." th:value="${currentSearch}"
+                    class="search-input">
+                <button type="submit" class="search-btn">Buscar</button>
+            </form>
 
-<nav th:fragment="navbar-admin" class="navbar">
-    <div class="container navbar-content">
-        <a class="brand-logo" th:href="@{/admin}">
-            <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg" style="height: 45px; vertical-align: middle; margin-right: 10px;">
-            TICKETEO
-        </a>
+            <div class="user-menu" style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+                <th:block sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="nav-item"
+                        style="font-weight: bold; border: 1px solid white; padding: 5px 15px; border-radius: 5px;">Iniciar
+                        Sesión</a>
+                </th:block>
 
-        <ul class="nav-links">
-            <li><a th:href="@{/admin}" class="nav-item">Gestionar Eventos</a></li>
-            <li><a th:href="@{/admin/category}" class="nav-item">Gestionar Categorías</a></li>
-            <li><a th:href="@{/admin/reports}" class="nav-item">Gestionar Reportes</a></li>
-        </ul>
-    </div>
-</nav>
+                <th:block sec:authorize="isAuthenticated()">
+                    <div style="display: flex; align-items: center; gap: 8px; color: white;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span sec:authentication="name"
+                            style="font-weight: bold; font-size: 1.1em; text-transform: capitalize;">User</span>
+                    </div>
+                    <form th:action="@{/logout}" method="post" style="margin: 0;">
+                        <button type="submit"
+                            style="background: rgba(255, 255, 255, 0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background 0.3s;">
+                            Salir
+                        </button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+    </nav>
+
+    <nav th:fragment="navbar-admin" class="navbar">
+        <div class="container navbar-content">
+            <a class="brand-logo" th:href="@{/admin}">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo" class="logo-svg"
+                    style="height: 45px; vertical-align: middle; margin-right: 10px;">
+                TICKETEO
+            </a>
+
+            <ul class="nav-links">
+                <li><a th:href="@{/admin}" class="nav-item">Eventos</a></li>
+                <li><a th:href="@{/admin/category}" class="nav-item">Categorías</a></li>
+                <li><a th:href="@{/admin/reports}" class="nav-item">Reportes</a></li>
+                <li><a th:href="@{/user}" class="nav-item">Vista Usuario</a></li>
+            </ul>
+
+            <div class="user-menu" style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
+                <div style="display: flex; align-items: center; gap: 8px; color: white;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span sec:authentication="name"
+                        style="font-weight: bold; font-size: 1.1em; color: #ffeb3b; text-transform: capitalize;">Admin</span>
+                </div>
+
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <button type="submit"
+                        style="background: rgba(255, 255, 255, 0.2); border: 1px solid white; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background 0.3s;">
+                        Salir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
 
 </body>
+
 </html>
