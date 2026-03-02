@@ -57,8 +57,8 @@
         Registro exitoso. ¡Ahora puedes iniciar sesión!
     </div>
 
-    <!-- El formulario debe enviar un POST a /login -->
-    <form action="/login" method="post">
+    <!-- El formulario debe enviar un POST a /login. Usamos th:action para que Thymeleaf inyecte el token CSRF -->
+    <form th:action="@{/login}" method="post">
         <div class="form-group">
             <label for="username">Nombre de usuario:</label>
             <input type="text" id="username" name="username" required autofocus />
