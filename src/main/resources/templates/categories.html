@@ -101,6 +101,18 @@
 
 </main>
 
+<div id="confirmModal" class="confirm-modal-overlay">
+    <div class="confirm-modal">
+        <div class="confirm-modal-icon">🗑️</div>
+        <div class="confirm-modal-title">¿Eliminar categoría?</div>
+        <div class="confirm-modal-message">Esta acción no se puede deshacer. Si la categoría tiene eventos asociados podría haber inconvenientes.</div>
+        <div class="confirm-modal-actions">
+            <button class="confirm-btn-cancel" id="confirmCancelBtn">Cancelar</button>
+            <button class="confirm-btn-confirm danger" id="confirmOkBtn">Eliminar</button>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
@@ -108,6 +120,37 @@
     const btnEdit = document.getElementById('btnEdit');
     const btnDelete = document.getElementById('btnDelete');
     const rows = document.querySelectorAll('.clickable-row');
+
+    // Custom confirm modal
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    let pendingDeleteUrl = null;
+
+    function showConfirmModal(url) {
+        pendingDeleteUrl = url;
+        confirmModal.classList.add('active');
+    }
+
+    confirmOkBtn.addEventListener('click', function() {
+        if (pendingDeleteUrl) {
+            window.location.href = pendingDeleteUrl;
+        }
+        confirmModal.classList.remove('active');
+        pendingDeleteUrl = null;
+    });
+
+    confirmCancelBtn.addEventListener('click', function() {
+        confirmModal.classList.remove('active');
+        pendingDeleteUrl = null;
+    });
+
+    confirmModal.addEventListener('click', function(e) {
+        if (e.target === confirmModal) {
+            confirmModal.classList.remove('active');
+            pendingDeleteUrl = null;
+        }
+    });
 
     rows.forEach(row => {
         row.addEventListener('click', function() {
@@ -142,13 +185,9 @@
     }
 
     btnDelete.addEventListener('click', function(e) {
-        if (this.classList.contains('btn-disabled')) {
-            e.preventDefault();
-            return;
-        }
-        if (!confirm('¿Estás seguro de que deseas eliminar esta categoría? Si tiene eventos asociados podría haber problemas.')) {
-            e.preventDefault();
-        }
+        e.preventDefault();
+        if (this.classList.contains('btn-disabled')) return;
+        showConfirmModal(this.href);
     });
 
     btnEdit.addEventListener('click', function(e) {

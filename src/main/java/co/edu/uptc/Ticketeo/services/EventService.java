@@ -1,6 +1,5 @@
 package co.edu.uptc.Ticketeo.services;
 
-
 import java.util.Collections;
 import java.util.List;
 
@@ -9,17 +8,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import co.edu.uptc.Ticketeo.models.Event;
 import co.edu.uptc.Ticketeo.repository.EventRepository;
+import co.edu.uptc.Ticketeo.repository.InterestReportRepository;
 
 @Service
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final InterestReportRepository interestReportRepository;
 
-    public EventService(EventRepository eventRepository) {
+    public EventService(EventRepository eventRepository, InterestReportRepository interestReportRepository) {
         this.eventRepository = eventRepository;
+        this.interestReportRepository = interestReportRepository;
     }
 
     public Event saveEvent(Event event) {
@@ -82,9 +85,9 @@ public class EventService {
         return eventRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void deleteEvent(Integer id) {
+        interestReportRepository.deleteByEventId(id);
         eventRepository.deleteById(id);
     }
 }
-
-

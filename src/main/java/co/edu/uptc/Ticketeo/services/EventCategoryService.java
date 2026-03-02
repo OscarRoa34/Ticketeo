@@ -7,9 +7,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import co.edu.uptc.Ticketeo.models.EventCategory;
 import co.edu.uptc.Ticketeo.repository.EventCategoryModelRepository;
+import co.edu.uptc.Ticketeo.repository.EventRepository;
+import co.edu.uptc.Ticketeo.repository.InterestReportRepository;
 
 @Service
 public class EventCategoryService {
@@ -22,16 +25,20 @@ public class EventCategoryService {
     };
 
     private final EventCategoryModelRepository eventCategoryRepository;
+    private final EventRepository eventRepository;
+    private final InterestReportRepository interestReportRepository;
 
-    public EventCategoryService(EventCategoryModelRepository eventCategoryRepository) {
+    public EventCategoryService(EventCategoryModelRepository eventCategoryRepository,
+                                EventRepository eventRepository,
+                                InterestReportRepository interestReportRepository) {
         this.eventCategoryRepository = eventCategoryRepository;
+        this.eventRepository = eventRepository;
+        this.interestReportRepository = interestReportRepository;
     }
 
     public EventCategory saveCategory(EventCategory category) {
-        // Si es nueva categoría (sin ID), asignar color único
         if (category.getId() == null) {
             List<EventCategory> existing = eventCategoryRepository.findAll();
-            // Buscar un color de la paleta que no esté en uso
             String assignedColor = COLOR_PALETTE[existing.size() % COLOR_PALETTE.length];
             for (String color : COLOR_PALETTE) {
                 boolean colorInUse = existing.stream().anyMatch(c -> color.equals(c.getColor()));
@@ -58,7 +65,10 @@ public class EventCategoryService {
         return eventCategoryRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public void deleteCategory(Integer id) {
+        interestReportRepository.deleteByEventCategoryId(id);
+        eventRepository.deleteByCategory_Id(id);
         eventCategoryRepository.deleteById(id);
     }
 }

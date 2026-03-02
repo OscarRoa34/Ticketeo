@@ -111,6 +111,18 @@
 
 </main>
 
+<div id="confirmModal" class="confirm-modal-overlay">
+    <div class="confirm-modal">
+        <div class="confirm-modal-icon">🗑️</div>
+        <div class="confirm-modal-title">¿Eliminar evento?</div>
+        <div class="confirm-modal-message">Esta acción no se puede deshacer. El evento será eliminado permanentemente del sistema.</div>
+        <div class="confirm-modal-actions">
+            <button class="confirm-btn-cancel" id="confirmCancelBtn">Cancelar</button>
+            <button class="confirm-btn-confirm danger" id="confirmOkBtn">Eliminar</button>
+        </div>
+    </div>
+</div>
+
 <div id="imageViewer" class="modal-overlay">
     <span class="close-btn">&times;</span>
     <img class="modal-content" id="fullImage">
@@ -125,15 +137,44 @@
     const btnDelete = document.getElementById('btnDelete');
     const rows = document.querySelectorAll('.clickable-row');
 
+    // Custom confirm modal
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    let pendingDeleteUrl = null;
+
+    function showConfirmModal(url) {
+        pendingDeleteUrl = url;
+        confirmModal.classList.add('active');
+    }
+
+    confirmOkBtn.addEventListener('click', function() {
+        if (pendingDeleteUrl) {
+            window.location.href = pendingDeleteUrl;
+        }
+        confirmModal.classList.remove('active');
+        pendingDeleteUrl = null;
+    });
+
+    confirmCancelBtn.addEventListener('click', function() {
+        confirmModal.classList.remove('active');
+        pendingDeleteUrl = null;
+    });
+
+    confirmModal.addEventListener('click', function(e) {
+        if (e.target === confirmModal) {
+            confirmModal.classList.remove('active');
+            pendingDeleteUrl = null;
+        }
+    });
+
     // Selección de filas
     rows.forEach(row => {
         row.addEventListener('click', function(e) {
-            // Evitar selección al hacer clic en la imagen (para el modal)
             if (e.target.classList.contains('table-thumbnail')) return;
 
             const id = this.getAttribute('data-id');
 
-            // Si ya está seleccionada, deseleccionar
             if (selectedEventId === id) {
                 this.classList.remove('selected-row');
                 selectedEventId = null;
@@ -141,10 +182,7 @@
                 return;
             }
 
-            // Deseleccionar otras filas
             rows.forEach(r => r.classList.remove('selected-row'));
-
-            // Seleccionar esta fila
             this.classList.add('selected-row');
             selectedEventId = id;
             enableButtons(id);
@@ -165,18 +203,13 @@
         btnDelete.href = '#';
     }
 
-    // Confirmación de eliminación
+    // Confirmación de eliminación — modal personalizado
     btnDelete.addEventListener('click', function(e) {
-        if (this.classList.contains('btn-disabled')) {
-            e.preventDefault();
-            return;
-        }
-        if (!confirm('¿Estás seguro de que deseas eliminar este evento?')) {
-            e.preventDefault();
-        }
+        e.preventDefault();
+        if (this.classList.contains('btn-disabled')) return;
+        showConfirmModal(this.href);
     });
 
-    // Prevenir clic en botón editar deshabilitado
     btnEdit.addEventListener('click', function(e) {
         if (this.classList.contains('btn-disabled')) {
             e.preventDefault();
