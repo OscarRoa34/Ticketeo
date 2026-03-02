@@ -1,8 +1,9 @@
 package co.edu.uptc.Ticketeo.services;
 
-import java.util.Collections;
-import java.util.List;
-
+import co.edu.uptc.Ticketeo.models.Event;
+import co.edu.uptc.Ticketeo.repository.EventRepository;
+import co.edu.uptc.Ticketeo.repository.InterestReportRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,20 +11,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import co.edu.uptc.Ticketeo.models.Event;
-import co.edu.uptc.Ticketeo.repository.EventRepository;
-import co.edu.uptc.Ticketeo.repository.InterestReportRepository;
+import java.util.Collections;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EventService {
 
     private final EventRepository eventRepository;
     private final InterestReportRepository interestReportRepository;
-
-    public EventService(EventRepository eventRepository, InterestReportRepository interestReportRepository) {
-        this.eventRepository = eventRepository;
-        this.interestReportRepository = interestReportRepository;
-    }
 
     public Event saveEvent(Event event) {
         return eventRepository.save(event);
@@ -44,29 +40,7 @@ public class EventService {
     }
 
     public Page<Event> getEventsFiltered(String searchQuery, Integer categoryId, int page, int size, String sortType) {
-        Sort sort = Sort.unsorted();
-
-        if (sortType != null) {
-            switch (sortType) {
-                case "price_asc":
-                    sort = Sort.by("price").ascending();
-                    break;
-                case "price_desc":
-                    sort = Sort.by("price").descending();
-                    break;
-                case "date_asc":
-                    sort = Sort.by("date").ascending();
-                    break;
-                case "date_desc":
-                    sort = Sort.by("date").descending();
-                    break;
-                default:
-                    sort = Sort.by("id").descending();
-            }
-        } else {
-            sort = Sort.by("id").descending();
-        }
-
+        Sort sort = resolveSort(sortType);
         Pageable pageable = PageRequest.of(page, size, sort);
 
         if (categoryId != null && searchQuery != null && !searchQuery.isEmpty()) {
@@ -92,25 +66,34 @@ public class EventService {
 
     @Transactional
     public void deactivateEvent(Integer id) {
-        Event event = eventRepository.findById(id).orElse(null);
-        if (event != null) {
+        eventRepository.findById(id).ifPresent(event -> {
             event.setIsActive(false);
             eventRepository.save(event);
-        }
+        });
     }
 
     @Transactional
     public void reactivateEvent(Integer id) {
-        Event event = eventRepository.findById(id).orElse(null);
-        if (event != null) {
+        eventRepository.findById(id).ifPresent(event -> {
             event.setIsActive(true);
             eventRepository.save(event);
-        }
+        });
     }
 
     @Transactional
     public void deleteEvent(Integer id) {
         interestReportRepository.deleteByEventId(id);
         eventRepository.deleteById(id);
+    }
+
+    private Sort resolveSort(String sortType) {
+        if (sortType == null) return Sort.by("id").descending();
+        return switch (sortType) {
+            case "price_asc"  -> Sort.by("price").ascending();
+            case "price_desc" -> Sort.by("price").descending();
+            case "date_asc"   -> Sort.by("date").ascending();
+            case "date_desc"  -> Sort.by("date").descending();
+            default           -> Sort.by("id").descending();
+        };
     }
 }

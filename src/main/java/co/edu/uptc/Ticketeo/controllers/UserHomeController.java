@@ -3,7 +3,7 @@ package co.edu.uptc.Ticketeo.controllers;
 import co.edu.uptc.Ticketeo.models.Event;
 import co.edu.uptc.Ticketeo.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.services.EventService;
-import co.edu.uptc.Ticketeo.services.InterestReportService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,17 +13,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserHomeController {
 
-    private final EventService eventService;
-    private final InterestReportService interestReportService;
-    private final EventCategoryService eventCategoryService;
+    private static final int PAGE_SIZE = 6;
 
-    public UserHomeController(EventService eventService, InterestReportService interestReportService, EventCategoryService eventCategoryService) {
-        this.eventService = eventService;
-        this.interestReportService = interestReportService;
-        this.eventCategoryService = eventCategoryService;
-    }
+    private final EventService eventService;
+    private final EventCategoryService eventCategoryService;
 
     @GetMapping
     public String showUserHome(
@@ -33,17 +29,14 @@ public class UserHomeController {
             @RequestParam(required = false, defaultValue = "date_desc") String sort,
             Model model) {
 
-        int pageSize = 6;
-        Page<Event> eventPage = eventService.getEventsFiltered(search, categoryId, page, pageSize, sort);
+        Page<Event> eventPage = eventService.getEventsFiltered(search, categoryId, page, PAGE_SIZE, sort);
 
         model.addAttribute("events", eventPage.getContent());
         model.addAttribute("carouselEvents", eventService.getRandomEvents(5));
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", eventPage.getTotalPages());
         model.addAttribute("totalItems", eventPage.getTotalElements());
-
         model.addAttribute("currentSearch", search);
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("currentSort", sort);
