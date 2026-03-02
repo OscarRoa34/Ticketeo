@@ -66,12 +66,10 @@ Sigue las siguientes instrucciones una vez tengas la base de datos configurada:
 
 ---
 
-## 🔐 Credenciales de Administrador por Defecto
+## Credenciales de Administrador por Defecto
 
-Para pruebas, en el archivo `application.properties` hay un usuario de Spring Security parametrizado por defecto con rol de administrador:
+Para pruebas, hay un usuario de Spring Security por defecto con rol de administrador:
 
 - **Usuario:** `admin`
-- **Contraseña:** `1234`
+- **Contraseña:** `admin`
 - **Rol:** `ADMIN`
-
- *(Asegúrate de cambiar estos datos u omitirlos para un entorno de producción).*
