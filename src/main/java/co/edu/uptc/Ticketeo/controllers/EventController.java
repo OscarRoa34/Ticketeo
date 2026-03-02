@@ -3,6 +3,7 @@ package co.edu.uptc.Ticketeo.controllers;
 import co.edu.uptc.Ticketeo.models.Event;
 import co.edu.uptc.Ticketeo.services.EventService;
 import co.edu.uptc.Ticketeo.services.InterestReportService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,15 +14,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/event")
+@RequiredArgsConstructor
 public class EventController {
 
     private final EventService eventService;
     private final InterestReportService interestReportService;
 
-    public EventController(EventService eventService, InterestReportService interestReportService) {
-        this.eventService = eventService;
-        this.interestReportService = interestReportService;
-    }
 
     @GetMapping("/{id}")
     public String viewEventDetails(@PathVariable Integer id, Model model) {

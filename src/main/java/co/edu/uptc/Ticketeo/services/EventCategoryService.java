@@ -1,7 +1,10 @@
 package co.edu.uptc.Ticketeo.services;
 
-import java.util.List;
-
+import co.edu.uptc.Ticketeo.models.EventCategory;
+import co.edu.uptc.Ticketeo.repository.EventCategoryRepository;
+import co.edu.uptc.Ticketeo.repository.EventRepository;
+import co.edu.uptc.Ticketeo.repository.InterestReportRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,12 +12,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import co.edu.uptc.Ticketeo.models.EventCategory;
-import co.edu.uptc.Ticketeo.repository.EventCategoryModelRepository;
-import co.edu.uptc.Ticketeo.repository.EventRepository;
-import co.edu.uptc.Ticketeo.repository.InterestReportRepository;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class EventCategoryService {
 
     private static final String[] COLOR_PALETTE = {
@@ -24,17 +25,9 @@ public class EventCategoryService {
         "#7F8C8D", "#6C5CE7", "#00B894", "#E17055", "#0984E3"
     };
 
-    private final EventCategoryModelRepository eventCategoryRepository;
+    private final EventCategoryRepository eventCategoryRepository;
     private final EventRepository eventRepository;
     private final InterestReportRepository interestReportRepository;
-
-    public EventCategoryService(EventCategoryModelRepository eventCategoryRepository,
-                                EventRepository eventRepository,
-                                InterestReportRepository interestReportRepository) {
-        this.eventCategoryRepository = eventCategoryRepository;
-        this.eventRepository = eventRepository;
-        this.interestReportRepository = interestReportRepository;
-    }
 
     public EventCategory saveCategory(EventCategory category) {
         if (category.getColor() == null || category.getColor().isBlank()) {
