@@ -21,7 +21,9 @@
         <div class="carousel-slide" th:each="event, iterStat : ${carouselEvents}" th:classappend="${iterStat.index == 0} ? 'active' : ''">
             <img th:src="${event.imageUrl}" th:alt="${event.name}" class="carousel-image">
             <div class="carousel-content">
-                <span class="category-badge carousel-category" th:text="${event.category.name}" th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
+                <span th:if="${event.category != null}" class="category-badge carousel-category"
+                      th:text="${event.category.name}"
+                      th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
                 <h2 class="carousel-title" th:text="${event.name}">Nombre del Evento</h2>
                 <p class="carousel-description" th:text="${event.description}">Descripción del evento</p>
                 <div class="carousel-meta">
@@ -70,7 +72,9 @@
             <img th:src="${event.imageUrl}" class="card-image" th:alt="${event.name}">
 
             <div class="card-body">
-                <span class="category-badge" th:text="${event.category.name}" th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
+                <span th:if="${event.category != null}" class="category-badge"
+                      th:text="${event.category.name}"
+                      th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
 
                 <h2 class="card-title" th:text="${event.name}">Nombre del Evento</h2>
 
@@ -84,9 +88,13 @@
             </div>
         </article>
 
-        <div th:if="${#lists.isEmpty(events)}" class="no-events-message" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: antiquewhite;">
-            <h3>No hay eventos disponibles en este momento.</h3>
-            <p>¡Vuelve pronto para descubrir nuevas experiencias!</p>
+        <div th:if="${#lists.isEmpty(events)}" style="grid-column: 1 / -1; text-align: center; padding: 70px 20px;">
+            <p style="color: var(--white); font-size: 2rem; font-weight: 800; text-shadow: 0 0 30px rgba(139,92,246,0.5), 0 2px 10px rgba(0,0,0,0.4); letter-spacing: 0.02em; margin-bottom: 12px;">
+                No hay eventos disponibles
+            </p>
+            <p style="color: rgba(255,255,255,0.45); font-size: 1rem; font-weight: 400;">
+                Vuelve pronto para descubrir nuevas experiencias
+            </p>
         </div>
 
     </div>

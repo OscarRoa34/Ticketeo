@@ -37,7 +37,7 @@ public class EventCategoryService {
     }
 
     public EventCategory saveCategory(EventCategory category) {
-        if (category.getId() == null) {
+        if (category.getColor() == null || category.getColor().isBlank()) {
             List<EventCategory> existing = eventCategoryRepository.findAll();
             String assignedColor = COLOR_PALETTE[existing.size() % COLOR_PALETTE.length];
             for (String color : COLOR_PALETTE) {
@@ -68,7 +68,7 @@ public class EventCategoryService {
     @Transactional
     public void deleteCategory(Integer id) {
         interestReportRepository.deleteByEventCategoryId(id);
-        eventRepository.deleteByCategory_Id(id);
+        eventRepository.detachCategory(id);
         eventCategoryRepository.deleteById(id);
     }
 }

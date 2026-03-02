@@ -43,8 +43,10 @@
                 </td>
 
                 <td>
-                    <span class="category-badge" th:text="${report.event.category.name}"
+                    <span th:if="${report.event.category != null}" class="category-badge"
+                          th:text="${report.event.category.name}"
                           th:style="'color:' + ${report.event.category.color} + '; border-color:' + ${report.event.category.color} + ';'"></span>
+                    <span th:if="${report.event.category == null}" style="color:#bbb;font-size:0.8rem;">—</span>
                 </td>
 
                 <td class="text-center">

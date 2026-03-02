@@ -25,7 +25,7 @@ public class Event {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "id_categoria", nullable = false)
+    @JoinColumn(name = "id_categoria", nullable = true)
     private EventCategory category;
 
     @Column(name = "nombre_evento", nullable = false, length = 150)

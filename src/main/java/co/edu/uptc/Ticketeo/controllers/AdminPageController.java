@@ -53,19 +53,22 @@ public class AdminPageController {
     }
 
     @GetMapping("/event/new")
-    public String showEventForm(Model model) {
+    public String showEventForm(@RequestParam(defaultValue = "false") boolean draft, Model model) {
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
+        model.addAttribute("draft", draft);
         return "eventForm";
     }
 
     @GetMapping("/event/edit/{id}")
-    public String showEditForm(@PathVariable("id") Integer id, Model model) {
+    public String showEditForm(@PathVariable("id") Integer id,
+                               @RequestParam(defaultValue = "false") boolean fromTrash,
+                               Model model) {
         Event event = eventService.getEventById(id);
-
         if (event != null) {
             model.addAttribute("event", event);
             model.addAttribute("categories", eventCategoryService.getAllCategories());
+            model.addAttribute("draft", fromTrash);
             return "eventForm";
         }
         return "redirect:/admin";
@@ -73,11 +76,18 @@ public class AdminPageController {
 
     @PostMapping("/event/save")
     public String saveEvent(@ModelAttribute Event event,
-                            @RequestParam("imageFile") MultipartFile image) {
+                            @RequestParam("imageFile") MultipartFile image,
+                            @RequestParam(value = "category", required = false) Integer categoryId,
+                            @RequestParam(value = "draft", defaultValue = "false") boolean draft) {
+
+        if (categoryId != null) {
+            event.setCategory(eventCategoryService.getEventCategoryById(categoryId));
+        } else {
+            event.setCategory(null);
+        }
 
         if (!image.isEmpty()) {
             Path imageDirectory = Paths.get("uploads");
-
             try {
                 if (!Files.exists(imageDirectory)) {
                     Files.createDirectories(imageDirectory);
@@ -86,7 +96,6 @@ public class AdminPageController {
                 Path fullPath = imageDirectory.resolve(uniqueFilename);
                 Files.copy(image.getInputStream(), fullPath, StandardCopyOption.REPLACE_EXISTING);
                 event.setImageUrl("/uploads/" + uniqueFilename);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -99,12 +108,19 @@ public class AdminPageController {
             }
         }
 
-        if (event.getIsActive() == null) {
-            event.setIsActive(true);
+        if (event.getId() == null) {
+            // new event: active unless created as draft
+            event.setIsActive(!draft);
+        } else {
+            // editing: always preserve the existing isActive value
+            Event existing = eventService.getEventById(event.getId());
+            if (existing != null) {
+                event.setIsActive(existing.getIsActive());
+            }
         }
 
         eventService.saveEvent(event);
-        return "redirect:/admin";
+        return draft ? "redirect:/admin/trash" : "redirect:/admin";
     }
 
     @GetMapping("/event/deactivate/{id}")

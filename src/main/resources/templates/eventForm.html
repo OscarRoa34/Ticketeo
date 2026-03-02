@@ -16,9 +16,9 @@
         .event-form-card {
             max-width: 960px;
             margin: 0 auto;
-            background: linear-gradient(160deg, #1a0a4a 0%, #0f1a3a 60%, #060b18 100%);
+            background: #ffffff;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(139, 92, 246, 0.12);
             overflow: hidden;
             position: relative;
         }
@@ -29,20 +29,9 @@
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background-image:
-                radial-gradient(1.5px 1.5px at 10% 15%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
-                radial-gradient(1px 1px at 25% 40%, rgba(139, 92, 246, 0.7) 0%, transparent 100%),
-                radial-gradient(1px 1px at 40% 8%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
-                radial-gradient(1.5px 1.5px at 60% 20%, rgba(74, 222, 128, 0.6) 0%, transparent 100%),
-                radial-gradient(1px 1px at 75% 55%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
-                radial-gradient(1px 1px at 85% 10%, rgba(139, 92, 246, 0.5) 0%, transparent 100%),
-                radial-gradient(1.5px 1.5px at 92% 35%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
-                radial-gradient(1px 1px at 5% 70%, rgba(74, 222, 128, 0.4) 0%, transparent 100%),
-                radial-gradient(1px 1px at 50% 80%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
-                radial-gradient(1px 1px at 30% 90%, rgba(139, 92, 246, 0.4) 0%, transparent 100%);
-            pointer-events: none;
-            z-index: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8B5CF6, #4ADE80, #8B5CF6);
+            z-index: 1;
         }
 
         .event-form-header {
@@ -57,25 +46,29 @@
         .event-form-header-icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, #8B5CF6, #4ADE80);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
             flex-shrink: 0;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            overflow: hidden;
+        }
+
+        .event-form-header-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .event-form-header-text h2 {
-            color: #fff;
+            color: #1A0A4A;
             font-size: 1.6rem;
             font-weight: 700;
             margin: 0 0 4px;
         }
 
         .event-form-header-text p {
-            color: rgba(255, 255, 255, 0.55);
+            color: #888;
             font-size: 0.88rem;
             margin: 0;
         }
@@ -123,7 +116,7 @@
         .ef-label {
             font-size: 0.82rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.65);
+            color: #555;
             letter-spacing: 0.04em;
             text-transform: uppercase;
         }
@@ -131,13 +124,13 @@
         .ef-input,
         .ef-select,
         .ef-textarea {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
             border-radius: 10px;
             padding: 11px 15px;
             font-size: 0.95rem;
             font-family: inherit;
-            color: #fff;
+            color: #1D1D1D;
             transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
             width: 100%;
             box-sizing: border-box;
@@ -145,7 +138,7 @@
 
         .ef-input::placeholder,
         .ef-textarea::placeholder {
-            color: rgba(255, 255, 255, 0.28);
+            color: #bbb;
         }
 
         .ef-input:focus,
@@ -153,13 +146,13 @@
         .ef-textarea:focus {
             outline: none;
             border-color: #8B5CF6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
-            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: #fff;
         }
 
         .ef-select option {
-            background: #1a0a4a;
-            color: #fff;
+            background: #fff;
+            color: #1D1D1D;
         }
 
         .ef-textarea {
@@ -176,7 +169,7 @@
             left: 13px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(74, 222, 128, 0.8);
+            color: #8B5CF6;
             font-weight: 700;
             font-size: 1rem;
             pointer-events: none;
@@ -196,9 +189,9 @@
             flex: 1;
             padding: 12px;
             border-radius: 10px;
-            border: 1px solid rgba(139, 92, 246, 0.4);
+            border: 1px solid #e0e0e0;
             background: transparent;
-            color: rgba(255, 255, 255, 0.7);
+            color: #555;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
@@ -208,8 +201,8 @@
         }
 
         .ef-btn-cancel:hover {
-            background: rgba(139, 92, 246, 0.1);
-            color: #fff;
+            background: #f5f0ff;
+            color: #8B5CF6;
             border-color: #8B5CF6;
         }
 
@@ -242,9 +235,9 @@
         .ef-image-drop {
             width: 100%;
             aspect-ratio: 1 / 1;
-            border: 2px dashed rgba(139, 92, 246, 0.4);
+            border: 2px dashed rgba(139, 92, 246, 0.35);
             border-radius: 14px;
-            background: rgba(255, 255, 255, 0.04);
+            background: #fafafa;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -258,7 +251,7 @@
 
         .ef-image-drop:hover {
             border-color: #8B5CF6;
-            background: rgba(139, 92, 246, 0.07);
+            background: #f5f0ff;
         }
 
         .ef-image-drop img {
@@ -283,7 +276,7 @@
         }
 
         .ef-image-placeholder p {
-            color: rgba(255, 255, 255, 0.35);
+            color: #aaa;
             font-size: 0.82rem;
             margin: 0;
             line-height: 1.5;
@@ -301,14 +294,14 @@
         .ef-image-label {
             font-size: 0.82rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.65);
+            color: #555;
             letter-spacing: 0.04em;
             text-transform: uppercase;
         }
 
         .ef-image-hint {
             font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: #bbb;
             text-align: center;
         }
 
@@ -354,10 +347,12 @@
     <div class="event-form-card">
 
         <div class="event-form-header">
-            <div class="event-form-header-icon">🎟</div>
+            <div class="event-form-header-icon">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo">
+            </div>
             <div class="event-form-header-text">
-                <h2 th:text="${event.id == null ? 'Crear Nuevo Evento' : 'Editar Evento'}">Evento</h2>
-                <p th:text="${event.id == null ? 'Completa los datos para publicar un nuevo evento en el catálogo.' : 'Modifica los datos del evento seleccionado.'}">Descripción
+                <h2 th:text="${event.id != null ? 'Editar Evento' : (draft ? 'Crear Evento Inactivo' : 'Crear Nuevo Evento')}">Evento</h2>
+                <p th:text="${event.id != null ? 'Modifica los datos del evento seleccionado.' : (draft ? 'Este evento se guardará como inactivo y no será visible para los usuarios hasta que lo actives.' : 'Completa los datos para publicar un nuevo evento en el catálogo.')}">Descripción
                 </p>
             </div>
         </div>
@@ -366,6 +361,7 @@
 
         <form th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" />
+            <input type="hidden" name="draft" th:value="${draft != null ? draft : false}" />
 
             <div class="event-form-body">
 
@@ -380,14 +376,17 @@
                     <div class="ef-row">
                         <div class="ef-group">
                             <label for="category" class="ef-label">Categoría</label>
-                            <select id="category" th:field="*{category}" class="ef-select" required>
-                                <option value="" disabled>Selecciona una categoría</option>
-                                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                            <select id="category" name="category" class="ef-select">
+                                <option value="">Sin categoría</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat.id}"
+                                        th:text="${cat.name}"
+                                        th:selected="${event.category != null && event.category.id == cat.id}"></option>
                             </select>
                         </div>
                         <div class="ef-group">
                             <label for="date" class="ef-label">Fecha del Evento</label>
-                            <input type="date" id="date" th:field="*{date}" class="ef-input" required>
+                            <input type="date" id="date" th:field="*{date}" class="ef-input">
                         </div>
                     </div>
 
@@ -395,9 +394,9 @@
                         <label for="price" class="ef-label">Valor de la Entrada</label>
                         <div class="ef-price-wrapper">
                             <span class="ef-price-prefix">$</span>
-                            <input type="text" id="price" name="price" class="ef-input"
-                                   th:value="${event.price != null ? event.price : ''}"
-                                   placeholder="0 para entrada gratis" autocomplete="off">
+                            <input type="text" id="price" class="ef-input"
+                                   th:value="${event.price != null && event.price > 0 ? #numbers.formatInteger(event.price, 1, 'POINT') : ''}"
+                                   placeholder="Dejar vacío si es gratis" autocomplete="off">
                             <input type="hidden" id="priceHidden" th:field="*{price}">
                         </div>
                     </div>
@@ -405,13 +404,13 @@
                     <div class="ef-group">
                         <label for="description" class="ef-label">Descripción</label>
                         <textarea id="description" th:field="*{description}" class="ef-textarea"
-                                  placeholder="Escribe los detalles del evento: artistas, horario, lugar..." required></textarea>
+                                  placeholder="Escribe los detalles del evento: artistas, horario, lugar..."></textarea>
                     </div>
 
                     <div class="ef-form-actions">
-                        <a th:href="@{/admin}" class="ef-btn-cancel">Cancelar</a>
+                        <a th:href="${draft ? '/admin/trash' : '/admin'}" class="ef-btn-cancel">Cancelar</a>
                         <button type="submit" class="ef-btn-submit">
-                            <span th:text="${event.id == null ? '✦ Publicar Evento' : '✦ Guardar Cambios'}">Guardar</span>
+                            <span th:text="${event.id != null ? '✦ Guardar Cambios' : (draft ? '✦ Guardar como Inactivo' : '✦ Publicar Evento')}">Guardar</span>
                         </button>
                     </div>
                 </div>
@@ -430,8 +429,7 @@
                     </div>
 
                     <input type="file" id="imageFile" name="imageFile" class="ef-file-input"
-                           accept="image/png, image/jpeg, image/webp"
-                           th:required="${event.id == null}">
+                           accept="image/png, image/jpeg, image/webp">
 
                     <p class="ef-image-hint">Recomendado: imagen cuadrada</p>
                 </div>
@@ -480,12 +478,15 @@
     });
 
     document.addEventListener('DOMContentLoaded', function () {
-        const initial = priceHidden.value;
-        if (initial && initial !== '') {
-            const num = parseFloat(initial);
+        // On edit: hidden has the raw number (e.g. "150000.0"), display already formatted by Thymeleaf.
+        // Just ensure hidden contains a clean integer string.
+        const hiddenVal = priceHidden.value;
+        if (hiddenVal && hiddenVal !== '') {
+            const num = parseFloat(hiddenVal);
             if (!isNaN(num) && num > 0) {
-                priceDisplay.value = num.toLocaleString('es-CO');
+                priceHidden.value = Math.round(num).toString();
             } else {
+                priceHidden.value = '';
                 priceDisplay.value = '';
             }
         }

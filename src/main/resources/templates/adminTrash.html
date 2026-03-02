@@ -15,14 +15,15 @@
 <main class="container admin-container">
 
     <div class="admin-header">
-        <div>
+        <div style="min-width:0;">
             <h1 class="admin-title">Eventos Inactivos</h1>
-            <p class="admin-subtitle">Eventos desactivados del catálogo principal. Puedes restaurarlos o eliminarlos permanentemente.</p>
+            <p class="admin-subtitle">Eventos desactivados del catálogo principal.</p>
         </div>
         <div class="admin-actions">
-            <a href="#" id="btnReactivate" class="btn-action btn-edit btn-disabled">Restaurar</a>
+            <a href="#" id="btnEdit" class="btn-action btn-edit btn-disabled">Editar</a>
+            <a href="#" id="btnReactivate" class="btn-action btn-trash btn-disabled">Activar</a>
             <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Eliminar</a>
-            <a th:href="@{/admin/event/new}" class="btn-primary">+ Nuevo Evento</a>
+            <a th:href="@{/admin/event/new(draft=true)}" class="btn-primary">+ Nuevo Evento</a>
             <a th:href="@{/admin}" class="btn-action btn-trash">← Panel Principal</a>
         </div>
     </div>
@@ -54,9 +55,10 @@
                 <td th:text="${event.description}">Descripción del evento</td>
 
                 <td>
-                    <span class="category-badge table-badge"
+                    <span th:if="${event.category != null}" class="category-badge table-badge"
                           th:text="${event.category.name}"
                           th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
+                    <span th:if="${event.category == null}" style="color:#bbb;font-size:0.8rem;">—</span>
                 </td>
 
                 <td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">15/03/2026</td>
@@ -117,12 +119,12 @@
 <!-- Modal restaurar -->
 <div id="reactivateModal" class="confirm-modal-overlay">
     <div class="confirm-modal">
-        <div class="confirm-modal-icon">♻️</div>
-        <div class="confirm-modal-title">¿Restaurar evento?</div>
+        <div class="confirm-modal-icon">✅</div>
+        <div class="confirm-modal-title">¿Activar evento?</div>
         <div class="confirm-modal-message">El evento volverá a aparecer en el panel principal y será visible para los usuarios.</div>
         <div class="confirm-modal-actions">
             <button class="confirm-btn-cancel" id="reactivateCancelBtn">Cancelar</button>
-            <button class="confirm-btn-confirm" id="reactivateOkBtn" style="background: #7c3aed;">Restaurar</button>
+            <button class="confirm-btn-confirm" id="reactivateOkBtn" style="background: #7c3aed;">Activar</button>
         </div>
     </div>
 </div>
@@ -150,6 +152,7 @@
 
 <script>
     let selectedEventId = null;
+    const btnEdit = document.getElementById('btnEdit');
     const btnReactivate = document.getElementById('btnReactivate');
     const btnDelete = document.getElementById('btnDelete');
     const rows = document.querySelectorAll('.clickable-row');
@@ -227,18 +230,26 @@
     });
 
     function enableButtons(id) {
+        btnEdit.classList.remove('btn-disabled');
         btnReactivate.classList.remove('btn-disabled');
         btnDelete.classList.remove('btn-disabled');
+        btnEdit.href = '/admin/event/edit/' + id + '?fromTrash=true';
         btnReactivate.href = '/admin/event/reactivate/' + id;
         btnDelete.href = '/admin/event/delete/' + id;
     }
 
     function disableButtons() {
+        btnEdit.classList.add('btn-disabled');
         btnReactivate.classList.add('btn-disabled');
         btnDelete.classList.add('btn-disabled');
+        btnEdit.href = '#';
         btnReactivate.href = '#';
         btnDelete.href = '#';
     }
+
+    btnEdit.addEventListener('click', function (e) {
+        if (this.classList.contains('btn-disabled')) e.preventDefault();
+    });
 
     btnReactivate.addEventListener('click', function (e) {
         e.preventDefault();

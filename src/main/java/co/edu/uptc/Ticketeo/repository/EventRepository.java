@@ -28,6 +28,10 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
     List<Event> findByCategory_Id(Integer categoryId);
 
     @Modifying
+    @Query("UPDATE Event e SET e.category = null WHERE e.category.id = :categoryId")
+    void detachCategory(@org.springframework.data.repository.query.Param("categoryId") Integer categoryId);
+
+    @Modifying
     @Query("DELETE FROM Event e WHERE e.category.id = :categoryId")
     void deleteByCategory_Id(Integer categoryId);
 }
