@@ -12,11 +12,18 @@ import java.util.List;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Integer> {
-    Page<Event> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
-    Page<Event> findByCategory_Id(Integer categoryId, Pageable pageable);
+    Page<Event> findByIsActiveTrue(Pageable pageable);
 
-    Page<Event> findByNameContainingIgnoreCaseAndCategory_Id(String name, Integer categoryId, Pageable pageable);
+    Page<Event> findByNameContainingIgnoreCaseAndIsActiveTrue(String name, Pageable pageable);
+
+    Page<Event> findByCategory_IdAndIsActiveTrue(Integer categoryId, Pageable pageable);
+
+    Page<Event> findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(String name, Integer categoryId, Pageable pageable);
+
+    List<Event> findByIsActiveTrue();
+
+    Page<Event> findByIsActiveFalse(Pageable pageable);
 
     List<Event> findByCategory_Id(Integer categoryId);
 

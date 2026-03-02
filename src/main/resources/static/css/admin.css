@@ -26,11 +26,13 @@
     text-decoration: none;
     display: inline-block;
     padding: 8px 18px;
+    white-space: nowrap;
 }
 
 .admin-actions .btn-primary {
     text-decoration: none;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .admin-title {
@@ -136,6 +138,7 @@
     color: var(--white);
     display: inline-block;
     margin-right: 8px;
+    white-space: nowrap;
 }
 
 .btn-action:last-child {
@@ -156,6 +159,21 @@
 
 .btn-delete:hover {
     background-color: #d14040;
+}
+
+.btn-trash {
+    background-color: #6b5c8a;
+    color: var(--white);
+}
+
+.btn-trash:hover {
+    background-color: #564870;
+    color: var(--white);
+    text-decoration: none;
+}
+
+.inactive-row {
+    opacity: 0.6;
 }
 
 
