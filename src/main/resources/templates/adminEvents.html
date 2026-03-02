@@ -62,7 +62,7 @@
 
                 <td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">15/03/2026</td>
 
-                <td class="col-price" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">$0</td>
+                <td class="col-price" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</td>
 
             </tr>
 
@@ -242,13 +242,15 @@
         const priceElements = document.querySelectorAll('.col-price');
         priceElements.forEach(el => {
             const price = el.getAttribute('data-price');
-            if (price && price !== '0.0') {
+            if (price && price !== 'null' && price !== '0.0' && parseFloat(price) !== 0) {
                 const formattedPrice = new Intl.NumberFormat('es-CO', {
                     style: 'currency',
                     currency: 'COP',
                     minimumFractionDigits: 0
                 }).format(price);
                 el.textContent = formattedPrice;
+            } else if (!price || price === 'null' || parseFloat(price) === 0) {
+                el.textContent = 'Gratis';
             }
         });
     }

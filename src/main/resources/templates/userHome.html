@@ -33,7 +33,7 @@
                     </span>
                     <span class="carousel-meta-item">
                         <span style="margin-right: 5px;">Precio:</span>
-                        <span class="price-tag" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">Precio</span>
+                        <span class="price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">Precio</span>
                     </span>
                 </div>
                 <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary carousel-btn">Ver Detalles</a>
@@ -81,7 +81,7 @@
                 <p class="card-description" th:text="${event.description}">Descripción y detalles del evento.</p>
 
                 <div class="card-footer">
-                    <span class="price-tag" th:data-price="${event.price}" th:text="${event.price == 0.0 ? 'Gratis' : '$' + event.price}">$0</span>
+                    <span class="price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</span>
 
                     <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary">Ver Detalles</a>
                 </div>
@@ -156,13 +156,15 @@
         const priceElements = document.querySelectorAll('.price-tag');
         priceElements.forEach(el => {
             const price = el.getAttribute('data-price');
-            if (price && parseFloat(price) !== 0) {
+            if (price && price !== 'null' && parseFloat(price) !== 0) {
                 const formattedPrice = new Intl.NumberFormat('es-CO', {
                     style: 'currency',
                     currency: 'COP',
                     minimumFractionDigits: 0
                 }).format(parseFloat(price));
                 el.textContent = formattedPrice;
+            } else if (!price || price === 'null' || parseFloat(price) === 0) {
+                el.textContent = 'Gratis';
             }
         });
     }

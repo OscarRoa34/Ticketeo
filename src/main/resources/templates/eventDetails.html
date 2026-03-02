@@ -36,7 +36,7 @@
                 </div>
                 <div class="event-meta-item">
                     <span class="event-meta-label">Precio</span>
-                    <span class="event-meta-value price-tag" th:data-price="${event.price}" th:text="${event.price == 0 ? 'Gratis' : '$' + event.price}">$0</span>
+                    <span class="event-meta-value price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0) ? 'Gratis' : '$' + event.price}">$0</span>
                 </div>
             </div>
 
@@ -69,11 +69,14 @@
 <script>
     function formatPrice() {
         document.querySelectorAll('.price-tag').forEach(el => {
-            const price = parseFloat(el.getAttribute('data-price'));
-            if (price && price !== 0) {
+            const raw = el.getAttribute('data-price');
+            const price = parseFloat(raw);
+            if (raw && raw !== 'null' && !isNaN(price) && price !== 0) {
                 el.textContent = new Intl.NumberFormat('es-CO', {
                     style: 'currency', currency: 'COP', minimumFractionDigits: 0
                 }).format(price);
+            } else {
+                el.textContent = 'Gratis';
             }
         });
     }
