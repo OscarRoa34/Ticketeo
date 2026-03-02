@@ -21,7 +21,8 @@
         </div>
         <div class="admin-actions">
             <a href="#" id="btnEdit" class="btn-action btn-edit btn-disabled">Editar</a>
-            <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Eliminar</a>
+            <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Desactivar</a>
+            <a th:href="@{/admin/trash}" class="btn-action btn-trash">Eventos Inactivos</a>
             <a th:href="@{/admin/event/new}" class="btn-primary">+ Nuevo Evento</a>
         </div>
     </div>
@@ -113,12 +114,12 @@
 
 <div id="confirmModal" class="confirm-modal-overlay">
     <div class="confirm-modal">
-        <div class="confirm-modal-icon">🗑️</div>
-        <div class="confirm-modal-title">¿Eliminar evento?</div>
-        <div class="confirm-modal-message">Esta acción no se puede deshacer. El evento será eliminado permanentemente del sistema.</div>
+        <div class="confirm-modal-icon">🔕</div>
+        <div class="confirm-modal-title">¿Desactivar evento?</div>
+        <div class="confirm-modal-message">El evento será ocultado del panel principal y movido a la papelera. Podrás restaurarlo en cualquier momento.</div>
         <div class="confirm-modal-actions">
             <button class="confirm-btn-cancel" id="confirmCancelBtn">Cancelar</button>
-            <button class="confirm-btn-confirm danger" id="confirmOkBtn">Eliminar</button>
+            <button class="confirm-btn-confirm danger" id="confirmOkBtn">Desactivar</button>
         </div>
     </div>
 </div>
@@ -193,7 +194,7 @@
         btnEdit.classList.remove('btn-disabled');
         btnDelete.classList.remove('btn-disabled');
         btnEdit.href = '/admin/event/edit/' + id;
-        btnDelete.href = '/admin/event/delete/' + id;
+        btnDelete.href = '/admin/event/deactivate/' + id;
     }
 
     function disableButtons() {

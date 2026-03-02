@@ -42,6 +42,16 @@ public class AdminPageController {
         return "admin";
     }
 
+    @GetMapping("/trash")
+    public String showTrash(@RequestParam(defaultValue = "0") int page, Model model) {
+        int pageSize = 6;
+        Page<Event> eventPage = eventService.getInactiveEventsPaginated(page, pageSize);
+        model.addAttribute("events", eventPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", eventPage.getTotalPages());
+        return "adminTrash";
+    }
+
     @GetMapping("/event/new")
     public String showEventForm(Model model) {
         model.addAttribute("event", new Event());
@@ -79,10 +89,8 @@ public class AdminPageController {
 
             } catch (IOException e) {
                 e.printStackTrace();
-
             }
         } else {
-
             if (event.getId() != null) {
                 Event existingEvent = eventService.getEventById(event.getId());
                 if (existingEvent != null) {
@@ -91,15 +99,30 @@ public class AdminPageController {
             }
         }
 
-        eventService.saveEvent(event);
+        if (event.getIsActive() == null) {
+            event.setIsActive(true);
+        }
 
+        eventService.saveEvent(event);
         return "redirect:/admin";
+    }
+
+    @GetMapping("/event/deactivate/{id}")
+    public String deactivateEvent(@PathVariable Integer id) {
+        eventService.deactivateEvent(id);
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/event/reactivate/{id}")
+    public String reactivateEvent(@PathVariable Integer id) {
+        eventService.reactivateEvent(id);
+        return "redirect:/admin/trash";
     }
 
     @GetMapping("/event/delete/{id}")
     public String deleteEvent(@PathVariable Integer id) {
         eventService.deleteEvent(id);
-        return "redirect:/admin";
+        return "redirect:/admin/trash";
     }
 
     @GetMapping("/reportes")
