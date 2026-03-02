@@ -4,52 +4,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticketeo | Nueva Categoría</title>
+    <title th:text="${category.id == null ? 'Ticketeo | Nueva Categoría' : 'Ticketeo | Editar Categoría'}">Ticketeo | Categoría</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .event-form-page {
+            min-height: calc(100vh - 80px);
+            padding: 40px 0 60px;
+        }
+
+        .event-form-card {
+            max-width: 560px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(139, 92, 246, 0.12);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .event-form-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8B5CF6, #4ADE80, #8B5CF6);
+            z-index: 1;
+        }
+
+        .event-form-header {
+            position: relative;
+            z-index: 1;
+            padding: 36px 40px 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .event-form-header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .event-form-header-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .event-form-header-text h2 {
+            color: #1A0A4A;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 4px;
+        }
+
+        .event-form-header-text p {
+            color: #888;
+            font-size: 0.88rem;
+            margin: 0;
+        }
+
+        .event-form-divider {
+            margin: 24px 40px;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.5), rgba(74, 222, 128, 0.3), transparent);
+        }
+
+        .event-form-body {
+            padding: 0 40px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .ef-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .ef-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .ef-input {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 11px 15px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: #1D1D1D;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .ef-input::placeholder { color: #bbb; }
+
+        .ef-input:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: #fff;
+        }
+
+        .ef-color-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .ef-color-picker {
+            width: 52px;
+            height: 44px;
+            padding: 2px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #fafafa;
+            flex-shrink: 0;
+            transition: border-color 0.25s;
+        }
+
+        .ef-color-picker:focus,
+        .ef-color-picker:hover {
+            outline: none;
+            border-color: #8B5CF6;
+        }
+
+        .ef-color-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        .ef-color-swatch {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.08);
+            flex-shrink: 0;
+            transition: background-color 0.2s;
+        }
+
+        .ef-color-hex {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+            font-family: monospace;
+            letter-spacing: 0.05em;
+        }
+
+        .ef-form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .ef-btn-cancel {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            background: transparent;
+            color: #555;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .ef-btn-cancel:hover {
+            background: #f5f0ff;
+            color: #8B5CF6;
+            border-color: #8B5CF6;
+        }
+
+        .ef-btn-submit {
+            flex: 2;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #8B5CF6, #6d28d9);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .ef-btn-submit:hover {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .event-form-header { padding: 24px 20px 0; }
+            .event-form-divider { margin: 20px 20px; }
+            .event-form-body { padding: 0 20px 30px; }
+        }
+    </style>
 </head>
 
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar-admin}"></div>
 
-<main class="container admin-container">
+<main class="container event-form-page">
+    <div class="event-form-card">
 
-    <div class="form-wrapper" style="max-width: 600px; margin: 0 auto;"> <div class="admin-header" style="box-shadow: none; padding: 0; margin-bottom: 20px;">
-        <div>
-            <h2 class="form-title" th:text="${category.id == null ? 'Crear Nueva Categoría' : 'Editar Categoría'}">Crear/Editar Categoría</h2>
-            <p class="admin-subtitle">Completa el nombre para añadir una clasificación al sistema.</p>
+        <div class="event-form-header">
+            <div class="event-form-header-icon">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo">
+            </div>
+            <div class="event-form-header-text">
+                <h2 th:text="${category.id == null ? 'Crear Nueva Categoría' : 'Editar Categoría'}">Categoría</h2>
+                <p th:text="${category.id == null ? 'Define el nombre y color para la nueva categoría.' : 'Modifica el nombre o el color de la categoría.'}">Descripción</p>
+            </div>
         </div>
-    </div>
 
-        <form class="custom-form" th:action="@{/admin/category/save}" th:object="${category}" method="POST">
+        <div class="event-form-divider"></div>
 
+        <form th:action="@{/admin/category/save}" th:object="${category}" method="POST">
             <input type="hidden" th:field="*{id}" />
 
-            <div class="form-grid">
-                <div class="form-group span-2">
-                    <label for="name" class="form-label">Nombre de la Categoría</label>
-                    <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Ej: Música, Teatro, Deportes..." required>
+            <div class="event-form-body">
+
+                <div class="ef-group">
+                    <label for="name" class="ef-label">Nombre de la Categoría</label>
+                    <input type="text" id="name" th:field="*{name}" class="ef-input"
+                           placeholder="Ej: Música, Teatro, Deportes..." required>
                 </div>
-                <div class="form-group" th:if="${category.id != null}">
-                    <label for="color" class="form-label">Color</label>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <input type="color" id="color" th:field="*{color}" class="form-control" style="width: 60px; height: 42px; padding: 2px; cursor: pointer; border-radius: 8px;">
-                        <span style="font-size: 0.9rem; color: var(--gray-1);">Selecciona el color de la categoría</span>
+
+                <div class="ef-group">
+                    <label class="ef-label">Color de la Categoría</label>
+                    <div class="ef-color-row">
+                        <input type="color" id="colorPicker" th:field="*{color}" class="ef-color-picker">
+                        <div class="ef-color-preview">
+                            <div class="ef-color-swatch" id="colorSwatch"
+                                 th:style="'background-color:' + ${category.color != null ? category.color : '#8B5CF6'}"></div>
+                            <span class="ef-color-hex" id="colorHex"
+                                  th:text="${category.color != null ? category.color : '#8B5CF6'}">#8B5CF6</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-actions" style="margin-top: 30px;">
-                <a th:href="@{/admin/category}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-primary">Guardar Categoría</button>
-            </div>
+                <div class="ef-form-actions">
+                    <a th:href="@{/admin/category}" class="ef-btn-cancel">Cancelar</a>
+                    <button type="submit" class="ef-btn-submit">
+                        <span th:text="${category.id == null ? '✦ Crear Categoría' : '✦ Guardar Cambios'}">Guardar</span>
+                    </button>
+                </div>
 
+            </div>
         </form>
     </div>
-
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<script>
+    const picker = document.getElementById('colorPicker');
+    const swatch = document.getElementById('colorSwatch');
+    const hexLabel = document.getElementById('colorHex');
+
+    picker.addEventListener('input', function () {
+        swatch.style.backgroundColor = this.value;
+        hexLabel.textContent = this.value.toUpperCase();
+    });
+</script>
+
 </body>
 </html>
+

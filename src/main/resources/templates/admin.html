@@ -54,7 +54,10 @@
                 <td th:text="${event.description}">Descripción del evento</td>
 
                 <td>
-                    <span class="category-badge table-badge" th:text="${event.category.name}" th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
+                    <span th:if="${event.category != null}" class="category-badge table-badge"
+                          th:text="${event.category.name}"
+                          th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
+                    <span th:if="${event.category == null}" style="color:#bbb;font-size:0.8rem;">—</span>
                 </td>
 
                 <td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">15/03/2026</td>

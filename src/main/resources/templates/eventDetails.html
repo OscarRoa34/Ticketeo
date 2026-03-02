@@ -21,7 +21,7 @@
 
         <div class="event-info-col">
 
-            <span class="event-category-label"
+            <span th:if="${event.category != null}" class="event-category-label"
                   th:text="${event.category.name}"
                   th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">
                 Categoría
