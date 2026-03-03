@@ -39,6 +39,34 @@ public class EventService {
         return eventRepository.findByIsActiveFalse(pageable);
     }
 
+    public Page<Event> getActiveEventsFiltered(String search, Integer categoryId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        boolean hasSearch = search != null && !search.isBlank();
+        boolean hasCat = categoryId != null;
+        if (hasSearch && hasCat) {
+            return eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(search, categoryId, pageable);
+        } else if (hasCat) {
+            return eventRepository.findByCategory_IdAndIsActiveTrue(categoryId, pageable);
+        } else if (hasSearch) {
+            return eventRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(search, pageable);
+        }
+        return eventRepository.findByIsActiveTrue(pageable);
+    }
+
+    public Page<Event> getInactiveEventsFiltered(String search, Integer categoryId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        boolean hasSearch = search != null && !search.isBlank();
+        boolean hasCat = categoryId != null;
+        if (hasSearch && hasCat) {
+            return eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveFalse(search, categoryId, pageable);
+        } else if (hasCat) {
+            return eventRepository.findByCategory_IdAndIsActiveFalse(categoryId, pageable);
+        } else if (hasSearch) {
+            return eventRepository.findByNameContainingIgnoreCaseAndIsActiveFalse(search, pageable);
+        }
+        return eventRepository.findByIsActiveFalse(pageable);
+    }
+
     public Page<Event> getEventsFiltered(String searchQuery, Integer categoryId, int page, int size, String sortType) {
         Sort sort = resolveSort(sortType);
         Pageable pageable = PageRequest.of(page, size, sort);

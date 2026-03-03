@@ -46,6 +46,102 @@
     font-size: 0.9rem;
 }
 
+.admin-search-bar {
+    margin-bottom: 20px;
+    background: var(--white);
+    border-radius: 12px;
+    padding: 16px 24px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.admin-search-form-fino {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.admin-search-select-fino {
+    padding: 9px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--dark);
+    background: #f8fafc;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 180px;
+}
+
+.admin-search-select-fino:focus {
+    border-color: var(--primary);
+    background: var(--white);
+}
+
+.admin-search-select-fino option {
+    background: var(--white);
+    color: var(--dark);
+}
+
+.admin-search-input-fino {
+    flex: 1;
+    padding: 9px 16px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--dark);
+    background: #f8fafc;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.admin-search-input-fino:focus {
+    border-color: var(--primary);
+    background: var(--white);
+}
+
+.admin-search-input-fino::placeholder {
+    color: #9ca3af;
+}
+
+.admin-search-btn-fino {
+    padding: 9px 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.admin-search-btn-fino:hover {
+    background: #7c3aed;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
+}
+
+.admin-search-clear-fino {
+    padding: 9px 16px;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.admin-search-clear-fino:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
 .table-responsive {
     overflow-x: auto;
     background-color: var(--white);
