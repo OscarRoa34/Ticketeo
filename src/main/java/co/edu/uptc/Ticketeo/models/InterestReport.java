@@ -1,5 +1,7 @@
 package co.edu.uptc.Ticketeo.models;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,8 +15,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reporte_interes")
@@ -33,6 +33,10 @@ public class InterestReport {
     @ManyToOne
     @JoinColumn(name = "id_evento", nullable = false)
     private Event event;
+
+    @ManyToOne
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private User user;
 
     @Column(name = "fecha_registro")
     @Builder.Default

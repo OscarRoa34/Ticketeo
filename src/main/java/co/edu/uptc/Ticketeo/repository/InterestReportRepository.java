@@ -1,13 +1,14 @@
 package co.edu.uptc.Ticketeo.repository;
 
-import co.edu.uptc.Ticketeo.dtos.EventInterestDto;
-import co.edu.uptc.Ticketeo.models.InterestReport;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import co.edu.uptc.Ticketeo.dtos.EventInterestDto;
+import co.edu.uptc.Ticketeo.models.InterestReport;
 
 @Repository
 public interface InterestReportRepository extends JpaRepository<InterestReport, Integer> {
@@ -22,4 +23,10 @@ public interface InterestReportRepository extends JpaRepository<InterestReport, 
     @Modifying
     @Query("DELETE FROM InterestReport r WHERE r.event.category.id = :categoryId")
     void deleteByEventCategoryId(Integer categoryId);
+
+    boolean existsByEventIdAndUserId(Integer eventId, Long userId);
+
+    @Modifying
+    @Query("DELETE FROM InterestReport r WHERE r.event.id = :eventId AND r.user.id = :userId")
+    void deleteByEventIdAndUserId(Integer eventId, Long userId);
 }

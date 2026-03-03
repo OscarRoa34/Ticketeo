@@ -181,8 +181,12 @@
     transition: all 0.2s ease;
 }
 
-.event-actions .btn-primary.btn-action-full:hover {
+.event-actions .btn-primary.btn-action-full:hover:not(:disabled) {
     background-color: var(--black-2);
+}
+
+.event-actions .btn-danger.btn-action-full:hover:not(:disabled) {
+    background-color: #c82333;
 }
 
 .image-modal {

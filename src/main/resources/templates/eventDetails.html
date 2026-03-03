@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,95 +8,113 @@
     <link rel="stylesheet" th:href="@{/css/styles.css}">
     <link rel="stylesheet" th:href="@{/css/event-details.css}">
 </head>
+
 <body>
 
-<div th:replace="~{fragments/navbar :: navbar-user}"></div>
+    <div th:replace="~{fragments/navbar :: navbar-user}"></div>
 
-<main class="event-details-container">
-    <article class="event-details-card">
+    <main class="event-details-container">
+        <article class="event-details-card">
 
-        <div class="event-image-col">
-            <img th:src="${event.imageUrl}" th:alt="${event.name}" class="event-hero-image" id="eventImage">
-            <span class="zoom-hint">Ver imagen</span>
-        </div>
+            <div class="event-image-col">
+                <img th:src="${event.imageUrl}" th:alt="${event.name}" class="event-hero-image" id="eventImage">
+                <span class="zoom-hint">Ver imagen</span>
+            </div>
 
-        <div class="event-info-col">
+            <div class="event-info-col">
 
-            <span th:if="${event.category != null}" class="event-category-label"
-                  th:text="${event.category.name}"
-                  th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">
-                Categoría
-            </span>
+                <span th:if="${event.category != null}" class="event-category-label" th:text="${event.category.name}"
+                    th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">
+                    Categoría
+                </span>
 
-            <h1 class="event-title" th:text="${event.name}">Nombre del Evento</h1>
+                <h1 class="event-title" th:text="${event.name}">Nombre del Evento</h1>
 
-            <div class="event-meta-row">
-                <div class="event-meta-item">
-                    <span class="event-meta-label">Fecha</span>
-                    <span class="event-meta-value" th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">01/01/2026</span>
+                <div class="event-meta-row">
+                    <div class="event-meta-item">
+                        <span class="event-meta-label">Fecha</span>
+                        <span class="event-meta-value"
+                            th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">01/01/2026</span>
+                    </div>
+                    <div class="event-meta-item">
+                        <span class="event-meta-label">Precio</span>
+                        <span class="event-meta-value price-tag" th:data-price="${event.price}"
+                            th:text="${(event.price == null or event.price == 0) ? 'Gratis' : '$' + event.price}">$0</span>
+                    </div>
                 </div>
-                <div class="event-meta-item">
-                    <span class="event-meta-label">Precio</span>
-                    <span class="event-meta-value price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0) ? 'Gratis' : '$' + event.price}">$0</span>
+
+                <div class="event-divider"></div>
+
+                <div class="event-description-section">
+                    <span class="event-description-label">Acerca del evento</span>
+                    <p class="event-description-text" th:text="${event.description}">Descripción del evento.</p>
                 </div>
+
+                <div class="event-actions">
+                    <th:block sec:authorize="isAuthenticated()">
+                        <form th:action="@{/event/{id}/interest(id=${event.id})}" method="post">
+                            <button type="submit"
+                                th:class="${isInterested} ? 'btn-danger btn-action-full' : 'btn-primary btn-action-full'"
+                                th:text="${isInterested} ? 'Ya no me interesa' : 'Me interesa'">
+                            </button>
+                        </form>
+                    </th:block>
+
+                    <th:block sec:authorize="isAnonymous()">
+                        <a th:href="@{/login}" class="btn-primary btn-action-full"
+                            title="Inicia sesión para mostrar interés"
+                            style="text-align: center; display: block; text-decoration: none;">
+                            Inicia sesión para interesarte
+                        </a>
+                    </th:block>
+
+                    <a th:href="@{/user}" class="btn-secondary btn-action-full"
+                        style="text-align: center; display: block; text-decoration: none;">Volver al catálogo</a>
+                </div>
+
             </div>
 
-            <div class="event-divider"></div>
+        </article>
+    </main>
 
-            <div class="event-description-section">
-                <span class="event-description-label">Acerca del evento</span>
-                <p class="event-description-text" th:text="${event.description}">Descripción del evento.</p>
-            </div>
+    <div class="image-modal" id="imageModal">
+        <span class="image-modal-close" id="modalClose">&times;</span>
+        <img class="image-modal-img" id="modalImg">
+    </div>
 
-            <div class="event-actions">
-                <form th:action="@{/event/{id}/interest(id=${event.id})}" method="POST">
-                    <button type="submit" class="btn-primary btn-action-full">Me interesa</button>
-                </form>
-                <a th:href="@{/user}" class="btn-secondary btn-action-full">Volver al catálogo</a>
-            </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
-        </div>
+    <script>
+        function formatPrice() {
+            document.querySelectorAll('.price-tag').forEach(el => {
+                const raw = el.getAttribute('data-price');
+                const price = parseFloat(raw);
+                if (raw && raw !== 'null' && !isNaN(price) && price !== 0) {
+                    el.textContent = new Intl.NumberFormat('es-CO', {
+                        style: 'currency', currency: 'COP', minimumFractionDigits: 0
+                    }).format(price);
+                } else {
+                    el.textContent = 'Gratis';
+                }
+            });
+        }
 
-    </article>
-</main>
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+        const eventImage = document.getElementById('eventImage');
+        const modalClose = document.getElementById('modalClose');
 
-<div class="image-modal" id="imageModal">
-    <span class="image-modal-close" id="modalClose">&times;</span>
-    <img class="image-modal-img" id="modalImg">
-</div>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
-
-<script>
-    function formatPrice() {
-        document.querySelectorAll('.price-tag').forEach(el => {
-            const raw = el.getAttribute('data-price');
-            const price = parseFloat(raw);
-            if (raw && raw !== 'null' && !isNaN(price) && price !== 0) {
-                el.textContent = new Intl.NumberFormat('es-CO', {
-                    style: 'currency', currency: 'COP', minimumFractionDigits: 0
-                }).format(price);
-            } else {
-                el.textContent = 'Gratis';
-            }
+        eventImage.addEventListener('click', () => {
+            modal.classList.add('active');
+            modalImg.src = eventImage.src;
         });
-    }
 
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImg');
-    const eventImage = document.getElementById('eventImage');
-    const modalClose = document.getElementById('modalClose');
+        modalClose.addEventListener('click', () => modal.classList.remove('active'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
 
-    eventImage.addEventListener('click', () => {
-        modal.classList.add('active');
-        modalImg.src = eventImage.src;
-    });
-
-    modalClose.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
-
-    document.addEventListener('DOMContentLoaded', formatPrice);
-</script>
+        document.addEventListener('DOMContentLoaded', formatPrice);
+    </script>
 
 </body>
+
 </html>
