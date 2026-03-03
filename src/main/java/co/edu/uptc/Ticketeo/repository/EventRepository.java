@@ -27,6 +27,12 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     List<Event> findByCategory_Id(Integer categoryId);
 
+    Page<Event> findByNameContainingIgnoreCaseAndIsActiveFalse(String name, Pageable pageable);
+
+    Page<Event> findByCategory_IdAndIsActiveFalse(Integer categoryId, Pageable pageable);
+
+    Page<Event> findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveFalse(String name, Integer categoryId, Pageable pageable);
+
     @Modifying
     @Query("UPDATE Event e SET e.category = null WHERE e.category.id = :categoryId")
     void detachCategory(@org.springframework.data.repository.query.Param("categoryId") Integer categoryId);
@@ -35,5 +41,3 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
     @Query("DELETE FROM Event e WHERE e.category.id = :categoryId")
     void deleteByCategory_Id(Integer categoryId);
 }
-
-

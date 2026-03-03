@@ -30,20 +30,32 @@ public class AdminEventController {
     private final EventCategoryService eventCategoryService;
 
     @GetMapping
-    public String showActiveEvents(@RequestParam(defaultValue = "0") int page, Model model) {
-        Page<Event> eventPage = eventService.getEventsPaginated(page, PAGE_SIZE);
+    public String showActiveEvents(@RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(required = false) String search,
+                                   @RequestParam(required = false) Integer categoryId,
+                                   Model model) {
+        Page<Event> eventPage = eventService.getActiveEventsFiltered(search, categoryId, page, PAGE_SIZE);
         model.addAttribute("events", eventPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", eventPage.getTotalPages());
+        model.addAttribute("search", search != null ? search : "");
+        model.addAttribute("currentCategory", categoryId);
+        model.addAttribute("categories", eventCategoryService.getAllCategories());
         return "adminEvents";
     }
 
     @GetMapping("/inactive")
-    public String showInactiveEvents(@RequestParam(defaultValue = "0") int page, Model model) {
-        Page<Event> eventPage = eventService.getInactiveEventsPaginated(page, PAGE_SIZE);
+    public String showInactiveEvents(@RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(required = false) String search,
+                                     @RequestParam(required = false) Integer categoryId,
+                                     Model model) {
+        Page<Event> eventPage = eventService.getInactiveEventsFiltered(search, categoryId, page, PAGE_SIZE);
         model.addAttribute("events", eventPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", eventPage.getTotalPages());
+        model.addAttribute("search", search != null ? search : "");
+        model.addAttribute("currentCategory", categoryId);
+        model.addAttribute("categories", eventCategoryService.getAllCategories());
         return "adminInactiveEvents";
     }
 
