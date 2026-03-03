@@ -1,5 +1,8 @@
 package co.edu.uptc.Ticketeo.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public Page<User> getAllUsers(int page, int size) {
+        return userRepository.findAll(PageRequest.of(page, size, Sort.by("id").ascending()));
+    }
 
     public User registerNewUser(String username, String rawPassword) {
         if (userRepository.findByUsername(username).isPresent()) {
