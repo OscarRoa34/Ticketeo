@@ -5,7 +5,17 @@
     max-width: 1400px;
     padding: 0 15px;
     margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 0;
 }
+
+.navbar-collapse {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
 
 /* MODIFICADO: 'margin-left: auto' empuja los enlaces hacia la derecha */
 .nav-links {
@@ -183,4 +193,143 @@
     color: #fef2f2;
     border-color: rgba(220, 38, 38, 0.5);
     transform: translateY(-1px);
+}
+
+.navbar-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.navbar-hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.navbar-hamburger.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.navbar-hamburger.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.navbar-hamburger.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.navbar-collapse {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 0;
+}
+
+@media (max-width: 768px) {
+    .navbar-hamburger {
+        display: flex;
+    }
+
+    .brand-logo {
+        flex: 1;
+    }
+
+    .navbar-collapse {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        flex-basis: 100%;
+        flex: none;
+        gap: 12px;
+        padding: 16px 0 8px;
+    }
+
+    .navbar-collapse.open {
+        display: flex;
+    }
+
+    .search-form-fino {
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 12px;
+        padding: 10px;
+        margin-right: 0;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .search-select-fino {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding: 10px 12px;
+        width: 100%;
+    }
+
+    .search-input-fino {
+        padding: 10px 12px;
+        width: 100%;
+    }
+
+    .search-btn-fino {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .user-menu {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .btn-login-fino,
+    .btn-logout-fino {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .profile-badge-fino {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        margin: 0;
+        width: 100%;
+    }
+
+    .nav-links li {
+        width: 100%;
+    }
+
+    .nav-item {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+    }
+
+    .nav-item::after {
+        display: none;
+    }
 }
