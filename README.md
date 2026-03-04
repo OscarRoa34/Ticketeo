@@ -6,7 +6,7 @@ Aplicación de gestión de eventos desarrollada con **Spring Boot, Spring Data J
 
 Antes de comenzar, asegúrate de tener instalados los siguientes componentes en tu sistema local:
 
-- **Java 21** o superior: [Descargar JDK 21](https://jdk.java.net/21/) (o versiones posteriores).
+- **Java 21** o superior: [Descargar JDK 21](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html) (o versiones posteriores).
 - **PostgreSQL**: [Descargar PostgreSQL](https://www.postgresql.org/download/).
 - **Git** para clonar el código.
 - Un IDE o editor de texto compatible (IntelliJ IDEA, Eclipse, VS Code).
