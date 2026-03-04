@@ -211,9 +211,27 @@
         carouselInterval = setInterval(nextSlide, 7000);
     }
 
+    function initHamburger() {
+        const pairs = [
+            { btn: 'navHamburgerGuest',  collapse: 'navCollapseGuest' },
+            { btn: 'navHamburgerUser',   collapse: 'navCollapseUser' }
+        ];
+        pairs.forEach(({ btn, collapse }) => {
+            const b = document.getElementById(btn);
+            const c = document.getElementById(collapse);
+            if (b && c) {
+                b.addEventListener('click', () => {
+                    const isOpen = c.classList.toggle('open');
+                    b.classList.toggle('open', isOpen);
+                });
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         formatPrice();
         initCarousel();
+        initHamburger();
     });
 </script>
 </body>

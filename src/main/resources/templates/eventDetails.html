@@ -112,7 +112,24 @@
         modalClose.addEventListener('click', () => modal.classList.remove('active'));
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
 
-        document.addEventListener('DOMContentLoaded', formatPrice);
+        document.addEventListener('DOMContentLoaded', () => {
+            formatPrice();
+
+            const pairs = [
+                { btn: 'navHamburgerGuest',  collapse: 'navCollapseGuest' },
+                { btn: 'navHamburgerUser',   collapse: 'navCollapseUser' }
+            ];
+            pairs.forEach(({ btn, collapse }) => {
+                const b = document.getElementById(btn);
+                const c = document.getElementById(collapse);
+                if (b && c) {
+                    b.addEventListener('click', () => {
+                        const isOpen = c.classList.toggle('open');
+                        b.classList.toggle('open', isOpen);
+                    });
+                }
+            });
+        });
     </script>
 
 </body>
