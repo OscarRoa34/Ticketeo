@@ -60,7 +60,7 @@
 
             <div class="navbar-collapse" id="navCollapseUser">
                 <ul class="nav-links">
-                    <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin}" class="nav-item">Panel Admin</a></li>
+                    <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin}" class="nav-item" th:classappend="${currentUri == '/admin' or currentUri.startsWith('/admin/')} ? 'active' : ''">Panel Admin</a></li>
                 </ul>
 
                 <form th:action="@{/user}" method="get" class="search-form-fino">
@@ -125,11 +125,11 @@
             </a>
 
             <ul class="nav-links">
-                <li><a th:href="@{/admin}" class="nav-item">Eventos</a></li>
-                <li><a th:href="@{/admin/category}" class="nav-item">Categorías</a></li>
-                <li><a th:href="@{/admin/users}" class="nav-item">Usuarios</a></li>
-                <li><a th:href="@{/admin/reports}" class="nav-item">Reportes</a></li>
-                <li><a th:href="@{/user}" class="nav-item">Vista Usuario</a></li>
+                <li><a th:href="@{/admin}" class="nav-item" th:classappend="${currentUri == '/admin' or currentUri == '/admin/new' or currentUri == '/admin/inactive' or currentUri.startsWith('/admin/edit/')} ? 'active' : ''">Eventos</a></li>
+                <li><a th:href="@{/admin/category}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/category')} ? 'active' : ''">Categorías</a></li>
+                <li><a th:href="@{/admin/users}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/users')} ? 'active' : ''">Usuarios</a></li>
+                <li><a th:href="@{/admin/reports}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/reports')} ? 'active' : ''">Reportes</a></li>
+                <li><a th:href="@{/user}" class="nav-item" th:classappend="${currentUri.startsWith('/user')} ? 'active' : ''">Vista Usuario</a></li>
             </ul>
 
             <div class="user-menu">

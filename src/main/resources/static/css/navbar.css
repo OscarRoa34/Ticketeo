@@ -37,7 +37,8 @@
     transition: color 0.3s ease;
 }
 
-.nav-item:hover {
+.nav-item:hover,
+.nav-item.active {
     color: #ffffff; /* Se ilumina el texto */
 }
 
@@ -54,8 +55,9 @@
     border-radius: 2px;
 }
 
-.nav-item:hover::after {
-    width: 100%; /* Se dibuja al pasar el mouse */
+.nav-item:hover::after,
+.nav-item.active::after {
+    width: 100%; /* Se dibuja al pasar el mouse o estar activo */
 }
 
 /* MODIFICADO: Le quitamos el margin-left: auto porque nav-links ya hace ese trabajo */
