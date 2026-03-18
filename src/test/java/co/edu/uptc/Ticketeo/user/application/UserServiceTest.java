@@ -18,9 +18,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import co.edu.uptc.Ticketeo.user.domain.Role;
-import co.edu.uptc.Ticketeo.user.domain.User;
-import co.edu.uptc.Ticketeo.user.infrastructure.repository.UserRepository;
+import co.edu.uptc.Ticketeo.user.models.Role;
+import co.edu.uptc.Ticketeo.user.models.User;
+import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
+import co.edu.uptc.Ticketeo.user.services.UserService;
+
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {

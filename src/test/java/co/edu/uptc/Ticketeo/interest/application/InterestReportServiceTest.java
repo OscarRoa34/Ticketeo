@@ -12,10 +12,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import co.edu.uptc.Ticketeo.catalog.domain.Event;
-import co.edu.uptc.Ticketeo.interest.domain.InterestReport;
-import co.edu.uptc.Ticketeo.interest.infrastructure.repository.InterestReportRepository;
-import co.edu.uptc.Ticketeo.user.domain.User;
+import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.interest.models.InterestReport;
+import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
+import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
+import co.edu.uptc.Ticketeo.user.models.User;
 
 @ExtendWith(MockitoExtension.class)
 class InterestReportServiceTest {
