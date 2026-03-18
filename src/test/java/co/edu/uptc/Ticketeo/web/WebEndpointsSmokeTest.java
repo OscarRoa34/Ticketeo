@@ -27,33 +27,33 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import co.edu.uptc.Ticketeo.auth.api.LoginController;
-import co.edu.uptc.Ticketeo.auth.api.RedirectController;
-import co.edu.uptc.Ticketeo.auth.api.RegisterController;
-import co.edu.uptc.Ticketeo.catalog.api.admin.AdminCategoryController;
-import co.edu.uptc.Ticketeo.catalog.api.admin.AdminEventController;
-import co.edu.uptc.Ticketeo.catalog.api.publicview.EventController;
-import co.edu.uptc.Ticketeo.catalog.api.publicview.UserHomeController;
-import co.edu.uptc.Ticketeo.catalog.application.EventCategoryService;
-import co.edu.uptc.Ticketeo.catalog.application.EventService;
-import co.edu.uptc.Ticketeo.catalog.domain.Event;
-import co.edu.uptc.Ticketeo.catalog.domain.EventCategory;
+import co.edu.uptc.Ticketeo.auth.controllers.LoginController;
+import co.edu.uptc.Ticketeo.auth.controllers.RedirectController;
+import co.edu.uptc.Ticketeo.auth.controllers.RegisterController;
 import co.edu.uptc.Ticketeo.config.GlobalModelAttributes;
-import co.edu.uptc.Ticketeo.interest.api.admin.AdminReportController;
-import co.edu.uptc.Ticketeo.interest.application.InterestReportService;
-import co.edu.uptc.Ticketeo.shared.config.SecurityConfig;
-import co.edu.uptc.Ticketeo.user.api.admin.AdminUserController;
-import co.edu.uptc.Ticketeo.user.application.UserService;
-import co.edu.uptc.Ticketeo.user.domain.Role;
-import co.edu.uptc.Ticketeo.user.domain.User;
-import co.edu.uptc.Ticketeo.user.infrastructure.repository.UserRepository;
+import co.edu.uptc.Ticketeo.config.SecurityConfig;
+import co.edu.uptc.Ticketeo.events.controllers.admin.AdminCategoryController;
+import co.edu.uptc.Ticketeo.events.controllers.admin.AdminEventController;
+import co.edu.uptc.Ticketeo.events.controllers.publicview.EventDetailsController;
+import co.edu.uptc.Ticketeo.events.controllers.publicview.PublicViewHomeController;
+import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.models.EventCategory;
+import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
+import co.edu.uptc.Ticketeo.events.services.EventService;
+import co.edu.uptc.Ticketeo.interest.controllers.AdminReportController;
+import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
+import co.edu.uptc.Ticketeo.user.controllers.AdminUserController;
+import co.edu.uptc.Ticketeo.user.models.Role;
+import co.edu.uptc.Ticketeo.user.models.User;
+import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
+import co.edu.uptc.Ticketeo.user.services.UserService;
 
 @WebMvcTest(controllers = {
         LoginController.class,
         RedirectController.class,
         RegisterController.class,
-        UserHomeController.class,
-        EventController.class,
+        PublicViewHomeController.class,
+        EventDetailsController.class,
         AdminEventController.class,
         AdminCategoryController.class,
         AdminReportController.class,

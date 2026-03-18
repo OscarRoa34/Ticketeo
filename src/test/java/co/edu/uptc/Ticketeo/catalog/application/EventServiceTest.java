@@ -21,9 +21,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import co.edu.uptc.Ticketeo.catalog.domain.Event;
-import co.edu.uptc.Ticketeo.catalog.infrastructure.repository.EventRepository;
-import co.edu.uptc.Ticketeo.interest.infrastructure.repository.InterestReportRepository;
+import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.repositorys.EventRepository;
+import co.edu.uptc.Ticketeo.events.services.EventService;
+import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
+
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceTest {
