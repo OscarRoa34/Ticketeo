@@ -1,27 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
 <body>
 
-<footer th:fragment="footer" class="site-footer">
-    <div class="container footer-content">
-        <div class="footer-brand">
-            <div class="brand-logo">
-                <img th:src="@{/images/logo.svg}" alt="Ticketeo" class="logo-svg">
-                <h2 class="brand-text">TICKETEO</h2>
+    <footer th:fragment="footer" class="site-footer">
+        <div class="container footer-content">
+
+            <div class="footer-section brand-section">
+                <div class="brand-logo">
+                    <img th:src="@{/images/logo.svg}" alt="Ticketeo" class="logo-svg">
+                    <h2 class="brand-text">TICKETEO</h2>
+                </div>
             </div>
-            <p>Tu portal de eventos</p>
+
+            <div class="footer-section team-section">
+                <h3>Desarrollado por</h3>
+                <ul class="team-list">
+                    <li>
+                        <a href="https://github.com/Davidaguilar03" target="_blank" class="github-link">
+                            <img th:src="@{/images/github-icon.svg}" alt="GitHub" class="github-icon"> David Aguilar
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/OscarRoa34" target="_blank" class="github-link">
+                            <img th:src="@{/images/github-icon.svg}" alt="GitHub" class="github-icon"> Oscar Roa
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="footer-section top-button-section">
+                <a href="#top" class="back-to-top-btn" title="Volver al inicio de la página">
+                    <span class="arrow">↑</span>
+                </a>
+            </div>
+
         </div>
 
-        <div class="footer-links">
-            <a href="#">Términos y Condiciones</a>
-            <a href="#">Política de Privacidad</a>
-            <a href="#">Soporte</a>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Ticketeo.</p>
         </div>
-    </div>
-    <div class="footer-bottom">
-        <p>&copy; 2026 Ticketeo. Todos los derechos reservados.</p>
-    </div>
-</footer>
+    </footer>
 
 </body>
+
 </html>
