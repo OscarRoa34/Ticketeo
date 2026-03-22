@@ -240,6 +240,14 @@ class WebEndpointsSmokeTest {
                 .andExpect(view().name("adminUsers"));
     }
 
+        @Test
+        void userHome_forAdmin_shouldRedirectToAdminPanel() throws Exception {
+                // Verifica que un ADMIN no pueda entrar a la vista de usuario.
+                mockMvc.perform(get("/user").with(user("admin").roles("ADMIN")))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(redirectedUrl("/admin"));
+        }
+
     @Test
     void adminMutationEndpoints_shouldRedirectAsExpected() throws Exception {
         // Verifica que las acciones administrativas (activar, eliminar, guardar, etc.)

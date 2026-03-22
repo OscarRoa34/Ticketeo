@@ -1,15 +1,17 @@
 package co.edu.uptc.Ticketeo.events.controllers.publicview;
 
-import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
-import co.edu.uptc.Ticketeo.events.services.EventService;
-import co.edu.uptc.Ticketeo.events.models.Event;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
+import co.edu.uptc.Ticketeo.events.services.EventService;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/user")
@@ -27,7 +29,13 @@ public class PublicViewHomeController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false, defaultValue = "date_desc") String sort,
+            Authentication authentication,
             Model model) {
+
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
+            return "redirect:/admin";
+        }
 
         Page<Event> eventPage = eventService.getEventsFiltered(search, categoryId, page, PAGE_SIZE, sort);
 
