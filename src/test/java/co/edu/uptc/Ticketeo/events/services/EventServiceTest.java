@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.catalog.application;
+package co.edu.uptc.Ticketeo.events.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +23,6 @@ import org.springframework.data.domain.Sort;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.repositorys.EventRepository;
-import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
 
 

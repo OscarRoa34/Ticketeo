@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.catalog.application;
+package co.edu.uptc.Ticketeo.events.services;
 
 import java.util.List;
 
@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.repositorys.EventCategoryRepository;
 import co.edu.uptc.Ticketeo.events.repositorys.EventRepository;
-import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
 
 @ExtendWith(MockitoExtension.class)
