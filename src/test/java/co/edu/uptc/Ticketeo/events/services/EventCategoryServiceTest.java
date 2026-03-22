@@ -12,10 +12,9 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
-import co.edu.uptc.Ticketeo.events.repositories.EventCategoryRepository;
-import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
-import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
-import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.events.repositorys.EventCategoryRepository;
+import co.edu.uptc.Ticketeo.events.repositorys.EventRepository;
+import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
 
 @ExtendWith(MockitoExtension.class)
 class EventCategoryServiceTest {
