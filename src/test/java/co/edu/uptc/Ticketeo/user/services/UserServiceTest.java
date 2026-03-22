@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.user.application;
+package co.edu.uptc.Ticketeo.user.services;
 
 import java.util.Optional;
 
@@ -21,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import co.edu.uptc.Ticketeo.user.models.Role;
 import co.edu.uptc.Ticketeo.user.models.User;
 import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
-import co.edu.uptc.Ticketeo.user.services.UserService;
 
 
 @ExtendWith(MockitoExtension.class)
