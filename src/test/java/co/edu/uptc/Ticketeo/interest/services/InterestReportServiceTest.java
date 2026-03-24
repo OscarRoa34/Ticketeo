@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.interest.services;
+package co.edu.uptc.Ticketeo.interest.application;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -14,7 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.interest.models.InterestReport;
-import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
+import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
 import co.edu.uptc.Ticketeo.user.models.User;
 
 @ExtendWith(MockitoExtension.class)
