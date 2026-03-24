@@ -1,8 +1,8 @@
-package co.edu.uptc.Ticketeo.config;
+package co.edu.uptc.Ticketeo.configuration;
 
 import co.edu.uptc.Ticketeo.user.models.Role;
 import co.edu.uptc.Ticketeo.user.models.User;
-import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
+import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

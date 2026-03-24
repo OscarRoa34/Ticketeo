@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.user.repositorys;
+package co.edu.uptc.Ticketeo.user.repositories;
 
 import java.util.Optional;
 

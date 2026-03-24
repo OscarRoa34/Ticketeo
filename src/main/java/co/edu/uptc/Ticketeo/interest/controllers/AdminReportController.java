@@ -16,12 +16,12 @@ public class AdminReportController {
 
     @GetMapping({"", "/"})
     public String showReportsMenu() {
-        return "adminReportsMenu";
+        return "interest/adminReportsMenu";
     }
 
     @GetMapping("/interest")
     public String showInterestReport(Model model) {
         model.addAttribute("interestRanking", interestReportService.getEventInterestRanking());
-        return "adminInterestReport";
+        return "interest/adminInterestReport";
     }
 }

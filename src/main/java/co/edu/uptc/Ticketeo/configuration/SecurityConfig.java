@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.config;
+package co.edu.uptc.Ticketeo.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/images/**", "/js/**", "/uploads/**").permitAll()
+                .requestMatchers("/css/**", "/images/**", "/js/**", "/uploads/**", 
+                                 "/authentication/css/**", "/events/css/**", "/interest/css/**", "/user/css/**").permitAll()
             .requestMatchers("/admin", "/admin/**", "/categories", "/categories/**", "/reports", "/reports/**").hasRole("ADMIN")
                 .requestMatchers("/event/interest/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().permitAll()
@@ -40,3 +41,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+

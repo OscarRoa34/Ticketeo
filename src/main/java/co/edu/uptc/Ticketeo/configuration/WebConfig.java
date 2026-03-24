@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.config;
+package co.edu.uptc.Ticketeo.configuration;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;

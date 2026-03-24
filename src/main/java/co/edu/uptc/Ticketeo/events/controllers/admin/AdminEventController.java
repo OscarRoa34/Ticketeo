@@ -3,6 +3,7 @@ package co.edu.uptc.Ticketeo.events.controllers.admin;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,7 +42,7 @@ public class AdminEventController {
         model.addAttribute("search", search != null ? search : "");
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "adminEvents";
+        return "events/adminEvents";
     }
 
     @GetMapping("/inactive")
@@ -56,7 +57,7 @@ public class AdminEventController {
         model.addAttribute("search", search != null ? search : "");
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "adminInactiveEvents";
+        return "events/adminInactiveEvents";
     }
 
     @GetMapping("/event/new")
@@ -64,7 +65,7 @@ public class AdminEventController {
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("draft", draft);
-        return "adminEventForm";
+        return "events/adminEventForm";
     }
 
     @GetMapping("/event/edit/{id}")
@@ -78,7 +79,7 @@ public class AdminEventController {
         model.addAttribute("event", event);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("draft", fromTrash);
-        return "adminEventForm";
+        return "events/adminEventForm";
     }
 
     @PostMapping("/event/save")

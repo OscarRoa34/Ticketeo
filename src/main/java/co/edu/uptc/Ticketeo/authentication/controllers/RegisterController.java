@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.auth.controllers;
+package co.edu.uptc.Ticketeo.authentication.controllers;
 
 import co.edu.uptc.Ticketeo.user.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ public class RegisterController {
 
     @GetMapping("/register")
     public String showRegistrationForm() {
-        return "register";
+        return "authentication/register";
     }
 
     @PostMapping("/register")
@@ -26,7 +26,7 @@ public class RegisterController {
                                Model model) {
         if (!password.equals(confirmPassword)) {
             model.addAttribute("error", "Las contraseñas no coinciden.");
-            return "register";
+            return "authentication/register";
         }
 
         try {
@@ -34,7 +34,7 @@ public class RegisterController {
             return "redirect:/login?registered=true";
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
-            return "register";
+            return "authentication/register";
         }
     }
 }

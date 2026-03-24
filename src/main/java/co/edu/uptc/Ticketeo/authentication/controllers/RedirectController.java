@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.auth.controllers;
+package co.edu.uptc.Ticketeo.authentication.controllers;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.interest.repositorys;
+package co.edu.uptc.Ticketeo.interest.repositories;
 
 import java.util.List;
 

@@ -1,16 +1,16 @@
-package co.edu.uptc.Ticketeo.auth.services;
+package co.edu.uptc.Ticketeo.authentication.services;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
+import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AuthUserDetailsService implements UserDetailsService {
+public class AuthenticationUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
