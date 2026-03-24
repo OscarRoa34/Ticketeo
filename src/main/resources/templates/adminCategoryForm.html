@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${category.id == null ? 'Ticketeo | Nueva Categoría' : 'Ticketeo | Editar Categoría'}">Ticketeo | Categoría</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container event-form-page">
+    <div class="event-form-card">
+
+        <div class="event-form-header">
+            <div class="event-form-header-icon">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo">
+            </div>
+            <div class="event-form-header-text">
+                <h2 th:text="${category.id == null ? 'Crear Nueva Categoría' : 'Editar Categoría'}">Categoría</h2>
+                <p th:text="${category.id == null ? 'Define el nombre y color para la nueva categoría.' : 'Modifica el nombre o el color de la categoría.'}">Descripción</p>
+            </div>
+        </div>
+
+        <div class="event-form-divider"></div>
+
+        <form th:action="@{/admin/category/save}" th:object="${category}" method="POST">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="event-form-body">
+
+                <div class="ef-group">
+                    <label for="name" class="ef-label">Nombre de la Categoría</label>
+                    <input type="text" id="name" th:field="*{name}" class="ef-input"
+                           placeholder="Ej: Música, Teatro, Deportes..." required>
+                </div>
+
+                <div class="ef-group">
+                    <label class="ef-label">Color de la Categoría</label>
+                    <div class="ef-color-row">
+                        <input type="color" id="colorPicker" th:field="*{color}" class="ef-color-picker">
+                        <div class="ef-color-preview">
+                            <div class="ef-color-swatch" id="colorSwatch"
+                                 th:style="'background-color:' + ${category.color != null ? category.color : '#8B5CF6'}"></div>
+                            <span class="ef-color-hex" id="colorHex"
+                                  th:text="${category.color != null ? category.color : '#8B5CF6'}">#8B5CF6</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ef-form-actions">
+                    <a th:href="@{/admin/category}" class="ef-btn-cancel">Cancelar</a>
+                    <button type="submit" class="ef-btn-submit">
+                        <span th:text="${category.id == null ? '✦ Crear Categoría' : '✦ Guardar Cambios'}">Guardar</span>
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    const picker = document.getElementById('colorPicker');
+    const swatch = document.getElementById('colorSwatch');
+    const hexLabel = document.getElementById('colorHex');
+
+    picker.addEventListener('input', function () {
+        swatch.style.backgroundColor = this.value;
+        hexLabel.textContent = this.value.toUpperCase();
+    });
+</script>
+
+</body>
+</html>
+
