@@ -1,0 +1,212 @@
+html {
+    scroll-behavior: smooth;
+}
+
+
+.site-footer {
+    background-color: #0A0A14;
+    color: var(--white);
+    padding: 40px 0 20px 0;
+    margin-top: 60px;
+    flex-shrink: 0;
+    width: 100%;
+
+    border-top: 1px solid rgba(139, 92, 246, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+
+.site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 60%, rgba(74, 222, 128, 0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 15%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 75%, rgba(139, 92, 246, 0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 55%, rgba(74, 222, 128, 0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 20%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+        radial-gradient(2px 2px at 60% 50%, rgba(139, 92, 246, 0.9) 0%, transparent 100%),
+        radial-gradient(2px 2px at 15% 80%, rgba(74, 222, 128, 0.8) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    gap: 30px;
+    position: relative;
+    z-index: 1;
+    border-bottom: none;
+}
+
+.footer-section {
+    flex: 1;
+}
+
+
+.team-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.team-section h3 {
+    text-align: left;
+    width: 100%;
+    max-width: 180px;
+}
+
+.site-footer h3 {
+    color: var(--white);
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.site-footer a {
+    text-decoration: none !important;
+    color: var(--gray-4);
+    transition: color 0.3s ease;
+}
+
+.site-footer a:hover {
+    color: var(--secondary);
+}
+
+
+.brand-section .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--white);
+    text-decoration: none;
+}
+
+.brand-section .logo-svg {
+    width: 64px;
+    height: 64px;
+}
+
+.brand-section .brand-text {
+    color: var(--secondary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+
+.team-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 180px;
+}
+
+.team-list li {
+    margin-bottom: 8px;
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+.github-icon {
+    width: 18px;
+    height: 18px;
+    filter: invert(1);
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.github-link:hover .github-icon {
+    opacity: 1;
+}
+
+
+.top-button-section {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.back-to-top-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.back-to-top-btn:hover {
+    background-color: rgba(139, 92, 246, 0.2);
+    border-color: var(--secondary);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+.back-to-top-btn .arrow {
+    font-size: 1.2rem;
+    font-weight: normal;
+    color: var(--secondary);
+}
+
+
+.footer-bottom {
+    text-align: center;
+    color: var(--gray-4);
+    font-size: 0.8rem;
+    margin-top: 30px;
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+    }
+
+    .brand-section .brand-logo,
+    .team-section h3,
+    .team-list {
+        justify-content: center;
+        text-align: center;
+        max-width: 100%;
+    }
+
+    .github-link {
+        justify-content: center;
+    }
+
+    .top-button-section {
+        justify-content: center;
+        width: 100%;
+    }
+}

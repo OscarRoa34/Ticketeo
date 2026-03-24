@@ -1,0 +1,337 @@
+.navbar-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 15px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 0;
+}
+
+.navbar-collapse {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+
+/* MODIFICADO: 'margin-left: auto' empuja los enlaces hacia la derecha */
+.nav-links {
+    display: flex;
+    list-style: none;
+    margin: 0 25px 0 auto; /* El auto empuja todo a la derecha */
+    padding: 0;
+    gap: 25px; /* Un poco más de espacio entre enlaces para que respiren */
+}
+
+/* NUEVO: Diseño del texto de los enlaces */
+.nav-item {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    position: relative; /* Clave para poner la línea debajo */
+    padding-bottom: 6px; /* Espacio para que la línea no pegue al texto */
+    transition: color 0.3s ease;
+}
+
+.nav-item:hover,
+.nav-item.active {
+    color: #ffffff; /* Se ilumina el texto */
+}
+
+/* NUEVO: El "____ moderno" animado */
+.nav-item::after {
+    content: '';
+    position: absolute;
+    width: 0; /* Inicia invisible */
+    height: 2px; /* Grosor de la línea */
+    bottom: 0;
+    left: 0;
+    background-color: #a78bfa; /* Un morado pastel muy elegante */
+    transition: width 0.3s ease; /* Animación suave */
+    border-radius: 2px;
+}
+
+.nav-item:hover::after,
+.nav-item.active::after {
+    width: 100%; /* Se dibuja al pasar el mouse o estar activo */
+}
+
+/* MODIFICADO: Le quitamos el margin-left: auto porque nav-links ya hace ese trabajo */
+.search-form-fino {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    padding: 4px 6px;
+    margin-right: 25px;
+    transition: all 0.3s ease;
+}
+
+.search-form-fino:focus-within {
+    border-color: #a78bfa;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
+}
+
+.search-select-fino,
+.search-input-fino {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-select-fino {
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+
+.search-select-fino option {
+    background: #1e1e2f;
+    color: white;
+}
+
+.search-input-fino::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.search-btn-fino {
+    background: rgba(167, 139, 250, 0.8);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-btn-fino:hover {
+    background: #a78bfa;
+    box-shadow: 0 2px 8px rgba(167, 139, 250, 0.4);
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-login-fino {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    /* ESTO ES LO NUEVO PARA EL ÍCONO */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-login-fino:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    transform: translateY(-1px);
+}
+.profile-badge-fino {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.profile-badge-fino:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-badge-fino.admin {
+    border-color: rgba(255, 235, 59, 0.3);
+    color: #ffeb3b;
+}
+
+.profile-icon {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.profile-badge-fino.admin .profile-icon {
+    color: #ffeb3b;
+}
+
+.btn-logout-fino {
+    background: rgba(220, 38, 38, 0.1);
+    color: #fca5a5;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-logout-fino:hover {
+    background: rgba(220, 38, 38, 0.2);
+    color: #fef2f2;
+    border-color: rgba(220, 38, 38, 0.5);
+    transform: translateY(-1px);
+}
+
+.navbar-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.navbar-hamburger span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.navbar-hamburger.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.navbar-hamburger.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.navbar-hamburger.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.navbar-collapse {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 0;
+}
+
+@media (max-width: 768px) {
+    .navbar-hamburger {
+        display: flex;
+    }
+
+    .brand-logo {
+        flex: 1;
+    }
+
+    .navbar-collapse {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        flex-basis: 100%;
+        flex: none;
+        gap: 12px;
+        padding: 16px 0 8px;
+    }
+
+    .navbar-collapse.open {
+        display: flex;
+    }
+
+    .search-form-fino {
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 12px;
+        padding: 10px;
+        margin-right: 0;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .search-select-fino {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding: 10px 12px;
+        width: 100%;
+    }
+
+    .search-input-fino {
+        padding: 10px 12px;
+        width: 100%;
+    }
+
+    .search-btn-fino {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .user-menu {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .btn-login-fino,
+    .btn-logout-fino {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .profile-badge-fino {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        margin: 0;
+        width: 100%;
+    }
+
+    .nav-links li {
+        width: 100%;
+    }
+
+    .nav-item {
+        display: block;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+    }
+
+    .nav-item::after {
+        display: none;
+    }
+}
