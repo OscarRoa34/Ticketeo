@@ -49,6 +49,6 @@ public class PublicViewHomeController {
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("currentSort", sort);
 
-        return "user/userHome";
+        return "userHome";
     }
 }

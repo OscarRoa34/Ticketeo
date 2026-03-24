@@ -26,6 +26,6 @@ public class AdminUserController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", userPage.getTotalPages());
         model.addAttribute("totalUsers", userPage.getTotalElements());
-        return "user/adminUsers";
+        return "adminUsers";
     }
 }

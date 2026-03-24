@@ -41,7 +41,7 @@ public class AdminEventController {
         model.addAttribute("search", search != null ? search : "");
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "events/adminEvents";
+        return "adminEvents";
     }
 
     @GetMapping("/inactive")
@@ -56,7 +56,7 @@ public class AdminEventController {
         model.addAttribute("search", search != null ? search : "");
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "events/adminInactiveEvents";
+        return "adminInactiveEvents";
     }
 
     @GetMapping("/event/new")
@@ -64,7 +64,7 @@ public class AdminEventController {
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("draft", draft);
-        return "events/adminEventForm";
+        return "adminEventForm";
     }
 
     @GetMapping("/event/edit/{id}")
@@ -78,7 +78,7 @@ public class AdminEventController {
         model.addAttribute("event", event);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("draft", fromTrash);
-        return "events/adminEventForm";
+        return "adminEventForm";
     }
 
     @PostMapping("/event/save")

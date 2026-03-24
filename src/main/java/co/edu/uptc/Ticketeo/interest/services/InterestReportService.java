@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.interest.models.EventInterestDto;
 import co.edu.uptc.Ticketeo.interest.models.InterestReport;
-import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
 import co.edu.uptc.Ticketeo.user.models.User;
 import lombok.RequiredArgsConstructor;
 
