@@ -153,12 +153,14 @@
     width: 100%;
     border-collapse: collapse;
     text-align: left;
+    table-layout: fixed;
 }
 
 .admin-table th,
 .admin-table td {
     padding: 15px 20px;
     border-bottom: 1px solid var(--gray-5);
+    vertical-align: middle;
 }
 
 .admin-table th {
@@ -212,6 +214,20 @@
 
 }
 
+.col-description-header {
+    width: 30%;
+}
+
+.col-description {
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+}
+
 .table-badge {
     margin-bottom: 0;
     padding: 4px 10px;
@@ -221,6 +237,53 @@
 .col-actions {
     white-space: nowrap;
     vertical-align: middle;
+    width: 1%;
+    text-align: center;
+}
+
+.col-actions-triple {
+    width: 1%;
+}
+
+.col-actions-double {
+    width: 1%;
+}
+
+.col-actions-header {
+    text-align: center;
+}
+
+.col-actions-header-double {
+    min-width: 120px;
+}
+
+.col-actions-header-triple {
+    text-align: center;
+}
+
+.row-actions {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+.row-action-btn {
+    margin-right: 0;
+    padding: 0;
+    min-width: 34px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.icon-action-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 15px;
 }
 
 .btn-action {
@@ -268,8 +331,13 @@
     text-decoration: none;
 }
 
-.inactive-row {
-    opacity: 0.6;
+.admin-table-inactive tbody .inactive-row {
+    opacity: 1;
+    background-color: #f7f9fc;
+}
+
+.admin-table-inactive tbody .inactive-row:hover {
+    background-color: #eef2fb;
 }
 
 

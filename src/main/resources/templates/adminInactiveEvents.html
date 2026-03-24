@@ -20,9 +20,6 @@
             <p class="admin-subtitle">Eventos desactivados del catálogo principal.</p>
         </div>
         <div class="admin-actions">
-            <a href="#" id="btnEdit" class="btn-action btn-edit btn-disabled">Editar</a>
-            <a href="#" id="btnReactivate" class="btn-action btn-trash btn-disabled">Activar</a>
-            <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Eliminar</a>
             <a th:href="@{/admin/event/new(draft=true)}" class="btn-primary">+ Nuevo Evento</a>
             <a th:href="@{/admin}" class="btn-action btn-trash">← Panel Principal</a>
         </div>
@@ -44,20 +41,31 @@
     </div>
 
     <div class="table-responsive">
-        <table class="admin-table">
+        <table class="admin-table admin-table-inactive">
+            <colgroup>
+                <col style="width: 6%;">
+                <col style="width: 8%;">
+                <col style="width: 16%;">
+                <col style="width: 27%;">
+                <col style="width: 12%;">
+                <col style="width: 10%;">
+                <col style="width: 7%;">
+                <col style="width: 14%;">
+            </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
                 <th class="text-center">Imagen</th>
                 <th>Nombre del Evento</th>
-                <th>Descripción</th>
+                <th class="col-description-header">Descripción</th>
                 <th>Categoría</th>
                 <th>Fecha</th>
                 <th>Valor</th>
+                <th class="text-center col-actions-header col-actions-header-triple">Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="event : ${events}" th:data-id="${event.id}" class="clickable-row inactive-row">
+            <tr th:each="event : ${events}" th:data-id="${event.id}" class="inactive-row">
 
                 <td class="col-id" th:text="${event.id}">1</td>
 
@@ -67,7 +75,7 @@
 
                 <td class="col-name" th:text="${event.name}">Nombre del Evento</td>
 
-                <td th:text="${event.description}">Descripción del evento</td>
+                <td class="col-description" th:text="${event.description}" th:title="${event.description}">Descripción del evento</td>
 
                 <td>
                     <span th:if="${event.category != null}" class="category-badge table-badge"
@@ -80,10 +88,29 @@
 
                 <td class="col-price" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</td>
 
+                <td class="col-actions col-actions-triple">
+                    <div class="row-actions">
+                        <a th:href="@{/admin/event/edit/{id}(id=${event.id}, fromTrash=true)}"
+                           class="btn-action btn-edit row-action-btn icon-action-btn"
+                           title="Editar evento"
+                           aria-label="Editar evento">&#9998;</a>
+                        <button type="button"
+                                class="btn-action btn-trash row-action-btn icon-action-btn js-reactivate-btn"
+                                title="Activar evento"
+                                aria-label="Activar evento"
+                                th:attr="data-url=@{/admin/event/activate/{id}(id=${event.id})}">&#10003;</button>
+                        <button type="button"
+                                class="btn-action btn-delete row-action-btn icon-action-btn js-delete-btn"
+                                title="Eliminar evento"
+                                aria-label="Eliminar evento"
+                                th:attr="data-url=@{/admin/event/delete/{id}(id=${event.id})}">&#128465;</button>
+                    </div>
+                </td>
+
             </tr>
 
             <tr th:if="${#lists.isEmpty(events)}">
-                <td colspan="7" style="text-align: center; padding: 30px;">
+                <td colspan="8" style="text-align: center; padding: 30px;">
                     La papelera está vacía. No hay eventos desactivados.
                 </td>
             </tr>
@@ -156,11 +183,8 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
-    let selectedEventId = null;
-    const btnEdit = document.getElementById('btnEdit');
-    const btnReactivate = document.getElementById('btnReactivate');
-    const btnDelete = document.getElementById('btnDelete');
-    const rows = document.querySelectorAll('.clickable-row');
+    const reactivateButtons = document.querySelectorAll('.js-reactivate-btn');
+    const deleteButtons = document.querySelectorAll('.js-delete-btn');
 
     const reactivateModal = document.getElementById('reactivateModal');
     const reactivateOkBtn = document.getElementById('reactivateOkBtn');
@@ -214,55 +238,22 @@
         }
     });
 
-    rows.forEach(row => {
-        row.addEventListener('click', function (e) {
-            if (e.target.classList.contains('table-thumbnail')) return;
-            const id = this.getAttribute('data-id');
-            if (selectedEventId === id) {
-                this.classList.remove('selected-row');
-                selectedEventId = null;
-                disableButtons();
-                return;
+    reactivateButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+            if (url) {
+                showReactivateModal(url);
             }
-            rows.forEach(r => r.classList.remove('selected-row'));
-            this.classList.add('selected-row');
-            selectedEventId = id;
-            enableButtons(id);
         });
     });
 
-    function enableButtons(id) {
-        btnEdit.classList.remove('btn-disabled');
-        btnReactivate.classList.remove('btn-disabled');
-        btnDelete.classList.remove('btn-disabled');
-        btnEdit.href = '/admin/event/edit/' + id + '?fromTrash=true';
-        btnReactivate.href = '/admin/event/activate/' + id;
-        btnDelete.href = '/admin/event/delete/' + id;
-    }
-
-    function disableButtons() {
-        btnEdit.classList.add('btn-disabled');
-        btnReactivate.classList.add('btn-disabled');
-        btnDelete.classList.add('btn-disabled');
-        btnEdit.href = '#';
-        btnReactivate.href = '#';
-        btnDelete.href = '#';
-    }
-
-    btnEdit.addEventListener('click', function (e) {
-        if (this.classList.contains('btn-disabled')) e.preventDefault();
-    });
-
-    btnReactivate.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (this.classList.contains('btn-disabled')) return;
-        showReactivateModal(this.href);
-    });
-
-    btnDelete.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (this.classList.contains('btn-disabled')) return;
-        showDeleteModal(this.href);
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const url = this.getAttribute('data-url');
+            if (url) {
+                showDeleteModal(url);
+            }
+        });
     });
 
     const modal = document.getElementById('imageViewer');
