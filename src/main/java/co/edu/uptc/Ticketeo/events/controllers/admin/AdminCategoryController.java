@@ -23,19 +23,19 @@ public class AdminCategoryController {
         model.addAttribute("categories", categoryPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", categoryPage.getTotalPages());
-        return "adminCategories";
+        return "events/adminCategories";
     }
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("category", new EventCategory());
-        return "adminCategoryForm";
+        return "events/adminCategoryForm";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id, Model model) {
         model.addAttribute("category", eventCategoryService.getEventCategoryById(id));
-        return "adminCategoryForm";
+        return "events/adminCategoryForm";
     }
 
     @PostMapping("/save")

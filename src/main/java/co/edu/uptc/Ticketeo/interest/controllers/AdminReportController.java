@@ -22,6 +22,6 @@ public class AdminReportController {
     @GetMapping("/interest")
     public String showInterestReport(Model model) {
         model.addAttribute("interestRanking", interestReportService.getEventInterestRanking());
-        return "adminInterestReport";
+        return "interest/adminInterestReport";
     }
 }
