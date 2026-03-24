@@ -1,5 +1,9 @@
 package co.edu.uptc.Ticketeo.events.controllers.publicview;
 
+import java.util.Map;
+
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -7,10 +11,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
 import co.edu.uptc.Ticketeo.user.models.User;
 import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
@@ -44,6 +49,38 @@ public class EventDetailsController {
         model.addAttribute("event", event);
         model.addAttribute("isInterested", isInterested);
         return "eventDetails";
+    }
+
+    @PostMapping(value = "/{id}/interest", headers = "X-Requested-With=XMLHttpRequest", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registerInterestAjax(@PathVariable Integer id, Authentication authentication) {
+        Event event = eventService.getEventById(id);
+
+        if (event == null || authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "Debes iniciar sesión para gestionar tu interés"
+            ));
+        }
+
+        User user = userRepository.findByUsername(authentication.getName()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "No se pudo identificar el usuario"
+            ));
+        }
+
+        boolean interestedNow = interestReportService.toggleInterest(event, user);
+        String message = interestedNow
+                ? "¡Genial! Hemos registrado tu interés en " + event.getName()
+                : "Ya no estás interesado en " + event.getName();
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "interested", interestedNow,
+                "message", message
+        ));
     }
 
     @PostMapping("/{id}/interest")

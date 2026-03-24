@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -195,6 +196,18 @@ class WebEndpointsSmokeTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/event/1"));
     }
+
+        @Test
+        void eventInterestEndpoint_ajaxRequest_shouldReturnJsonWithoutRedirect() throws Exception {
+                // Verifica que el flujo AJAX no redirige y retorna el estado actualizado.
+                mockMvc.perform(post("/event/1/interest")
+                                                .with(user("user").roles("USER"))
+                                                .with(csrf())
+                                                .header("X-Requested-With", "XMLHttpRequest"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.success").value(true))
+                                .andExpect(jsonPath("$.interested").value(true));
+        }
 
     @Test
     void adminViews_shouldRenderWithoutServerErrors() throws Exception {
