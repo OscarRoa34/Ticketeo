@@ -52,12 +52,16 @@
 
                 <div class="event-actions">
                     <th:block sec:authorize="isAuthenticated()">
-                        <form th:action="@{/event/{id}/interest(id=${event.id})}" method="post">
+                        <form th:action="@{/event/{id}/interest(id=${event.id})}" method="post" id="interestForm">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <button type="submit"
+                                id="interestButton"
                                 th:class="${isInterested} ? 'btn-danger btn-action-full' : 'btn-primary btn-action-full'"
-                                th:text="${isInterested} ? 'Ya no me interesa' : 'Me interesa'">
+                                th:text="${isInterested} ? 'Ya no me interesa' : 'Me interesa'"
+                                th:attr="aria-pressed=${isInterested}">
                             </button>
                         </form>
+                        <p id="interestFeedback" role="status" aria-live="polite" style="margin-top: 10px;"></p>
                     </th:block>
 
                     <th:block sec:authorize="isAnonymous()">
@@ -99,6 +103,64 @@
             });
         }
 
+        function setupInterestToggle() {
+            const form = document.getElementById('interestForm');
+            const button = document.getElementById('interestButton');
+            const feedback = document.getElementById('interestFeedback');
+
+            if (!form || !button) {
+                return;
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const previousLabel = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Procesando...';
+
+                try {
+                    const body = new URLSearchParams(new FormData(form));
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                        },
+                        body: body.toString(),
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('No se pudo procesar la solicitud');
+                    }
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.message || 'No fue posible actualizar el interés');
+                    }
+
+                    const interested = Boolean(data.interested);
+                    button.classList.toggle('btn-danger', interested);
+                    button.classList.toggle('btn-primary', !interested);
+                    button.textContent = interested ? 'Ya no me interesa' : 'Me interesa';
+                    button.setAttribute('aria-pressed', String(interested));
+
+                    if (feedback) {
+                        feedback.textContent = data.message || '';
+                    }
+                } catch (error) {
+                    button.textContent = previousLabel;
+                    if (feedback) {
+                        feedback.textContent = error.message || 'Ocurrió un error al actualizar el interés';
+                    }
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        }
+
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImg');
         const eventImage = document.getElementById('eventImage');
@@ -114,6 +176,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             formatPrice();
+            setupInterestToggle();
 
             const pairs = [
                 { btn: 'navHamburgerGuest',  collapse: 'navCollapseGuest' },
