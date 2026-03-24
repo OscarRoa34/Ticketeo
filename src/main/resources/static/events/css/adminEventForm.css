@@ -1,0 +1,327 @@
+        .event-form-page {
+            min-height: calc(100vh - 80px);
+            padding: 40px 0 60px;
+        }
+
+        .event-form-card {
+            max-width: 960px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(139, 92, 246, 0.12);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .event-form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #8B5CF6, #4ADE80, #8B5CF6);
+            z-index: 1;
+        }
+
+        .event-form-header {
+            position: relative;
+            z-index: 1;
+            padding: 36px 40px 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .event-form-header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .event-form-header-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .event-form-header-text h2 {
+            color: #1A0A4A;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0 0 4px;
+        }
+
+        .event-form-header-text p {
+            color: #888;
+            font-size: 0.88rem;
+            margin: 0;
+        }
+
+        .event-form-divider {
+            margin: 28px 40px;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.5), rgba(74, 222, 128, 0.3), transparent);
+            position: relative;
+            z-index: 1;
+        }
+
+        .event-form-body {
+            position: relative;
+            z-index: 1;
+            padding: 0 40px 40px;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 36px;
+            align-items: start;
+        }
+
+        .event-form-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .ef-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .ef-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .ef-group.full {
+            grid-column: span 2;
+        }
+
+        .ef-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .ef-input,
+        .ef-select,
+        .ef-textarea {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 11px 15px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: #1D1D1D;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .ef-input::placeholder,
+        .ef-textarea::placeholder {
+            color: #bbb;
+        }
+
+        .ef-input:focus,
+        .ef-select:focus,
+        .ef-textarea:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: #fff;
+        }
+
+        .ef-select option {
+            background: #fff;
+            color: #1D1D1D;
+        }
+
+        .ef-textarea {
+            resize: vertical;
+            min-height: 110px;
+        }
+
+        .ef-price-wrapper {
+            position: relative;
+        }
+
+        .ef-price-prefix {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8B5CF6;
+            font-weight: 700;
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        .ef-price-wrapper .ef-input {
+            padding-left: 28px;
+        }
+
+        .ef-form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .ef-btn-cancel {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            background: transparent;
+            color: #555;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .ef-btn-cancel:hover {
+            background: #f5f0ff;
+            color: #8B5CF6;
+            border-color: #8B5CF6;
+        }
+
+        .ef-btn-submit {
+            flex: 2;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #8B5CF6, #6d28d9);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .ef-btn-submit:hover {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .event-form-image-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .ef-image-drop {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border: 2px dashed rgba(139, 92, 246, 0.35);
+            border-radius: 14px;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ef-image-drop:hover {
+            border-color: #8B5CF6;
+            background: #f5f0ff;
+        }
+
+        .ef-image-drop img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+        }
+
+        .ef-image-placeholder {
+            text-align: center;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        .ef-image-placeholder-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        .ef-image-placeholder p {
+            color: #aaa;
+            font-size: 0.82rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .ef-image-placeholder span {
+            color: #8B5CF6;
+            font-weight: 600;
+        }
+
+        .ef-file-input {
+            display: none;
+        }
+
+        .ef-image-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .ef-image-hint {
+            font-size: 0.78rem;
+            color: #bbb;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .event-form-body {
+                grid-template-columns: 1fr;
+                padding: 0 20px 30px;
+            }
+
+            .event-form-header {
+                padding: 24px 20px 0;
+            }
+
+            .event-form-divider {
+                margin: 20px 20px;
+            }
+
+            .ef-row {
+                grid-template-columns: 1fr;
+            }
+
+            .ef-group.full {
+                grid-column: span 1;
+            }
+
+            .event-form-image-panel {
+                order: -1;
+            }
+
+            .ef-image-drop {
+                aspect-ratio: 16 / 9;
+            }
+        }
