@@ -43,14 +43,14 @@
     <div class="table-responsive">
         <table class="admin-table admin-table-inactive">
             <colgroup>
-                <col style="width: 6%;">
+                <col style="width: 5%;">
                 <col style="width: 8%;">
-                <col style="width: 16%;">
-                <col style="width: 27%;">
-                <col style="width: 12%;">
+                <col style="width: 15%;">
+                <col style="width: 24%;">
+                <col style="width: 11%;">
                 <col style="width: 10%;">
                 <col style="width: 7%;">
-                <col style="width: 14%;">
+                <col style="width: 20%;">
             </colgroup>
             <thead>
             <tr>
@@ -93,7 +93,9 @@
                         <a th:href="@{/admin/event/edit/{id}(id=${event.id}, fromTrash=true)}"
                            class="btn-action btn-edit row-action-btn icon-action-btn"
                            title="Editar evento"
-                           aria-label="Editar evento">&#9998;</a>
+                           aria-label="Editar evento">
+                            <img th:src="@{/images/edit.svg}" src="/images/edit.svg" alt="Editar">
+                        </a>
                         <button type="button"
                                 class="btn-action btn-trash row-action-btn icon-action-btn js-reactivate-btn"
                                 title="Activar evento"
@@ -103,7 +105,9 @@
                                 class="btn-action btn-delete row-action-btn icon-action-btn js-delete-btn"
                                 title="Eliminar evento"
                                 aria-label="Eliminar evento"
-                                th:attr="data-url=@{/admin/event/delete/{id}(id=${event.id})}">&#128465;</button>
+                                th:attr="data-url=@{/admin/event/delete/{id}(id=${event.id})}">
+                            <img th:src="@{/images/delete.svg}" src="/images/delete.svg" alt="Eliminar">
+                        </button>
                     </div>
                 </td>
 

@@ -1,12 +1,19 @@
 package co.edu.uptc.Ticketeo.events.controllers.admin;
 
-import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
-import co.edu.uptc.Ticketeo.events.models.EventCategory;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import co.edu.uptc.Ticketeo.events.models.EventCategory;
+import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/admin/category")
@@ -45,8 +52,16 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteCategory(@PathVariable Integer id) {
-        eventCategoryService.deleteCategory(id);
+    public String deleteCategory(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            eventCategoryService.deleteCategory(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Categoría eliminada correctamente.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "No se pudo eliminar la categoría. Verifica si tiene eventos asociados e inténtalo de nuevo."
+            );
+        }
         return "redirect:/admin/category";
     }
 }

@@ -20,23 +20,31 @@
             <p class="admin-subtitle">Administra los géneros y clasificaciones disponibles para los eventos.</p>
         </div>
         <div class="admin-actions">
-            <a href="#" id="btnEdit" class="btn-action btn-edit btn-disabled">Editar</a>
-            <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Eliminar</a>
             <a th:href="@{/admin/category/new}" class="btn-primary">+ Nueva Categoría</a>
         </div>
     </div>
 
+    <div th:if="${successMessage}" class="admin-alert admin-alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="admin-alert admin-alert-error" th:text="${errorMessage}"></div>
+
     <div class="table-responsive categories-table-wrapper">
         <table class="admin-table">
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 50%;">
+                <col style="width: 15%;">
+                <col style="width: 20%;">
+            </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
                 <th>Nombre de la Categoría</th>
                 <th class="text-center">Color</th>
+                <th class="text-center col-actions-header col-actions-header-double">Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="category : ${categories}" th:data-id="${category.id}" class="clickable-row">
+            <tr th:each="category : ${categories}" th:data-id="${category.id}">
 
                 <td class="col-id" th:text="${category.id}">1</td>
 
@@ -50,10 +58,28 @@
                     <div class="color-swatch" th:style="'background-color: ' + ${category.color} + ';'" th:title="${category.color}"></div>
                 </td>
 
+                <td class="col-actions col-actions-double">
+                    <div class="row-actions">
+                        <a th:href="@{/admin/category/edit/{id}(id=${category.id})}"
+                           class="btn-action btn-edit row-action-btn icon-action-btn"
+                           title="Editar categoría"
+                           aria-label="Editar categoría">
+                            <img th:src="@{/images/edit.svg}" src="/images/edit.svg" alt="Editar">
+                        </a>
+                        <button type="button"
+                                class="btn-action btn-delete row-action-btn icon-action-btn js-delete-category-btn"
+                                title="Eliminar categoría"
+                                aria-label="Eliminar categoría"
+                                th:attr="data-url=@{/admin/category/delete/{id}(id=${category.id})}">
+                            <img th:src="@{/images/delete.svg}" src="/images/delete.svg" alt="Eliminar">
+                        </button>
+                    </div>
+                </td>
+
             </tr>
 
             <tr th:if="${#lists.isEmpty(categories)}">
-                <td colspan="3" style="text-align: center; padding: 30px;">
+                <td colspan="4" style="text-align: center; padding: 30px;">
                     No hay categorías registradas en el sistema. ¡Crea la primera para organizar tus eventos!
                 </td>
             </tr>
@@ -116,10 +142,7 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
-    let selectedCategoryId = null;
-    const btnEdit = document.getElementById('btnEdit');
-    const btnDelete = document.getElementById('btnDelete');
-    const rows = document.querySelectorAll('.clickable-row');
+    const deleteCategoryButtons = document.querySelectorAll('.js-delete-category-btn');
 
     // Custom confirm modal
     const confirmModal = document.getElementById('confirmModal');
@@ -152,48 +175,13 @@
         }
     });
 
-    rows.forEach(row => {
-        row.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-
-            if (selectedCategoryId === id) {
-                this.classList.remove('selected-row');
-                selectedCategoryId = null;
-                disableButtons();
-                return;
+    deleteCategoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (url) {
+                showConfirmModal(url);
             }
-
-            rows.forEach(r => r.classList.remove('selected-row'));
-            this.classList.add('selected-row');
-            selectedCategoryId = id;
-            enableButtons(id);
         });
-    });
-
-    function enableButtons(id) {
-        btnEdit.classList.remove('btn-disabled');
-        btnDelete.classList.remove('btn-disabled');
-        btnEdit.href = '/admin/category/edit/' + id;
-        btnDelete.href = '/admin/category/delete/' + id;
-    }
-
-    function disableButtons() {
-        btnEdit.classList.add('btn-disabled');
-        btnDelete.classList.add('btn-disabled');
-        btnEdit.href = '#';
-        btnDelete.href = '#';
-    }
-
-    btnDelete.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (this.classList.contains('btn-disabled')) return;
-        showConfirmModal(this.href);
-    });
-
-    btnEdit.addEventListener('click', function(e) {
-        if (this.classList.contains('btn-disabled')) {
-            e.preventDefault();
-        }
     });
 </script>
 
