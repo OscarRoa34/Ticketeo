@@ -1,15 +1,15 @@
 
 
-@import url('variables.css');
-@import url('base.css');
-@import url('layout.css');
-@import url('components.css');
-@import url('home.css');
-@import url('admin.css');
-@import url('form.css');
-@import url('login.css');
-@import url('register.css');
-@import url('navbar.css');
-@import url('adminCategoryForm.css');
-@import url('adminEventForm.css');
-@import url('footer.css');
+@import url('common/variables.css');
+@import url('common/base.css');
+@import url('common/layout.css');
+@import url('common/components.css');
+@import url('events/home.css');
+@import url('admin/admin.css');
+@import url('common/form.css');
+@import url('authentication/login.css');
+@import url('authentication/register.css');
+@import url('common/navbar.css');
+@import url('admin/adminCategoryForm.css');
+@import url('admin/adminEventForm.css');
+@import url('common/footer.css');
