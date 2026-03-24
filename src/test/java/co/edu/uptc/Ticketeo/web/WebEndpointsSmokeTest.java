@@ -28,11 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import co.edu.uptc.Ticketeo.auth.controllers.LoginController;
-import co.edu.uptc.Ticketeo.auth.controllers.RedirectController;
-import co.edu.uptc.Ticketeo.auth.controllers.RegisterController;
-import co.edu.uptc.Ticketeo.config.GlobalModelAttributes;
-import co.edu.uptc.Ticketeo.config.SecurityConfig;
+import co.edu.uptc.Ticketeo.authentication.controllers.LoginController;
+import co.edu.uptc.Ticketeo.authentication.controllers.RedirectController;
+import co.edu.uptc.Ticketeo.authentication.controllers.RegisterController;
+import co.edu.uptc.Ticketeo.configuration.GlobalModelAttributes;
+import co.edu.uptc.Ticketeo.configuration.SecurityConfig;
 import co.edu.uptc.Ticketeo.events.controllers.admin.AdminCategoryController;
 import co.edu.uptc.Ticketeo.events.controllers.admin.AdminEventController;
 import co.edu.uptc.Ticketeo.events.controllers.publicview.EventDetailsController;
@@ -46,7 +46,7 @@ import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
 import co.edu.uptc.Ticketeo.user.controllers.AdminUserController;
 import co.edu.uptc.Ticketeo.user.models.Role;
 import co.edu.uptc.Ticketeo.user.models.User;
-import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
+import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
 import co.edu.uptc.Ticketeo.user.services.UserService;
 
 @WebMvcTest(controllers = {
@@ -132,11 +132,11 @@ class WebEndpointsSmokeTest {
         // Verifica que las vistas de login y registro cargan correctamente sin errores.
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("login"));
+                .andExpect(view().name("authentication/login"));
 
         mockMvc.perform(get("/register"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("register"));
+                .andExpect(view().name("authentication/register"));
     }
 
     @Test
@@ -149,7 +149,7 @@ class WebEndpointsSmokeTest {
                         .param("password", "abc123")
                         .param("confirmPassword", "xyz999"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("register"))
+                .andExpect(view().name("authentication/register"))
                 .andExpect(model().attributeExists("error"));
     }
 
@@ -175,11 +175,11 @@ class WebEndpointsSmokeTest {
 
         mockMvc.perform(get("/user"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("userHome"));
+                .andExpect(view().name("user/userHome"));
 
         mockMvc.perform(get("/event/1"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("eventDetails"));
+                .andExpect(view().name("events/eventDetails"));
 
         mockMvc.perform(get("/event/999"))
                 .andExpect(status().is3xxRedirection())
@@ -242,15 +242,15 @@ class WebEndpointsSmokeTest {
 
         mockMvc.perform(get("/admin/reports").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminReportsMenu"));
+                .andExpect(view().name("interest/adminReportsMenu"));
 
         mockMvc.perform(get("/admin/reports/interest").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminInterestReport"));
+                .andExpect(view().name("interest/adminInterestReport"));
 
         mockMvc.perform(get("/admin/users").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminUsers"));
+                .andExpect(view().name("user/adminUsers"));
     }
 
         @Test

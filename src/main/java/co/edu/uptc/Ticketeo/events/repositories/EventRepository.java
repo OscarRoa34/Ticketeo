@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.events.repositorys;
+package co.edu.uptc.Ticketeo.events.repositories;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import org.springframework.data.domain.Page;
