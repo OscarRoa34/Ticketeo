@@ -1,8 +1,8 @@
 package co.edu.uptc.Ticketeo.events.services;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
-import co.edu.uptc.Ticketeo.events.repositorys.EventRepository;
-import co.edu.uptc.Ticketeo.interest.repositorys.InterestReportRepository;
+import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
+import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

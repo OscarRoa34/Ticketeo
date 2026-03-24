@@ -4,11 +4,11 @@
 @import url('base.css');
 @import url('layout.css');
 @import url('components.css');
-@import url('home.css');
+@import url('../user/css/home.css');
 @import url('admin.css');
 @import url('form.css');
-@import url('login.css');
-@import url('register.css');
+@import url('../authentication/css/login.css');
+@import url('../authentication/css/register.css');
 @import url('navbar.css');
-@import url('adminCategoryForm.css');
-@import url('adminEventForm.css');
+@import url('../events/css/adminCategoryForm.css');
+@import url('../events/css/adminEventForm.css');

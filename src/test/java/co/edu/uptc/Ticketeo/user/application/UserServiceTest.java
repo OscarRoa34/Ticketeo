@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import co.edu.uptc.Ticketeo.user.models.Role;
 import co.edu.uptc.Ticketeo.user.models.User;
-import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
+import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
 import co.edu.uptc.Ticketeo.user.services.UserService;
 
 

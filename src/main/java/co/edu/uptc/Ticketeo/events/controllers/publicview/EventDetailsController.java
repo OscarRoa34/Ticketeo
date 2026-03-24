@@ -13,7 +13,7 @@ import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
 import co.edu.uptc.Ticketeo.user.models.User;
-import co.edu.uptc.Ticketeo.user.repositorys.UserRepository;
+import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -43,7 +43,7 @@ public class EventDetailsController {
         
         model.addAttribute("event", event);
         model.addAttribute("isInterested", isInterested);
-        return "eventDetails";
+        return "events/eventDetails";
     }
 
     @PostMapping("/{id}/interest")
