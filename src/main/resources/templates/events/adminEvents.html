@@ -20,8 +20,6 @@
             <p class="admin-subtitle">Administra el catálogo de eventos y categorías.</p>
         </div>
         <div class="admin-actions">
-            <a href="#" id="btnEdit" class="btn-action btn-edit btn-disabled">Editar</a>
-            <a href="#" id="btnDelete" class="btn-action btn-delete btn-disabled">Desactivar</a>
             <a th:href="@{/admin/inactive}" class="btn-action btn-trash">Eventos Inactivos</a>
             <a th:href="@{/admin/event/new}" class="btn-primary">+ Nuevo Evento</a>
         </div>
@@ -43,20 +41,31 @@
     </div>
 
     <div class="table-responsive">
-        <table class="admin-table">
+        <table class="admin-table admin-table-events">
+            <colgroup>
+                <col style="width: 6%;">
+                <col style="width: 8%;">
+                <col style="width: 16%;">
+                <col style="width: 27%;">
+                <col style="width: 12%;">
+                <col style="width: 10%;">
+                <col style="width: 8%;">
+                <col style="width: 13%;">
+            </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
                 <th class="text-center">Imagen</th>
                 <th>Nombre del Evento</th>
-                <th>Descripción</th>
+                <th class="col-description-header">Descripción</th>
                 <th>Categoría</th>
                 <th>Fecha</th>
                 <th>Valor</th>
+                <th class="text-center col-actions-header col-actions-header-double">Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="event : ${events}" th:data-id="${event.id}" class="clickable-row">
+            <tr th:each="event : ${events}" th:data-id="${event.id}">
 
                 <td class="col-id" th:text="${event.id}">1</td>
 
@@ -66,7 +75,7 @@
 
                 <td class="col-name" th:text="${event.name}">Nombre del Evento</td>
 
-                <td th:text="${event.description}">Descripción del evento</td>
+                <td class="col-description" th:text="${event.description}" th:title="${event.description}">Descripción del evento</td>
 
                 <td>
                     <span th:if="${event.category != null}" class="category-badge table-badge"
@@ -79,10 +88,28 @@
 
                 <td class="col-price" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</td>
 
+                <td class="col-actions col-actions-double">
+                    <div class="row-actions">
+                        <a th:href="@{/admin/event/edit/{id}(id=${event.id})}"
+                           class="btn-action btn-edit row-action-btn icon-action-btn"
+                           title="Editar evento"
+                           aria-label="Editar evento">
+                            <img th:src="@{/images/edit.svg}" class="action-icon-edit" alt="Editar" width="16" height="16">
+                        </a>
+                        <button type="button"
+                                class="btn-action btn-delete row-action-btn icon-action-btn js-deactivate-btn"
+                                title="Desactivar evento"
+                                aria-label="Desactivar evento"
+                                th:attr="data-url=@{/admin/event/deactivate/{id}(id=${event.id})}">
+                            <img th:src="@{/images/delete.svg}" alt="Desactivar" width="16" height="16">
+                        </button>
+                    </div>
+                </td>
+
             </tr>
 
             <tr th:if="${#lists.isEmpty(events)}">
-                <td colspan="7" style="text-align: center; padding: 30px;">
+                <td colspan="8" style="text-align: center; padding: 30px;">
                     No hay eventos registrados en el sistema. ¡Empieza creando uno!
                 </td>
             </tr>
@@ -140,14 +167,10 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
-    let selectedEventId = null;
-    const btnEdit = document.getElementById('btnEdit');
-    const btnDelete = document.getElementById('btnDelete');
-    const rows = document.querySelectorAll('.clickable-row');
-
     const confirmModal = document.getElementById('confirmModal');
     const confirmOkBtn = document.getElementById('confirmOkBtn');
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const deactivateButtons = document.querySelectorAll('.js-deactivate-btn');
     let pendingDeleteUrl = null;
 
     function showConfirmModal(url) {
@@ -175,50 +198,13 @@
         }
     });
 
-    rows.forEach(row => {
-        row.addEventListener('click', function(e) {
-            if (e.target.classList.contains('table-thumbnail')) return;
-
-            const id = this.getAttribute('data-id');
-
-            if (selectedEventId === id) {
-                this.classList.remove('selected-row');
-                selectedEventId = null;
-                disableButtons();
-                return;
+    deactivateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            if (url) {
+                showConfirmModal(url);
             }
-
-            rows.forEach(r => r.classList.remove('selected-row'));
-            this.classList.add('selected-row');
-            selectedEventId = id;
-            enableButtons(id);
         });
-    });
-
-    function enableButtons(id) {
-        btnEdit.classList.remove('btn-disabled');
-        btnDelete.classList.remove('btn-disabled');
-        btnEdit.href = '/admin/event/edit/' + id;
-        btnDelete.href = '/admin/event/deactivate/' + id;
-    }
-
-    function disableButtons() {
-        btnEdit.classList.add('btn-disabled');
-        btnDelete.classList.add('btn-disabled');
-        btnEdit.href = '#';
-        btnDelete.href = '#';
-    }
-
-    btnDelete.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (this.classList.contains('btn-disabled')) return;
-        showConfirmModal(this.href);
-    });
-
-    btnEdit.addEventListener('click', function(e) {
-        if (this.classList.contains('btn-disabled')) {
-            e.preventDefault();
-        }
     });
 
     const modal = document.getElementById('imageViewer');
