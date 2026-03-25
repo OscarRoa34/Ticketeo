@@ -78,6 +78,35 @@
                                   placeholder="Escribe los detalles del evento: artistas, horario, lugar..."></textarea>
                     </div>
 
+                    <div class="ef-group">
+                        <label for="ticketTypeSearch" class="ef-label">Tipos de Ticket y Cantidad Disponible</label>
+                        <input type="text" id="ticketTypeSearch" class="ef-input" placeholder="Buscar tipo de ticket...">
+
+                        <div class="ef-ticket-types" id="ticketTypeList">
+                            <div class="ef-ticket-type-row" th:each="ticketType : ${ticketTypes}"
+                                 th:attr="data-name=${#strings.toLowerCase(ticketType.name)}">
+                                <label class="ef-ticket-type-label">
+                                    <input type="checkbox"
+                                           name="ticketTypeIds"
+                                           th:value="${ticketType.id}"
+                                           class="ef-ticket-type-check"
+                                           th:checked="${ticketQuantities[ticketType.id] != null}">
+                                    <span th:text="${ticketType.name}">VIP</span>
+                                </label>
+                                <input type="number"
+                                       min="1"
+                                       class="ef-input ef-ticket-qty"
+                                       th:name="${'ticketQuantity_' + ticketType.id}"
+                                       th:value="${ticketQuantities[ticketType.id]}"
+                                       th:disabled="${ticketQuantities[ticketType.id] == null}"
+                                       placeholder="Cantidad">
+                            </div>
+                            <p th:if="${#lists.isEmpty(ticketTypes)}" class="ef-ticket-empty">
+                                No hay tipos de ticket creados. Primero crea uno en el módulo Tipos de Ticket.
+                            </p>
+                        </div>
+                    </div>
+
                     <div class="ef-form-actions">
                         <a th:href="${draft ? '/admin/inactive' : '/admin'}" class="ef-btn-cancel">Cancelar</a>
                         <button type="submit" class="ef-btn-submit">
@@ -119,6 +148,9 @@
     const placeholder = document.getElementById('imagePlaceholder');
     const priceDisplay = document.getElementById('price');
     const priceHidden = document.getElementById('priceHidden');
+    const ticketTypeSearch = document.getElementById('ticketTypeSearch');
+    const ticketTypeRows = document.querySelectorAll('.ef-ticket-type-row');
+    const ticketTypeChecks = document.querySelectorAll('.ef-ticket-type-check');
 
     fileInput.addEventListener('change', function () {
         const file = this.files[0];
@@ -158,6 +190,31 @@
                 priceHidden.value = '';
                 priceDisplay.value = '';
             }
+        }
+
+        ticketTypeChecks.forEach(function (check) {
+            const qtyInput = check.closest('.ef-ticket-type-row').querySelector('.ef-ticket-qty');
+            qtyInput.disabled = !check.checked;
+            if (check.checked && (!qtyInput.value || qtyInput.value === '0')) {
+                qtyInput.value = '1';
+            }
+
+            check.addEventListener('change', function () {
+                qtyInput.disabled = !this.checked;
+                if (this.checked && (!qtyInput.value || qtyInput.value === '0')) {
+                    qtyInput.value = '1';
+                }
+            });
+        });
+
+        if (ticketTypeSearch) {
+            ticketTypeSearch.addEventListener('input', function () {
+                const searchValue = this.value.toLowerCase().trim();
+                ticketTypeRows.forEach(function (row) {
+                    const name = row.dataset.name || '';
+                    row.style.display = name.includes(searchValue) ? 'grid' : 'none';
+                });
+            });
         }
     });
 </script>

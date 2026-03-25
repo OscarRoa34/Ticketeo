@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${ticketType.id == null ? 'Ticketeo | Nuevo Tipo de Ticket' : 'Ticketeo | Editar Tipo de Ticket'}">Ticketeo | Tipo de Ticket</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container event-form-page">
+    <div class="event-form-card">
+
+        <div class="event-form-header">
+            <div class="event-form-header-icon">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo">
+            </div>
+            <div class="event-form-header-text">
+                <h2 th:text="${ticketType.id == null ? 'Crear Tipo de Ticket' : 'Editar Tipo de Ticket'}">Tipo de Ticket</h2>
+                <p th:text="${ticketType.id == null ? 'Define un nuevo tipo de entrada reutilizable para los eventos.' : 'Actualiza el nombre del tipo de ticket.'}">Descripción</p>
+            </div>
+        </div>
+
+        <div class="event-form-divider"></div>
+
+        <form th:action="@{/admin/ticket-type/save}" th:object="${ticketType}" method="POST">
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="event-form-body" style="grid-template-columns: 1fr;">
+                <div class="event-form-fields">
+                    <div class="ef-group">
+                        <label for="name" class="ef-label">Nombre del Tipo de Ticket</label>
+                        <input type="text" id="name" th:field="*{name}" class="ef-input"
+                               placeholder="Ej: VIP, General, Oro, Plata" required>
+                    </div>
+
+                    <div class="ef-form-actions">
+                        <a th:href="@{/admin/ticket-type}" class="ef-btn-cancel">Cancelar</a>
+                        <button type="submit" class="ef-btn-submit">
+                            <span th:text="${ticketType.id == null ? '✦ Crear Tipo' : '✦ Guardar Cambios'}">Guardar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

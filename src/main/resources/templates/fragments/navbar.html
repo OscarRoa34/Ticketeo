@@ -127,6 +127,7 @@
             <ul class="nav-links">
                 <li><a th:href="@{/admin}" class="nav-item" th:classappend="${currentUri == '/admin' or currentUri == '/admin/new' or currentUri == '/admin/inactive' or currentUri.startsWith('/admin/edit/')} ? 'active' : ''">Eventos</a></li>
                 <li><a th:href="@{/admin/category}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/category')} ? 'active' : ''">Categorías</a></li>
+                <li><a th:href="@{/admin/ticket-type}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/ticket-type')} ? 'active' : ''">Tipos de Ticket</a></li>
                 <li><a th:href="@{/admin/users}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/users')} ? 'active' : ''">Usuarios</a></li>
                 <li><a th:href="@{/admin/reports}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/reports')} ? 'active' : ''">Reportes</a></li>
             </ul>

@@ -1,23 +1,32 @@
 package co.edu.uptc.Ticketeo.events.controllers.admin;
 
-import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
-import co.edu.uptc.Ticketeo.events.services.EventService;
-import co.edu.uptc.Ticketeo.events.models.Event;
-import co.edu.uptc.Ticketeo.events.models.EventCategory;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
+import co.edu.uptc.Ticketeo.events.services.EventService;
+import co.edu.uptc.Ticketeo.events.services.TicketTypeService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/admin")
@@ -29,6 +38,7 @@ public class AdminEventController {
 
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
+    private final TicketTypeService ticketTypeService;
 
     @GetMapping
     public String showActiveEvents(@RequestParam(defaultValue = "0") int page,
@@ -64,6 +74,8 @@ public class AdminEventController {
     public String showCreateForm(@RequestParam(defaultValue = "false") boolean draft, Model model) {
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
+        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
+        model.addAttribute("ticketQuantities", Map.of());
         model.addAttribute("draft", draft);
         return "events/adminEventForm";
     }
@@ -78,6 +90,8 @@ public class AdminEventController {
         }
         model.addAttribute("event", event);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
+        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
+        model.addAttribute("ticketQuantities", eventService.getTicketTypeQuantitiesForEvent(id));
         model.addAttribute("draft", fromTrash);
         return "events/adminEventForm";
     }
@@ -86,13 +100,15 @@ public class AdminEventController {
     public String saveEvent(@ModelAttribute Event event,
                             @RequestParam("imageFile") MultipartFile image,
                             @RequestParam(value = "category", required = false) Integer categoryId,
+                            @RequestParam(value = "ticketTypeIds", required = false) List<Integer> ticketTypeIds,
+                            @RequestParam Map<String, String> allParams,
                             @RequestParam(value = "draft", defaultValue = "false") boolean draft) {
 
         event.setCategory(categoryId != null ? eventCategoryService.getEventCategoryById(categoryId) : null);
         handleImageUpload(event, image);
         preserveActiveStatus(event, draft);
 
-        eventService.saveEvent(event);
+        eventService.saveEventWithTicketTypes(event, extractTicketQuantities(ticketTypeIds, allParams));
         return draft ? "redirect:/admin/inactive" : "redirect:/admin";
     }
 
@@ -144,5 +160,28 @@ public class AdminEventController {
                 event.setIsActive(existing.getIsActive());
             }
         }
+    }
+
+    private Map<Integer, Integer> extractTicketQuantities(List<Integer> ticketTypeIds, Map<String, String> allParams) {
+        Map<Integer, Integer> ticketQuantities = new HashMap<>();
+        if (ticketTypeIds == null || ticketTypeIds.isEmpty()) {
+            return ticketQuantities;
+        }
+
+        for (Integer ticketTypeId : ticketTypeIds) {
+            String quantityValue = allParams.get("ticketQuantity_" + ticketTypeId);
+            if (quantityValue == null || quantityValue.isBlank()) {
+                continue;
+            }
+            try {
+                int quantity = Integer.parseInt(quantityValue.trim());
+                if (quantity > 0) {
+                    ticketQuantities.put(ticketTypeId, quantity);
+                }
+            } catch (NumberFormatException ignored) {
+                // Ignora valores inválidos para no interrumpir el guardado del evento.
+            }
+        }
+        return ticketQuantities;
     }
 }
