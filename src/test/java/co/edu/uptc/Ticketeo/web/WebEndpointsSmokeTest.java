@@ -214,31 +214,31 @@ class WebEndpointsSmokeTest {
         // Verifica que todas las vistas del panel admin cargan correctamente con rol ADMIN.
         mockMvc.perform(get("/admin").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminEvents"));
+                .andExpect(view().name("events/adminEvents"));
 
         mockMvc.perform(get("/admin/inactive").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminInactiveEvents"));
+                .andExpect(view().name("events/adminInactiveEvents"));
 
         mockMvc.perform(get("/admin/event/new").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminEventForm"));
+                .andExpect(view().name("events/adminEventForm"));
 
         mockMvc.perform(get("/admin/event/edit/1").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminEventForm"));
+                .andExpect(view().name("events/adminEventForm"));
 
         mockMvc.perform(get("/admin/category").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminCategories"));
+                .andExpect(view().name("events/adminCategories"));
 
         mockMvc.perform(get("/admin/category/new").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminCategoryForm"));
+                .andExpect(view().name("events/adminCategoryForm"));
 
         mockMvc.perform(get("/admin/category/edit/1").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminCategoryForm"));
+                .andExpect(view().name("events/adminCategoryForm"));
 
         mockMvc.perform(get("/admin/reports").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
