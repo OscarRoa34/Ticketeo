@@ -155,6 +155,11 @@
     text-align: left;
 }
 
+.admin-table-events,
+.admin-table-inactive {
+    table-layout: fixed;
+}
+
 .admin-table th,
 .admin-table td {
     padding: 15px 20px;
@@ -221,6 +226,62 @@
 .col-actions {
     white-space: nowrap;
     vertical-align: middle;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.col-actions-header {
+    text-align: center !important;
+}
+
+.row-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.row-actions .btn-action {
+    margin-right: 0;
+}
+
+.icon-action-btn {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    line-height: 1;
+    font-size: 20px;
+    border: none;
+}
+
+button.icon-action-btn {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.icon-action-btn img {
+    width: 20px;
+    height: 20px;
+    display: block;
+    margin: 0;
+    pointer-events: none;
+}
+
+.icon-action-btn .action-icon-edit {
+    transform: translate(2px, 1.5px);
+}
+
+.admin-table-events .col-description,
+.admin-table-inactive .col-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .btn-action {
@@ -269,7 +330,24 @@
 }
 
 .inactive-row {
-    opacity: 0.6;
+    background-color: #fcfcfd;
+}
+
+.inactive-row td {
+    color: #5f6b7a;
+}
+
+.inactive-row .col-name {
+    color: #5f6b7a;
+}
+
+.inactive-row:hover {
+    background-color: #f4f6fa !important;
+}
+
+.admin-table-inactive .js-reactivate-btn {
+    font-size: 1rem;
+    font-weight: 700;
 }
 
 

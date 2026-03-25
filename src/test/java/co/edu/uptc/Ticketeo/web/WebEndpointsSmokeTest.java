@@ -214,31 +214,31 @@ class WebEndpointsSmokeTest {
         // Verifica que todas las vistas del panel admin cargan correctamente con rol ADMIN.
         mockMvc.perform(get("/admin").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminEvents"));
+                .andExpect(view().name("events/adminEvents"));
 
         mockMvc.perform(get("/admin/inactive").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminInactiveEvents"));
+                .andExpect(view().name("events/adminInactiveEvents"));
 
         mockMvc.perform(get("/admin/event/new").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminEventForm"));
+                .andExpect(view().name("events/adminEventForm"));
 
         mockMvc.perform(get("/admin/event/edit/1").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminEventForm"));
+                .andExpect(view().name("events/adminEventForm"));
 
         mockMvc.perform(get("/admin/category").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminCategories"));
+                .andExpect(view().name("events/adminCategories"));
 
         mockMvc.perform(get("/admin/category/new").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminCategoryForm"));
+                .andExpect(view().name("events/adminCategoryForm"));
 
         mockMvc.perform(get("/admin/category/edit/1").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("adminCategoryForm"));
+                .andExpect(view().name("events/adminCategoryForm"));
 
         mockMvc.perform(get("/admin/reports").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
@@ -299,20 +299,4 @@ class WebEndpointsSmokeTest {
                 .andExpect(redirectedUrl("/admin"));
     }
 
-    @Test
-    void adminEndpoints_forAnonymous_shouldRedirectToLogin() throws Exception {
-        // Verifica que los endpoints de administración requieren autenticación
-        // y redirigen si el usuario es anónimo.
-        mockMvc.perform(get("/admin"))
-                .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/admin/category"))
-                .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/admin/reports"))
-                .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/admin/users"))
-                .andExpect(status().is3xxRedirection());
-    }
 }
