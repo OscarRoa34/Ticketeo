@@ -16,6 +16,8 @@ public interface InterestReportRepository extends JpaRepository<InterestReport, 
     @Query("SELECT r.event AS event, COUNT(r.id) AS totalInterests FROM InterestReport r GROUP BY r.event ORDER BY totalInterests DESC")
     List<EventInterestDto> findEventInterestRanking();
 
+    List<InterestReport> findByUserUsername(String username);
+
     @Modifying
     @Query("DELETE FROM InterestReport r WHERE r.event.id = :eventId")
     void deleteByEventId(Integer eventId);
