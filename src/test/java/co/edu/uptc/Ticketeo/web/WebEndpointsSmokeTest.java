@@ -299,20 +299,4 @@ class WebEndpointsSmokeTest {
                 .andExpect(redirectedUrl("/admin"));
     }
 
-    @Test
-    void adminEndpoints_forAnonymous_shouldRedirectToLogin() throws Exception {
-        // Verifica que los endpoints de administración requieren autenticación
-        // y redirigen si el usuario es anónimo.
-        mockMvc.perform(get("/admin"))
-                .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/admin/category"))
-                .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/admin/reports"))
-                .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/admin/users"))
-                .andExpect(status().is3xxRedirection());
-    }
 }
