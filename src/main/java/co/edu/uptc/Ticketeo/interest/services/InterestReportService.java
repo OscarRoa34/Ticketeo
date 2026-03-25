@@ -43,4 +43,9 @@ public class InterestReportService {
     public List<EventInterestDto> getEventInterestRanking() {
         return interestReportRepository.findEventInterestRanking();
     }
+
+    public List<Event> getUserInterests(String username) {
+        List<InterestReport> reports = interestReportRepository.findByUserUsername(username);
+        return reports.stream().map(InterestReport::getEvent).toList();
+    }
 }
