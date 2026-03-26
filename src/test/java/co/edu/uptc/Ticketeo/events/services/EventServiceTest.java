@@ -40,29 +40,29 @@ class EventServiceTest {
 
     @Test
     void getActiveEventsFiltered_withSearchAndCategory_usesCombinedQuery() {
-        // Verifica que si se proporciona texto de búsqueda y categoría,
-        // el servicio usa la consulta combinada por nombre, categoría y estado activo.
+        // Verifica que el listado admin de eventos activos excluye completados
+        // y aplica filtro combinado por nombre + categoria.
         Page<Event> expected = new PageImpl<>(List.of(Event.builder().id(1).name("Rock Fest").build()));
-        when(eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(eq("rock"), eq(3), any(Pageable.class)))
+        when(eventRepository.findManageableActiveEventsByNameAndCategory(eq("rock"), eq(3), any(java.time.LocalDate.class), any(Pageable.class)))
                 .thenReturn(expected);
 
         Page<Event> result = eventService.getActiveEventsFiltered("rock", 3, 0, 6);
 
         assertEquals(expected, result);
-        verify(eventRepository).findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(eq("rock"), eq(3), any(Pageable.class));
+        verify(eventRepository).findManageableActiveEventsByNameAndCategory(eq("rock"), eq(3), any(java.time.LocalDate.class), any(Pageable.class));
     }
 
     @Test
     void getActiveEventsFiltered_withoutFilters_usesDefaultActiveQuery() {
-        // Verifica que si no hay filtros (búsqueda vacía y sin categoría),
-        // el servicio usa la consulta por eventos activos sin condiciones adicionales.
+        // Verifica que sin filtros se usa la consulta de eventos activos gestionables
+        // (no completados por fecha).
         Page<Event> expected = new PageImpl<>(List.of());
-        when(eventRepository.findByIsActiveTrue(any(Pageable.class))).thenReturn(expected);
+        when(eventRepository.findManageableActiveEvents(any(java.time.LocalDate.class), any(Pageable.class))).thenReturn(expected);
 
         Page<Event> result = eventService.getActiveEventsFiltered("   ", null, 1, 4);
 
         assertEquals(expected, result);
-        verify(eventRepository).findByIsActiveTrue(any(Pageable.class));
+        verify(eventRepository).findManageableActiveEvents(any(java.time.LocalDate.class), any(Pageable.class));
     }
 
     @Test

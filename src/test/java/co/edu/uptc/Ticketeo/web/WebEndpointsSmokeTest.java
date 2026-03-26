@@ -104,6 +104,8 @@ class WebEndpointsSmokeTest {
         when(eventService.getEventById(999)).thenReturn(null);
         when(eventService.getActiveEventsFiltered(any(), any(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(event)));
+        when(eventService.getCompletedEventsFiltered(any(), any(), anyInt(), anyInt()))
+                .thenReturn(new PageImpl<>(List.of(event)));
         when(eventService.getInactiveEventsFiltered(any(), any(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(event)));
         when(eventService.saveEvent(any(Event.class))).thenReturn(event);
@@ -216,9 +218,9 @@ class WebEndpointsSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("events/adminEvents"));
 
-        mockMvc.perform(get("/admin/inactive").with(user("admin").roles("ADMIN")))
+        mockMvc.perform(get("/admin/completed").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("events/adminInactiveEvents"));
+                .andExpect(view().name("events/adminCompletedEvents"));
 
         mockMvc.perform(get("/admin/event/new").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
@@ -263,19 +265,11 @@ class WebEndpointsSmokeTest {
 
     @Test
     void adminMutationEndpoints_shouldRedirectAsExpected() throws Exception {
-        // Verifica que las acciones administrativas (activar, eliminar, guardar, etc.)
+        // Verifica que las acciones administrativas disponibles
         // ejecutan y redirigen correctamente.
         mockMvc.perform(get("/admin/event/deactivate/1").with(user("admin").roles("ADMIN")))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));
-
-        mockMvc.perform(get("/admin/event/activate/1").with(user("admin").roles("ADMIN")))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/inactive"));
-
-        mockMvc.perform(get("/admin/event/delete/1").with(user("admin").roles("ADMIN")))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/inactive"));
 
         mockMvc.perform(post("/admin/category/save")
                         .with(user("admin").roles("ADMIN"))
