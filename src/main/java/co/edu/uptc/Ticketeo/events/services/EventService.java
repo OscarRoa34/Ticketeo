@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,16 +42,34 @@ public class EventService {
 
     public Page<Event> getActiveEventsFiltered(String search, Integer categoryId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        LocalDate today = LocalDate.now();
         boolean hasSearch = search != null && !search.isBlank();
         boolean hasCat = categoryId != null;
+
         if (hasSearch && hasCat) {
-            return eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(search, categoryId, pageable);
+            return eventRepository.findManageableActiveEventsByNameAndCategory(search, categoryId, today, pageable);
         } else if (hasCat) {
-            return eventRepository.findByCategory_IdAndIsActiveTrue(categoryId, pageable);
+            return eventRepository.findManageableActiveEventsByCategory(categoryId, today, pageable);
         } else if (hasSearch) {
-            return eventRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(search, pageable);
+            return eventRepository.findManageableActiveEventsByName(search, today, pageable);
         }
-        return eventRepository.findByIsActiveTrue(pageable);
+        return eventRepository.findManageableActiveEvents(today, pageable);
+    }
+
+    public Page<Event> getCompletedEventsFiltered(String search, Integer categoryId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending().and(Sort.by("id").descending()));
+        LocalDate today = LocalDate.now();
+        boolean hasSearch = search != null && !search.isBlank();
+        boolean hasCat = categoryId != null;
+
+        if (hasSearch && hasCat) {
+            return eventRepository.findCompletedEventsByNameAndCategory(search, categoryId, today, pageable);
+        } else if (hasCat) {
+            return eventRepository.findCompletedEventsByCategory(categoryId, today, pageable);
+        } else if (hasSearch) {
+            return eventRepository.findCompletedEventsByName(search, today, pageable);
+        }
+        return eventRepository.findCompletedEvents(today, pageable);
     }
 
     public Page<Event> getInactiveEventsFiltered(String search, Integer categoryId, int page, int size) {

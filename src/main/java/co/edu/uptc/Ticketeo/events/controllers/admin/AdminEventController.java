@@ -45,6 +45,21 @@ public class AdminEventController {
         return "events/adminEvents";
     }
 
+    @GetMapping("/completed")
+    public String showCompletedEvents(@RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(required = false) String search,
+                                      @RequestParam(required = false) Integer categoryId,
+                                      Model model) {
+        Page<Event> eventPage = eventService.getCompletedEventsFiltered(search, categoryId, page, PAGE_SIZE);
+        model.addAttribute("events", eventPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", eventPage.getTotalPages());
+        model.addAttribute("search", search != null ? search : "");
+        model.addAttribute("currentCategory", categoryId);
+        model.addAttribute("categories", eventCategoryService.getAllCategories());
+        return "events/adminCompletedEvents";
+    }
+
     @GetMapping("/event/new")
     public String showCreateForm(Model model) {
         model.addAttribute("event", new Event());
