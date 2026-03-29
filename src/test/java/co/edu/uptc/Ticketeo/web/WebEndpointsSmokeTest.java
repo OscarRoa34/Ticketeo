@@ -35,12 +35,15 @@ import co.edu.uptc.Ticketeo.configuration.GlobalModelAttributes;
 import co.edu.uptc.Ticketeo.configuration.SecurityConfig;
 import co.edu.uptc.Ticketeo.events.controllers.admin.AdminCategoryController;
 import co.edu.uptc.Ticketeo.events.controllers.admin.AdminEventController;
+import co.edu.uptc.Ticketeo.events.controllers.admin.AdminTicketTypeController;
 import co.edu.uptc.Ticketeo.events.controllers.publicview.EventDetailsController;
 import co.edu.uptc.Ticketeo.events.controllers.publicview.PublicViewHomeController;
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
+import co.edu.uptc.Ticketeo.events.models.TicketType;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
+import co.edu.uptc.Ticketeo.events.services.TicketTypeService;
 import co.edu.uptc.Ticketeo.interest.controllers.AdminReportController;
 import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
 import co.edu.uptc.Ticketeo.user.controllers.AdminUserController;
@@ -57,6 +60,7 @@ import co.edu.uptc.Ticketeo.user.services.UserService;
         EventDetailsController.class,
         AdminEventController.class,
         AdminCategoryController.class,
+        AdminTicketTypeController.class,
         AdminReportController.class,
         AdminUserController.class,
         GlobalModelAttributes.class
@@ -75,6 +79,9 @@ class WebEndpointsSmokeTest {
     @MockitoBean
     private EventCategoryService eventCategoryService;
 
+        @MockitoBean
+        private TicketTypeService ticketTypeService;
+
     @MockitoBean
     private InterestReportService interestReportService;
 
@@ -88,6 +95,7 @@ class WebEndpointsSmokeTest {
     void setUp() {
         // Configura datos mockeados para que todos los endpoints tengan respuestas válidas
         EventCategory category = EventCategory.builder().id(1).name("Music").color("#E74C3C").build();
+        TicketType ticketType = TicketType.builder().id(1).name("VIP").build();
         Event event = Event.builder()
                 .id(1)
                 .name("Rock Fest")
@@ -115,6 +123,11 @@ class WebEndpointsSmokeTest {
         when(eventCategoryService.getCategoriesPaginated(anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(category)));
 
+        when(ticketTypeService.getAllTicketTypes()).thenReturn(List.of(ticketType));
+        when(ticketTypeService.getTicketTypeById(1)).thenReturn(ticketType);
+        when(ticketTypeService.getTicketTypesPaginated(anyInt(), anyInt()))
+                .thenReturn(new PageImpl<>(List.of(ticketType)));
+
         User user = User.builder().id(10L).username("user").password("pwd").role(Role.USER).build();
         when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
         when(interestReportService.isUserInterested(1, 10L)).thenReturn(true);
@@ -127,6 +140,7 @@ class WebEndpointsSmokeTest {
         doNothing().when(eventService).reactivateEvent(anyInt());
         doNothing().when(eventService).deleteEvent(anyInt());
         doNothing().when(eventCategoryService).deleteCategory(anyInt());
+        doNothing().when(ticketTypeService).deleteTicketType(anyInt());
     }
 
     @Test
@@ -242,6 +256,18 @@ class WebEndpointsSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("events/adminCategoryForm"));
 
+        mockMvc.perform(get("/admin/ticket-type").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/adminTicketTypes"));
+
+        mockMvc.perform(get("/admin/ticket-type/new").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/adminTicketTypeForm"));
+
+        mockMvc.perform(get("/admin/ticket-type/edit/1").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/adminTicketTypeForm"));
+
         mockMvc.perform(get("/admin/reports").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("interest/adminReportsMenu"));
@@ -282,12 +308,25 @@ class WebEndpointsSmokeTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/category"));
 
+        mockMvc.perform(post("/admin/ticket-type/save")
+                        .with(user("admin").roles("ADMIN"))
+                        .with(csrf())
+                        .param("name", "General"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/ticket-type"));
+
+        mockMvc.perform(get("/admin/ticket-type/delete/1").with(user("admin").roles("ADMIN")))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/ticket-type"));
+
         mockMvc.perform(multipart("/admin/event/save")
                         .with(user("admin").roles("ADMIN"))
                         .file("imageFile", new byte[0])
                         .param("name", "Evento smoke")
                         .param("price", "15000")
                         .param("description", "prueba")
+                        .param("ticketTypeIds", "1")
+                        .param("ticketQuantity_1", "50")
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));

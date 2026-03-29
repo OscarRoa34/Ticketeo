@@ -23,6 +23,8 @@ import org.springframework.data.domain.Sort;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
+import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
+import co.edu.uptc.Ticketeo.events.repositories.TicketTypeRepository;
 import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
 
 
@@ -34,6 +36,12 @@ class EventServiceTest {
 
     @Mock
     private InterestReportRepository interestReportRepository;
+
+    @Mock
+    private EventTicketTypeRepository eventTicketTypeRepository;
+
+    @Mock
+    private TicketTypeRepository ticketTypeRepository;
 
     @InjectMocks
     private EventService eventService;
@@ -110,6 +118,7 @@ class EventServiceTest {
         eventService.deleteEvent(7);
 
         verify(interestReportRepository).deleteByEventId(7);
+        verify(eventTicketTypeRepository).deleteByEvent_Id(7);
         verify(eventRepository).deleteById(7);
     }
 }

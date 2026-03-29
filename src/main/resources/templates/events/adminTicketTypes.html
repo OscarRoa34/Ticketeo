@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticketeo | Gestión de Categorías</title>
+    <title>Ticketeo | Gestión de Tipos de Ticket</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 
@@ -16,71 +16,54 @@
 
     <div class="admin-header">
         <div>
-            <h1 class="admin-title">Gestión de Categorías</h1>
-            <p class="admin-subtitle">Administra los géneros y clasificaciones disponibles para los eventos.</p>
+            <h1 class="admin-title">Gestión de Tipos de Ticket</h1>
+            <p class="admin-subtitle">Administra los tipos de entrada reutilizables para tus eventos.</p>
         </div>
         <div class="admin-actions">
-            <a th:href="@{/admin/category/new}" class="btn-primary">+ Nueva Categoría</a>
+            <a th:href="@{/admin/ticket-type/new}" class="btn-primary">+ Nuevo Tipo de Ticket</a>
         </div>
     </div>
-
-    <div th:if="${successMessage}" class="admin-alert admin-alert-success" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" class="admin-alert admin-alert-error" th:text="${errorMessage}"></div>
 
     <div class="table-responsive categories-table-wrapper">
         <table class="admin-table">
             <colgroup>
-                <col style="width: 15%;">
-                <col style="width: 50%;">
-                <col style="width: 15%;">
+                <col style="width: 20%;">
+                <col style="width: 60%;">
                 <col style="width: 20%;">
             </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
-                <th>Nombre de la Categoría</th>
-                <th class="text-center">Color</th>
+                <th>Nombre del Tipo</th>
                 <th class="text-center col-actions-header col-actions-header-double">Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="category : ${categories}" th:data-id="${category.id}">
-
-                <td class="col-id" th:text="${category.id}">1</td>
-
-                <td class="col-name">
-                    <span class="category-badge table-badge"
-                          th:text="${category.name}"
-                          th:style="'color:' + ${category.color} + '; border-color:' + ${category.color} + ';'">Música</span>
-                </td>
-
-                <td class="text-center">
-                    <div class="color-swatch" th:style="'background-color: ' + ${category.color} + ';'" th:title="${category.color}"></div>
-                </td>
-
+            <tr th:each="ticketType : ${ticketTypes}">
+                <td class="col-id" th:text="${ticketType.id}">1</td>
+                <td class="col-name" th:text="${ticketType.name}">VIP</td>
                 <td class="col-actions col-actions-double">
                     <div class="row-actions">
-                        <a th:href="@{/admin/category/edit/{id}(id=${category.id})}"
+                        <a th:href="@{/admin/ticket-type/edit/{id}(id=${ticketType.id})}"
                            class="btn-action btn-edit row-action-btn icon-action-btn"
-                           title="Editar categoría"
-                           aria-label="Editar categoría">
+                           title="Editar tipo de ticket"
+                           aria-label="Editar tipo de ticket">
                             <img th:src="@{/images/edit.svg}" class="action-icon-edit" alt="Editar" width="16" height="16">
                         </a>
                         <button type="button"
-                                class="btn-action btn-delete row-action-btn icon-action-btn js-delete-category-btn"
-                                title="Eliminar categoría"
-                                aria-label="Eliminar categoría"
-                                th:attr="data-url=@{/admin/category/delete/{id}(id=${category.id})}">
+                                class="btn-action btn-delete row-action-btn icon-action-btn js-delete-ticket-type-btn"
+                                title="Eliminar tipo de ticket"
+                                aria-label="Eliminar tipo de ticket"
+                                th:attr="data-url=@{/admin/ticket-type/delete/{id}(id=${ticketType.id})}">
                             <img th:src="@{/images/delete.svg}" alt="Eliminar" width="16" height="16">
                         </button>
                     </div>
                 </td>
-
             </tr>
 
-            <tr th:if="${#lists.isEmpty(categories)}">
-                <td colspan="4" style="text-align: center; padding: 30px;">
-                    No hay categorías registradas en el sistema. ¡Crea la primera para organizar tus eventos!
+            <tr th:if="${#lists.isEmpty(ticketTypes)}">
+                <td colspan="3" style="text-align: center; padding: 30px;">
+                    No hay tipos de ticket registrados. Crea uno para asignarlo en tus eventos.
                 </td>
             </tr>
             </tbody>
@@ -90,34 +73,34 @@
     <div class="pagination-container" th:if="${totalPages > 1}">
         <ul class="pagination">
             <li>
-                <a th:href="@{/admin/category(page=${currentPage > 0 ? currentPage - 1 : 0})}"
+                <a th:href="@{/admin/ticket-type(page=${currentPage > 0 ? currentPage - 1 : 0})}"
                    class="page-link" th:classappend="${currentPage == 0} ? 'disabled' : ''">
                     &laquo; Anterior
                 </a>
             </li>
             <li th:if="${currentPage > 2}">
-                <a th:href="@{/admin/category(page=0)}" class="page-link">1</a>
+                <a th:href="@{/admin/ticket-type(page=0)}" class="page-link">1</a>
             </li>
             <li th:if="${currentPage > 3}">
                 <span class="page-dots">...</span>
             </li>
             <li th:if="${currentPage > 1}">
-                <a th:href="@{/admin/category(page=${currentPage - 1})}" class="page-link" th:text="${currentPage}"></a>
+                <a th:href="@{/admin/ticket-type(page=${currentPage - 1})}" class="page-link" th:text="${currentPage}"></a>
             </li>
             <li>
                 <a href="#" class="page-link active" th:text="${currentPage + 1}"></a>
             </li>
             <li th:if="${currentPage < totalPages - 2}">
-                <a th:href="@{/admin/category(page=${currentPage + 1})}" class="page-link" th:text="${currentPage + 2}"></a>
+                <a th:href="@{/admin/ticket-type(page=${currentPage + 1})}" class="page-link" th:text="${currentPage + 2}"></a>
             </li>
             <li th:if="${currentPage < totalPages - 4}">
                 <span class="page-dots">...</span>
             </li>
             <li th:if="${currentPage < totalPages - 3}">
-                <a th:href="@{/admin/category(page=${totalPages - 1})}" class="page-link" th:text="${totalPages}"></a>
+                <a th:href="@{/admin/ticket-type(page=${totalPages - 1})}" class="page-link" th:text="${totalPages}"></a>
             </li>
             <li>
-                <a th:href="@{/admin/category(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}"
+                <a th:href="@{/admin/ticket-type(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage})}"
                    class="page-link" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
                     Siguiente &raquo;
                 </a>
@@ -130,8 +113,8 @@
 <div id="confirmModal" class="confirm-modal-overlay">
     <div class="confirm-modal">
         <div class="confirm-modal-icon">🗑️</div>
-        <div class="confirm-modal-title">¿Eliminar categoría?</div>
-        <div class="confirm-modal-message">Esta acción no se puede deshacer. Si la categoría tiene eventos asociados podría haber inconvenientes.</div>
+        <div class="confirm-modal-title">¿Eliminar tipo de ticket?</div>
+        <div class="confirm-modal-message">Esta acción no se puede deshacer y afectará la asignación de este tipo en eventos existentes.</div>
         <div class="confirm-modal-actions">
             <button class="confirm-btn-cancel" id="confirmCancelBtn">Cancelar</button>
             <button class="confirm-btn-confirm danger" id="confirmOkBtn">Eliminar</button>
@@ -142,13 +125,12 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
-    const deleteCategoryButtons = document.querySelectorAll('.js-delete-category-btn');
+    const deleteTicketTypeButtons = document.querySelectorAll('.js-delete-ticket-type-btn');
 
-    // Custom confirm modal
     const confirmModal = document.getElementById('confirmModal');
     const confirmOkBtn = document.getElementById('confirmOkBtn');
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
-    const categoriesTableBody = document.querySelector('.admin-table tbody');
+    const ticketTypesTableBody = document.querySelector('.admin-table tbody');
     let pendingDeleteUrl = null;
     let pendingDeleteRow = null;
 
@@ -159,12 +141,12 @@
     }
 
     function ensureEmptyState(colspan, message) {
-        if (!categoriesTableBody) {
+        if (!ticketTypesTableBody) {
             return;
         }
-        const hasDataRows = categoriesTableBody.querySelector('tr[data-id]');
+        const hasDataRows = ticketTypesTableBody.querySelector('tr td.col-id');
         if (!hasDataRows) {
-            categoriesTableBody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align: center; padding: 30px;">' + message + '</td></tr>';
+            ticketTypesTableBody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align: center; padding: 30px;">' + message + '</td></tr>';
         }
     }
 
@@ -185,7 +167,7 @@
 
             if (pendingDeleteRow) {
                 pendingDeleteRow.remove();
-                ensureEmptyState(4, 'No hay categorías registradas en el sistema. ¡Crea la primera para organizar tus eventos!');
+                ensureEmptyState(3, 'No hay tipos de ticket registrados. Crea uno para asignarlo en tus eventos.');
             }
         } catch (error) {
             window.location.href = pendingDeleteUrl;
@@ -213,7 +195,7 @@
         }
     });
 
-    deleteCategoryButtons.forEach(button => {
+    deleteTicketTypeButtons.forEach(button => {
         button.addEventListener('click', function() {
             const url = this.getAttribute('data-url');
             if (url) {
