@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Eventos Completados</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container admin-container">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Eventos Completados</h1>
+            <p class="admin-subtitle">Consulta los eventos que ya finalizaron. Esta vista es solo de lectura.</p>
+        </div>
+        <div class="admin-actions">
+            <a th:href="@{/admin}" class="btn-primary">Volver a eventos</a>
+        </div>
+    </div>
+
+    <div class="admin-search-bar">
+        <form th:action="@{/admin/completed}" method="get" class="admin-search-form-fino">
+            <select name="categoryId" class="admin-search-select-fino">
+                <option value="">Todas las categorías</option>
+                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
+                        th:selected="${currentCategory != null and currentCategory == cat.id}"></option>
+            </select>
+            <input type="text" name="search" class="admin-search-input-fino"
+                   placeholder="Buscar evento por nombre..." th:value="${search}">
+            <button type="submit" class="admin-search-btn-fino">Buscar</button>
+            <a th:if="${(search != null and !search.isEmpty()) or currentCategory != null}"
+               th:href="@{/admin/completed}" class="admin-search-clear-fino">✕ Limpiar</a>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="admin-table admin-table-events">
+            <colgroup>
+                <col style="width: 8%;">
+                <col style="width: 12%;">
+                <col style="width: 24%;">
+                <col style="width: 28%;">
+                <col style="width: 12%;">
+                <col style="width: 16%;">
+            </colgroup>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th class="text-center">Imagen</th>
+                <th>Evento</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Precio</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="event : ${events}">
+                <td class="col-id" th:text="${event.id}">1</td>
+                <td class="col-img">
+                    <img th:if="${event.imageUrl != null and !event.imageUrl.isBlank()}"
+                         th:src="${event.imageUrl}"
+                         th:alt="${event.name}"
+                         class="table-thumbnail cursor-pointer">
+                </td>
+                <td class="col-name" th:text="${event.name}">Nombre del evento</td>
+                <td class="col-description" th:text="${event.description}">Descripción</td>
+                <td th:text="${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : '-'}">01/01/2026</td>
+                <td>
+                    <span class="col-price"
+                          th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$ ' + #numbers.formatDecimal(event.price, 0, 'POINT', 0, 'COMMA')}">$0</span>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(events)}">
+                <td colspan="6" style="text-align: center; padding: 30px;">
+                    No hay eventos completados para mostrar.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-container" th:if="${totalPages > 1}">
+        <ul class="pagination">
+            <li>
+                <a th:href="@{/admin/completed(page=${currentPage > 0 ? currentPage - 1 : 0}, search=${search}, categoryId=${currentCategory})}"
+                   class="page-link" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                    &laquo; Anterior
+                </a>
+            </li>
+            <li th:if="${currentPage > 2}">
+                <a th:href="@{/admin/completed(page=0, search=${search}, categoryId=${currentCategory})}" class="page-link">1</a>
+            </li>
+            <li th:if="${currentPage > 3}">
+                <span class="page-dots">...</span>
+            </li>
+            <li th:if="${currentPage > 1}">
+                <a th:href="@{/admin/completed(page=${currentPage - 1}, search=${search}, categoryId=${currentCategory})}" class="page-link" th:text="${currentPage}"></a>
+            </li>
+            <li>
+                <a href="#" class="page-link active" th:text="${currentPage + 1}"></a>
+            </li>
+            <li th:if="${currentPage < totalPages - 2}">
+                <a th:href="@{/admin/completed(page=${currentPage + 1}, search=${search}, categoryId=${currentCategory})}" class="page-link" th:text="${currentPage + 2}"></a>
+            </li>
+            <li th:if="${currentPage < totalPages - 4}">
+                <span class="page-dots">...</span>
+            </li>
+            <li th:if="${currentPage < totalPages - 3}">
+                <a th:href="@{/admin/completed(page=${totalPages - 1}, search=${search}, categoryId=${currentCategory})}" class="page-link" th:text="${totalPages}"></a>
+            </li>
+            <li>
+                <a th:href="@{/admin/completed(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage}, search=${search}, categoryId=${currentCategory})}"
+                   class="page-link" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+                    Siguiente &raquo;
+                </a>
+            </li>
+        </ul>
+    </div>
+
+</main>
+
+<div id="imageViewer" class="modal-overlay">
+    <span class="close-btn">&times;</span>
+    <img class="modal-content" id="fullImage" alt="Vista previa del evento">
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    const modal = document.getElementById('imageViewer');
+    const modalImg = document.getElementById('fullImage');
+    const thumbnails = document.querySelectorAll('.table-thumbnail');
+    const closeBtn = document.getElementsByClassName('close-btn')[0];
+
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            modal.style.display = 'flex';
+            modalImg.src = this.src;
+        });
+    });
+
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+    };
+
+    modal.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+</script>
+
+</body>
+</html>
+

@@ -55,44 +55,38 @@ public class AdminEventController {
         return "events/adminEvents";
     }
 
-    @GetMapping("/inactive")
-    public String showInactiveEvents(@RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(required = false) String search,
-                                     @RequestParam(required = false) Integer categoryId,
-                                     Model model) {
-        Page<Event> eventPage = eventService.getInactiveEventsFiltered(search, categoryId, page, PAGE_SIZE);
+    @GetMapping("/completed")
+    public String showCompletedEvents(@RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(required = false) String search,
+                                      @RequestParam(required = false) Integer categoryId,
+                                      Model model) {
+        Page<Event> eventPage = eventService.getCompletedEventsFiltered(search, categoryId, page, PAGE_SIZE);
         model.addAttribute("events", eventPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", eventPage.getTotalPages());
         model.addAttribute("search", search != null ? search : "");
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "events/adminInactiveEvents";
+        return "events/adminCompletedEvents";
     }
 
     @GetMapping("/event/new")
-    public String showCreateForm(@RequestParam(defaultValue = "false") boolean draft, Model model) {
+    public String showCreateForm(Model model) {
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
-        model.addAttribute("ticketQuantities", Map.of());
-        model.addAttribute("draft", draft);
+        model.addAttribute("draft", ticketTypeService);
         return "events/adminEventForm";
     }
 
     @GetMapping("/event/edit/{id}")
-    public String showEditForm(@PathVariable Integer id,
-                               @RequestParam(defaultValue = "false") boolean fromTrash,
-                               Model model) {
+    public String showEditForm(@PathVariable Integer id, Model model) {
         Event event = eventService.getEventById(id);
         if (event == null) {
             return "redirect:/admin";
         }
         model.addAttribute("event", event);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
-        model.addAttribute("ticketQuantities", eventService.getTicketTypeQuantitiesForEvent(id));
-        model.addAttribute("draft", fromTrash);
+        model.addAttribute("draft", ticketTypeService);
         return "events/adminEventForm";
     }
 
@@ -100,14 +94,13 @@ public class AdminEventController {
     public String saveEvent(@ModelAttribute Event event,
                             @RequestParam("imageFile") MultipartFile image,
                             @RequestParam(value = "category", required = false) Integer categoryId,
-                            @RequestParam(value = "ticketTypeIds", required = false) List<Integer> ticketTypeIds,
-                            @RequestParam Map<String, String> allParams,
                             @RequestParam(value = "draft", defaultValue = "false") boolean draft) {
-        event.setCategory(resolveCategoryForSave(categoryId));
-        handleImageUpload(event, image);
-        preserveActiveStatus(event, draft);
 
-        eventService.saveEventWithTicketTypes(event, extractTicketQuantities(ticketTypeIds, allParams));
+        event.setCategory(categoryId != null ? eventCategoryService.getEventCategoryById(categoryId) : null);
+        handleImageUpload(event, image);
+        preserveActiveStatus(event);
+
+        eventService.saveEvent(event);
         return draft ? "redirect:/admin/inactive" : "redirect:/admin";
     }
 
@@ -125,18 +118,6 @@ public class AdminEventController {
     public String deactivateEvent(@PathVariable Integer id) {
         eventService.deactivateEvent(id);
         return "redirect:/admin";
-    }
-
-    @GetMapping("/event/activate/{id}")
-    public String activateEvent(@PathVariable Integer id) {
-        eventService.reactivateEvent(id);
-        return "redirect:/admin/inactive";
-    }
-
-    @GetMapping("/event/delete/{id}")
-    public String deleteEvent(@PathVariable Integer id) {
-        eventService.deleteEvent(id);
-        return "redirect:/admin/inactive";
     }
 
     private void handleImageUpload(Event event, MultipartFile image) {
@@ -160,9 +141,9 @@ public class AdminEventController {
         }
     }
 
-    private void preserveActiveStatus(Event event, boolean draft) {
+    private void preserveActiveStatus(Event event) {
         if (event.getId() == null) {
-            event.setIsActive(!draft);
+            event.setIsActive(true);
         } else {
             Event existing = eventService.getEventById(event.getId());
             if (existing != null) {
@@ -188,7 +169,6 @@ public class AdminEventController {
                     ticketQuantities.put(ticketTypeId, quantity);
                 }
             } catch (NumberFormatException ignored) {
-                // Ignora valores inválidos para no interrumpir el guardado del evento.
             }
         }
         return ticketQuantities;

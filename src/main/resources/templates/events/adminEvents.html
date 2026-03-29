@@ -20,8 +20,8 @@
             <p class="admin-subtitle">Administra el catálogo de eventos y categorías.</p>
         </div>
         <div class="admin-actions">
-            <a th:href="@{/admin/inactive}" class="btn-action btn-trash">Eventos Inactivos</a>
             <a th:href="@{/admin/event/new}" class="btn-primary">+ Nuevo Evento</a>
+            <a th:href="@{/admin/completed}" class="btn-primary btn-trash">Eventos completados</a>
         </div>
     </div>
 
@@ -43,6 +43,7 @@
     <div class="table-responsive">
         <table class="admin-table admin-table-events">
             <colgroup>
+<<<<<<< HEAD
                 <col style="width: 6%;">
                 <col style="width: 10%;">
                 <col style="width: 30%;">
@@ -50,41 +51,56 @@
                 <col style="width: 12%;">
                 <col style="width: 10%;">
                 <col style="width: 18%;">
+=======
+                <col style="width: 7%;">
+                <col style="width: 11%;">
+                <col style="width: 22%;">
+                <col style="width: 26%;">
+                <col style="width: 10%;">
+                <col style="width: 12%;">
+                <col style="width: 12%;">
+>>>>>>> origin/main
             </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
                 <th class="text-center">Imagen</th>
+<<<<<<< HEAD
                 <th>Nombre del Evento</th>
                 <th>Categoría</th>
+=======
+                <th>Evento</th>
+                <th>Descripción</th>
+>>>>>>> origin/main
                 <th>Fecha</th>
-                <th>Valor</th>
-                <th class="text-center col-actions-header col-actions-header-double">Acciones</th>
+                <th>Precio</th>
+                <th class="col-actions-header">Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="event : ${events}" th:data-id="${event.id}">
-
+            <tr th:each="event : ${events}">
                 <td class="col-id" th:text="${event.id}">1</td>
-
                 <td class="col-img">
-                    <img th:src="${event.imageUrl}" th:alt="${event.name}" class="table-thumbnail cursor-pointer">
+                    <img th:if="${event.imageUrl != null and !event.imageUrl.isBlank()}"
+                         th:src="${event.imageUrl}"
+                         th:alt="${event.name}"
+                         class="table-thumbnail cursor-pointer">
                 </td>
+                <td class="col-name" th:text="${event.name}">Nombre del evento</td>
+                <td class="col-description" th:text="${event.description}">Descripción</td>
+                <td th:text="${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : '-'}">01/01/2026
+                </td>
+<<<<<<< HEAD
 
                 <td class="col-name" th:text="${event.name}">Nombre del Evento</td>
 
+=======
+>>>>>>> origin/main
                 <td>
-                    <span th:if="${event.category != null}" class="category-badge table-badge"
-                          th:text="${event.category.name}"
-                          th:style="'color:' + ${event.category.color} + '; border-color:' + ${event.category.color} + ';'">Categoría</span>
-                    <span th:if="${event.category == null}" style="color:#bbb;font-size:0.8rem;">—</span>
+                    <span class="col-price" th:data-price="${event.price}"
+                          th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$ ' + #numbers.formatDecimal(event.price, 0, 'POINT', 0, 'COMMA')}">$0</span>
                 </td>
-
-                <td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">15/03/2026</td>
-
-                <td class="col-price" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</td>
-
-                <td class="col-actions col-actions-double">
+                <td class="col-actions">
                     <div class="row-actions">
                         <button type="button"
                                 class="btn-action btn-view row-action-btn icon-action-btn js-view-details-btn"
@@ -127,12 +143,15 @@
                         </div>
                     </div>
                 </td>
-
             </tr>
 
             <tr th:if="${#lists.isEmpty(events)}">
                 <td colspan="7" style="text-align: center; padding: 30px;">
+<<<<<<< HEAD
                     No hay eventos registrados en el sistema. ¡Empieza creando uno!
+=======
+                    No hay eventos activos para mostrar.
+>>>>>>> origin/main
                 </td>
             </tr>
             </tbody>
@@ -143,26 +162,36 @@
         <ul class="pagination">
             <li>
                 <a th:href="@{/admin(page=${currentPage > 0 ? currentPage - 1 : 0}, search=${search}, categoryId=${currentCategory})}"
-                   class="page-link" th:classappend="${currentPage == 0} ? 'disabled' : ''">&laquo; Anterior</a>
+                   class="page-link" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                    &laquo; Anterior
+                </a>
             </li>
             <li th:if="${currentPage > 2}">
                 <a th:href="@{/admin(page=0, search=${search}, categoryId=${currentCategory})}" class="page-link">1</a>
             </li>
-            <li th:if="${currentPage > 3}"><span class="page-dots">...</span></li>
+            <li th:if="${currentPage > 3}">
+                <span class="page-dots">...</span>
+            </li>
             <li th:if="${currentPage > 1}">
                 <a th:href="@{/admin(page=${currentPage - 1}, search=${search}, categoryId=${currentCategory})}" class="page-link" th:text="${currentPage}"></a>
             </li>
-            <li><a href="#" class="page-link active" th:text="${currentPage + 1}"></a></li>
+            <li>
+                <a href="#" class="page-link active" th:text="${currentPage + 1}"></a>
+            </li>
             <li th:if="${currentPage < totalPages - 2}">
                 <a th:href="@{/admin(page=${currentPage + 1}, search=${search}, categoryId=${currentCategory})}" class="page-link" th:text="${currentPage + 2}"></a>
             </li>
-            <li th:if="${currentPage < totalPages - 4}"><span class="page-dots">...</span></li>
+            <li th:if="${currentPage < totalPages - 4}">
+                <span class="page-dots">...</span>
+            </li>
             <li th:if="${currentPage < totalPages - 3}">
                 <a th:href="@{/admin(page=${totalPages - 1}, search=${search}, categoryId=${currentCategory})}" class="page-link" th:text="${totalPages}"></a>
             </li>
             <li>
                 <a th:href="@{/admin(page=${currentPage < totalPages - 1 ? currentPage + 1 : currentPage}, search=${search}, categoryId=${currentCategory})}"
-                   class="page-link" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">Siguiente &raquo;</a>
+                   class="page-link" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+                    Siguiente &raquo;
+                </a>
             </li>
         </ul>
     </div>
@@ -173,7 +202,7 @@
     <div class="confirm-modal">
         <div class="confirm-modal-icon">🔕</div>
         <div class="confirm-modal-title">¿Desactivar evento?</div>
-        <div class="confirm-modal-message">El evento será ocultado del panel principal y movido a la papelera. Podrás restaurarlo en cualquier momento.</div>
+        <div class="confirm-modal-message">El evento será desactivado y ya no será visible para los usuarios.</div>
         <div class="confirm-modal-actions">
             <button class="confirm-btn-cancel" id="confirmCancelBtn">Cancelar</button>
             <button class="confirm-btn-confirm danger" id="confirmOkBtn">Desactivar</button>

@@ -1,5 +1,6 @@
 package co.edu.uptc.Ticketeo.events.repositories;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
@@ -34,9 +36,39 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     Page<Event> findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveFalse(String name, Integer categoryId, Pageable pageable);
 
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND (e.date IS NULL OR e.date >= :today)")
+    Page<Event> findManageableActiveEvents(@Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND (e.date IS NULL OR e.date >= :today) AND LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    Page<Event> findManageableActiveEventsByName(@Param("name") String name, @Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND (e.date IS NULL OR e.date >= :today) AND e.category.id = :categoryId")
+    Page<Event> findManageableActiveEventsByCategory(@Param("categoryId") Integer categoryId, @Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND (e.date IS NULL OR e.date >= :today) AND LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%')) AND e.category.id = :categoryId")
+    Page<Event> findManageableActiveEventsByNameAndCategory(@Param("name") String name,
+                                                             @Param("categoryId") Integer categoryId,
+                                                             @Param("today") LocalDate today,
+                                                             Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND e.date < :today")
+    Page<Event> findCompletedEvents(@Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND e.date < :today AND LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    Page<Event> findCompletedEventsByName(@Param("name") String name, @Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND e.date < :today AND e.category.id = :categoryId")
+    Page<Event> findCompletedEventsByCategory(@Param("categoryId") Integer categoryId, @Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.isActive = true AND e.date < :today AND LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%')) AND e.category.id = :categoryId")
+    Page<Event> findCompletedEventsByNameAndCategory(@Param("name") String name,
+                                                      @Param("categoryId") Integer categoryId,
+                                                      @Param("today") LocalDate today,
+                                                      Pageable pageable);
+
     @Modifying
     @Query("UPDATE Event e SET e.category = null WHERE e.category.id = :categoryId")
-    void detachCategory(@org.springframework.data.repository.query.Param("categoryId") Integer categoryId);
+    void detachCategory(@Param("categoryId") Integer categoryId);
 
     @Modifying
     @Query("DELETE FROM Event e WHERE e.category.id = :categoryId")

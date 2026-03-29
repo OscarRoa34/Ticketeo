@@ -22,8 +22,8 @@
                 <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo">
             </div>
             <div class="event-form-header-text">
-                <h2 th:text="${event.id != null ? 'Editar Evento' : (draft ? 'Crear Evento Inactivo' : 'Crear Nuevo Evento')}">Evento</h2>
-                <p th:text="${event.id != null ? 'Modifica los datos del evento seleccionado.' : (draft ? 'Este evento se guardará como inactivo y no será visible para los usuarios hasta que lo actives.' : 'Completa los datos para publicar un nuevo evento en el catálogo.')}">Descripción
+                <h2 th:text="${event.id != null ? 'Editar Evento' : 'Crear Nuevo Evento'}">Evento</h2>
+                <p th:text="${event.id != null ? 'Modifica los datos del evento seleccionado.' : 'Completa los datos para publicar un nuevo evento en el catálogo.'}">Descripción
                 </p>
             </div>
         </div>
@@ -36,7 +36,6 @@
 
         <form th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" />
-            <input type="hidden" name="draft" th:value="${draft != null ? draft : false}" />
 
             <div class="event-form-body">
 
@@ -113,9 +112,9 @@
                     </div>
 
                     <div class="ef-form-actions">
-                        <a th:href="${draft ? '/admin/inactive' : '/admin'}" class="ef-btn-cancel">Cancelar</a>
+                        <a th:href="@{/admin}" class="ef-btn-cancel">Cancelar</a>
                         <button type="submit" class="ef-btn-submit">
-                            <span th:text="${event.id != null ? '✦ Guardar Cambios' : (draft ? '✦ Guardar como Inactivo' : '✦ Publicar Evento')}">Guardar</span>
+                            <span th:text="${event.id != null ? '✦ Guardar Cambios' : '✦ Publicar Evento'}">Guardar</span>
                         </button>
                     </div>
                 </div>
