@@ -43,35 +43,20 @@
     <div class="table-responsive">
         <table class="admin-table admin-table-events">
             <colgroup>
-<<<<<<< HEAD
                 <col style="width: 6%;">
                 <col style="width: 10%;">
-                <col style="width: 30%;">
-                <col style="width: 14%;">
-                <col style="width: 12%;">
-                <col style="width: 10%;">
                 <col style="width: 18%;">
-=======
-                <col style="width: 7%;">
-                <col style="width: 11%;">
-                <col style="width: 22%;">
-                <col style="width: 26%;">
-                <col style="width: 10%;">
+                <col style="width: 24%;">
                 <col style="width: 12%;">
                 <col style="width: 12%;">
->>>>>>> origin/main
+                <col style="width: 18%;">
             </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
                 <th class="text-center">Imagen</th>
-<<<<<<< HEAD
-                <th>Nombre del Evento</th>
-                <th>Categoría</th>
-=======
                 <th>Evento</th>
                 <th>Descripción</th>
->>>>>>> origin/main
                 <th>Fecha</th>
                 <th>Precio</th>
                 <th class="col-actions-header">Acciones</th>
@@ -90,12 +75,6 @@
                 <td class="col-description" th:text="${event.description}">Descripción</td>
                 <td th:text="${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : '-'}">01/01/2026
                 </td>
-<<<<<<< HEAD
-
-                <td class="col-name" th:text="${event.name}">Nombre del Evento</td>
-
-=======
->>>>>>> origin/main
                 <td>
                     <span class="col-price" th:data-price="${event.price}"
                           th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$ ' + #numbers.formatDecimal(event.price, 0, 'POINT', 0, 'COMMA')}">$0</span>
@@ -147,11 +126,7 @@
 
             <tr th:if="${#lists.isEmpty(events)}">
                 <td colspan="7" style="text-align: center; padding: 30px;">
-<<<<<<< HEAD
-                    No hay eventos registrados en el sistema. ¡Empieza creando uno!
-=======
                     No hay eventos activos para mostrar.
->>>>>>> origin/main
                 </td>
             </tr>
             </tbody>

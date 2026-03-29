@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.services.TicketTypeService;
@@ -74,7 +75,9 @@ public class AdminEventController {
     public String showCreateForm(Model model) {
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        model.addAttribute("draft", ticketTypeService);
+        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
+        model.addAttribute("ticketQuantities", Map.<Integer, Integer>of());
+        model.addAttribute("draft", false);
         return "events/adminEventForm";
     }
 
@@ -86,7 +89,9 @@ public class AdminEventController {
         }
         model.addAttribute("event", event);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        model.addAttribute("draft", ticketTypeService);
+        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
+        model.addAttribute("ticketQuantities", eventService.getTicketTypeQuantitiesForEvent(id));
+        model.addAttribute("draft", !Boolean.TRUE.equals(event.getIsActive()));
         return "events/adminEventForm";
     }
 
@@ -94,19 +99,23 @@ public class AdminEventController {
     public String saveEvent(@ModelAttribute Event event,
                             @RequestParam("imageFile") MultipartFile image,
                             @RequestParam(value = "category", required = false) Integer categoryId,
+                            @RequestParam(value = "ticketTypeIds", required = false) List<Integer> ticketTypeIds,
+                            @RequestParam Map<String, String> allParams,
                             @RequestParam(value = "draft", defaultValue = "false") boolean draft) {
 
-        event.setCategory(categoryId != null ? eventCategoryService.getEventCategoryById(categoryId) : null);
+        event.setCategory(resolveCategoryForSave(categoryId));
         handleImageUpload(event, image);
         preserveActiveStatus(event);
+        event.setIsActive(!draft);
 
-        eventService.saveEvent(event);
+        Map<Integer, Integer> ticketQuantities = extractTicketQuantities(ticketTypeIds, allParams);
+        eventService.saveEventWithTicketTypes(event, ticketQuantities);
         return draft ? "redirect:/admin/inactive" : "redirect:/admin";
     }
 
-    private co.edu.uptc.Ticketeo.events.models.EventCategory resolveCategoryForSave(Integer categoryId) {
+    private EventCategory resolveCategoryForSave(Integer categoryId) {
         if (categoryId != null) {
-            co.edu.uptc.Ticketeo.events.models.EventCategory selected = eventCategoryService.getEventCategoryById(categoryId);
+            EventCategory selected = eventCategoryService.getEventCategoryById(categoryId);
             if (selected != null) {
                 return selected;
             }
