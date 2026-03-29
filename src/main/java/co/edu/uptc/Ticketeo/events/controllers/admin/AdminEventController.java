@@ -72,12 +72,13 @@ public class AdminEventController {
     }
 
     @GetMapping("/event/new")
-    public String showCreateForm(Model model) {
+    public String showCreateForm(@RequestParam(value = "draft", defaultValue = "false") boolean draft,
+                                 Model model) {
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
         model.addAttribute("ticketQuantities", Map.<Integer, Integer>of());
-        model.addAttribute("draft", false);
+        model.addAttribute("draft", draft);
         return "events/adminEventForm";
     }
 

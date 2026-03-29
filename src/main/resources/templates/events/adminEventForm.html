@@ -36,6 +36,7 @@
 
         <form th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" />
+            <input type="hidden" name="draft" th:value="${draft}">
 
             <div class="event-form-body">
 
