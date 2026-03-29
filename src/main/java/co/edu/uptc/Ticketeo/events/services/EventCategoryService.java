@@ -1,10 +1,7 @@
 package co.edu.uptc.Ticketeo.events.services;
 
-import co.edu.uptc.Ticketeo.events.models.EventCategory;
-import co.edu.uptc.Ticketeo.events.repositories.EventCategoryRepository;
-import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
-import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +9,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import co.edu.uptc.Ticketeo.events.models.EventCategory;
+import co.edu.uptc.Ticketeo.events.repositories.EventCategoryRepository;
+import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
+import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -60,8 +61,8 @@ public class EventCategoryService {
 
     @Transactional
     public void deleteCategory(Integer id) {
-        interestReportRepository.deleteByEventCategoryId(id);
         eventRepository.detachCategory(id);
+        interestReportRepository.deleteByEventCategoryId(id);
         eventCategoryRepository.deleteById(id);
     }
 }

@@ -44,20 +44,18 @@
         <table class="admin-table admin-table-events">
             <colgroup>
                 <col style="width: 6%;">
-                <col style="width: 8%;">
-                <col style="width: 16%;">
-                <col style="width: 27%;">
+                <col style="width: 10%;">
+                <col style="width: 30%;">
+                <col style="width: 14%;">
                 <col style="width: 12%;">
                 <col style="width: 10%;">
-                <col style="width: 8%;">
-                <col style="width: 13%;">
+                <col style="width: 18%;">
             </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
                 <th class="text-center">Imagen</th>
                 <th>Nombre del Evento</th>
-                <th class="col-description-header">Descripción</th>
                 <th>Categoría</th>
                 <th>Fecha</th>
                 <th>Valor</th>
@@ -75,8 +73,6 @@
 
                 <td class="col-name" th:text="${event.name}">Nombre del Evento</td>
 
-                <td class="col-description" th:text="${event.description}" th:title="${event.description}">Descripción del evento</td>
-
                 <td>
                     <span th:if="${event.category != null}" class="category-badge table-badge"
                           th:text="${event.category.name}"
@@ -90,6 +86,24 @@
 
                 <td class="col-actions col-actions-double">
                     <div class="row-actions">
+                        <button type="button"
+                                class="btn-action btn-view row-action-btn icon-action-btn js-view-details-btn"
+                                title="Ver detalles"
+                                aria-label="Ver detalles"
+                                th:attr="
+                                    data-id=${event.id},
+                                    data-name=${event.name},
+                                    data-description=${event.description},
+                                    data-category=${event.category != null ? event.category.name : 'Sin categoría'},
+                                    data-date=${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : 'Sin fecha'},
+                                    data-price=${event.price},
+                                    data-image=${event.imageUrl},
+                                    data-state='Activo'">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
                         <a th:href="@{/admin/event/edit/{id}(id=${event.id})}"
                            class="btn-action btn-edit row-action-btn icon-action-btn"
                            title="Editar evento"
@@ -104,12 +118,20 @@
                             <img th:src="@{/images/delete.svg}" alt="Desactivar" width="16" height="16">
                         </button>
                     </div>
+                    <div class="event-ticket-payload" hidden>
+                        <div th:each="assignment : ${event.ticketTypes}"
+                             class="event-ticket-item-data"
+                             th:attr="
+                                data-ticket-name=${assignment.ticketType != null ? assignment.ticketType.name : 'Tipo'},
+                                data-ticket-qty=${assignment.availableQuantity}">
+                        </div>
+                    </div>
                 </td>
 
             </tr>
 
             <tr th:if="${#lists.isEmpty(events)}">
-                <td colspan="8" style="text-align: center; padding: 30px;">
+                <td colspan="7" style="text-align: center; padding: 30px;">
                     No hay eventos registrados en el sistema. ¡Empieza creando uno!
                 </td>
             </tr>
@@ -164,6 +186,35 @@
     <img class="modal-content" id="fullImage">
 </div>
 
+<div id="eventDetailsModal" class="event-details-overlay">
+    <div class="event-details-modal">
+        <button type="button" class="event-details-close" id="eventDetailsCloseBtn" aria-label="Cerrar">&times;</button>
+        <div class="event-details-grid">
+            <div class="event-details-image-wrap">
+                <img id="detailsImage" alt="Imagen del evento" class="event-details-image">
+            </div>
+            <div class="event-details-content">
+                <div class="event-details-headline">
+                    <span id="detailsState" class="event-state-pill">-</span>
+                    <span id="detailsCategory" class="event-category-pill">Sin categoría</span>
+                </div>
+                <h3 id="detailsName" class="event-details-title">Evento</h3>
+                <p id="detailsDescription" class="event-details-description">Descripción</p>
+                <div class="event-details-meta">
+                    <div><strong>ID:</strong> <span id="detailsId">-</span></div>
+                    <div><strong>Fecha:</strong> <span id="detailsDate">-</span></div>
+                    <div><strong>Valor:</strong> <span id="detailsPrice">-</span></div>
+                    <div><strong>Tickets:</strong> <span id="detailsTicketsSummary">Sin tickets</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="event-details-ticket-section event-details-ticket-section-full">
+            <h4 class="event-details-ticket-title">Tickets asignados</h4>
+            <div id="detailsTicketsList" class="event-details-ticket-list"></div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
@@ -171,30 +222,68 @@
     const confirmOkBtn = document.getElementById('confirmOkBtn');
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
     const deactivateButtons = document.querySelectorAll('.js-deactivate-btn');
+    const eventsTableBody = document.querySelector('.admin-table tbody');
     let pendingDeleteUrl = null;
+    let pendingDeleteRow = null;
 
-    function showConfirmModal(url) {
+    function showConfirmModal(url, row) {
         pendingDeleteUrl = url;
+        pendingDeleteRow = row;
         confirmModal.classList.add('active');
     }
 
-    confirmOkBtn.addEventListener('click', function() {
-        if (pendingDeleteUrl) {
+    function ensureEmptyState(colspan, message) {
+        if (!eventsTableBody) {
+            return;
+        }
+        const hasDataRows = eventsTableBody.querySelector('tr[data-id]');
+        if (!hasDataRows) {
+            eventsTableBody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align: center; padding: 30px;">' + message + '</td></tr>';
+        }
+    }
+
+    async function performDeactivateWithoutReload() {
+        if (!pendingDeleteUrl) {
+            return;
+        }
+
+        try {
+            const response = await fetch(pendingDeleteUrl, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) {
+                throw new Error('Deactivate failed');
+            }
+
+            if (pendingDeleteRow) {
+                pendingDeleteRow.remove();
+                ensureEmptyState(7, 'No hay eventos registrados en el sistema. ¡Empieza creando uno!');
+            }
+        } catch (error) {
             window.location.href = pendingDeleteUrl;
         }
+    }
+
+    confirmOkBtn.addEventListener('click', async function() {
+        await performDeactivateWithoutReload();
         confirmModal.classList.remove('active');
         pendingDeleteUrl = null;
+        pendingDeleteRow = null;
     });
 
     confirmCancelBtn.addEventListener('click', function() {
         confirmModal.classList.remove('active');
         pendingDeleteUrl = null;
+        pendingDeleteRow = null;
     });
 
     confirmModal.addEventListener('click', function(e) {
         if (e.target === confirmModal) {
             confirmModal.classList.remove('active');
             pendingDeleteUrl = null;
+            pendingDeleteRow = null;
         }
     });
 
@@ -202,7 +291,7 @@
         button.addEventListener('click', function() {
             const url = this.getAttribute('data-url');
             if (url) {
-                showConfirmModal(url);
+                showConfirmModal(url, this.closest('tr'));
             }
         });
     });
@@ -211,6 +300,20 @@
     const modalImg = document.getElementById("fullImage");
     const thumbnails = document.querySelectorAll('.table-thumbnail');
     const closeBtn = document.getElementsByClassName("close-btn")[0];
+    const detailsButtons = document.querySelectorAll('.js-view-details-btn');
+    const detailsModal = document.getElementById('eventDetailsModal');
+    const detailsCloseBtn = document.getElementById('eventDetailsCloseBtn');
+
+    const detailsId = document.getElementById('detailsId');
+    const detailsName = document.getElementById('detailsName');
+    const detailsDescription = document.getElementById('detailsDescription');
+    const detailsCategory = document.getElementById('detailsCategory');
+    const detailsDate = document.getElementById('detailsDate');
+    const detailsPrice = document.getElementById('detailsPrice');
+    const detailsImage = document.getElementById('detailsImage');
+    const detailsState = document.getElementById('detailsState');
+    const detailsTicketsSummary = document.getElementById('detailsTicketsSummary');
+    const detailsTicketsList = document.getElementById('detailsTicketsList');
 
     thumbnails.forEach(thumb => {
         thumb.addEventListener('click', function() {
@@ -228,6 +331,73 @@
             modal.style.display = "none";
         }
     }
+
+    function formatPriceValue(price) {
+        if (!price || price === 'null' || parseFloat(price) === 0) {
+            return 'Gratis';
+        }
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0
+        }).format(price);
+    }
+
+    function renderAssignedTickets(button) {
+        const eventRow = button.closest('tr');
+        const ticketNodes = eventRow ? eventRow.querySelectorAll('.event-ticket-item-data') : [];
+
+        detailsTicketsList.innerHTML = '';
+
+        if (!ticketNodes.length) {
+            detailsTicketsSummary.textContent = 'Sin tickets';
+            detailsTicketsList.innerHTML = '<div class="event-ticket-empty">Este evento no tiene tickets asignados.</div>';
+            return;
+        }
+
+        let totalTickets = 0;
+
+        ticketNodes.forEach(node => {
+            const name = node.dataset.ticketName || 'Tipo de ticket';
+            const quantity = parseInt(node.dataset.ticketQty || '0', 10);
+            const safeQuantity = Number.isNaN(quantity) ? 0 : quantity;
+            totalTickets += safeQuantity;
+
+            const ticketCard = document.createElement('div');
+            ticketCard.className = 'event-ticket-card';
+            ticketCard.innerHTML = '<span class="event-ticket-name"></span><span class="event-ticket-qty"></span>';
+            ticketCard.querySelector('.event-ticket-name').textContent = name;
+            ticketCard.querySelector('.event-ticket-qty').textContent = safeQuantity.toLocaleString('es-CO');
+            detailsTicketsList.appendChild(ticketCard);
+        });
+
+        detailsTicketsSummary.textContent = ticketNodes.length + ' tipos · ' + totalTickets.toLocaleString('es-CO') + ' disponibles';
+    }
+
+    detailsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            detailsId.textContent = this.dataset.id || '-';
+            detailsName.textContent = this.dataset.name || 'Evento';
+            detailsDescription.textContent = this.dataset.description || 'Sin descripción';
+            detailsCategory.textContent = this.dataset.category || 'Sin categoría';
+            detailsDate.textContent = this.dataset.date || 'Sin fecha';
+            detailsPrice.textContent = formatPriceValue(this.dataset.price);
+            detailsState.textContent = this.dataset.state || '-';
+            detailsImage.src = this.dataset.image || '/images/logo.svg';
+            renderAssignedTickets(this);
+            detailsModal.classList.add('active');
+        });
+    });
+
+    detailsCloseBtn.addEventListener('click', function() {
+        detailsModal.classList.remove('active');
+    });
+
+    detailsModal.addEventListener('click', function(event) {
+        if (event.target === detailsModal) {
+            detailsModal.classList.remove('active');
+        }
+    });
 
     function formatPrice() {
         const priceElements = document.querySelectorAll('.col-price');

@@ -103,13 +103,22 @@ public class AdminEventController {
                             @RequestParam(value = "ticketTypeIds", required = false) List<Integer> ticketTypeIds,
                             @RequestParam Map<String, String> allParams,
                             @RequestParam(value = "draft", defaultValue = "false") boolean draft) {
-
-        event.setCategory(categoryId != null ? eventCategoryService.getEventCategoryById(categoryId) : null);
+        event.setCategory(resolveCategoryForSave(categoryId));
         handleImageUpload(event, image);
         preserveActiveStatus(event, draft);
 
         eventService.saveEventWithTicketTypes(event, extractTicketQuantities(ticketTypeIds, allParams));
         return draft ? "redirect:/admin/inactive" : "redirect:/admin";
+    }
+
+    private co.edu.uptc.Ticketeo.events.models.EventCategory resolveCategoryForSave(Integer categoryId) {
+        if (categoryId != null) {
+            co.edu.uptc.Ticketeo.events.models.EventCategory selected = eventCategoryService.getEventCategoryById(categoryId);
+            if (selected != null) {
+                return selected;
+            }
+        }
+        return null;
     }
 
     @GetMapping("/event/deactivate/{id}")

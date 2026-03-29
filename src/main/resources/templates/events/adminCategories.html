@@ -148,30 +148,68 @@
     const confirmModal = document.getElementById('confirmModal');
     const confirmOkBtn = document.getElementById('confirmOkBtn');
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const categoriesTableBody = document.querySelector('.admin-table tbody');
     let pendingDeleteUrl = null;
+    let pendingDeleteRow = null;
 
-    function showConfirmModal(url) {
+    function showConfirmModal(url, row) {
         pendingDeleteUrl = url;
+        pendingDeleteRow = row;
         confirmModal.classList.add('active');
     }
 
-    confirmOkBtn.addEventListener('click', function() {
-        if (pendingDeleteUrl) {
+    function ensureEmptyState(colspan, message) {
+        if (!categoriesTableBody) {
+            return;
+        }
+        const hasDataRows = categoriesTableBody.querySelector('tr[data-id]');
+        if (!hasDataRows) {
+            categoriesTableBody.innerHTML = '<tr><td colspan="' + colspan + '" style="text-align: center; padding: 30px;">' + message + '</td></tr>';
+        }
+    }
+
+    async function performDeleteWithoutReload() {
+        if (!pendingDeleteUrl) {
+            return;
+        }
+
+        try {
+            const response = await fetch(pendingDeleteUrl, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) {
+                throw new Error('Delete failed');
+            }
+
+            if (pendingDeleteRow) {
+                pendingDeleteRow.remove();
+                ensureEmptyState(4, 'No hay categorías registradas en el sistema. ¡Crea la primera para organizar tus eventos!');
+            }
+        } catch (error) {
             window.location.href = pendingDeleteUrl;
         }
+    }
+
+    confirmOkBtn.addEventListener('click', async function() {
+        await performDeleteWithoutReload();
         confirmModal.classList.remove('active');
         pendingDeleteUrl = null;
+        pendingDeleteRow = null;
     });
 
     confirmCancelBtn.addEventListener('click', function() {
         confirmModal.classList.remove('active');
         pendingDeleteUrl = null;
+        pendingDeleteRow = null;
     });
 
     confirmModal.addEventListener('click', function(e) {
         if (e.target === confirmModal) {
             confirmModal.classList.remove('active');
             pendingDeleteUrl = null;
+            pendingDeleteRow = null;
         }
     });
 
@@ -179,7 +217,7 @@
         button.addEventListener('click', function() {
             const url = this.getAttribute('data-url');
             if (url) {
-                showConfirmModal(url);
+                showConfirmModal(url, this.closest('tr'));
             }
         });
     });
