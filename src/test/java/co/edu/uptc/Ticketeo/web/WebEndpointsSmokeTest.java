@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -125,6 +127,15 @@ class WebEndpointsSmokeTest {
                 .category(category)
                 .build();
 
+        Event completedEvent = Event.builder()
+                .id(2)
+                .name("Old Fest")
+                .date(LocalDate.now().minusDays(2))
+                .price(45000.0)
+                .isActive(true)
+                .category(category)
+                .build();
+
         EventTicketType eventTicketType = EventTicketType.builder()
                 .id(1)
                 .event(event)
@@ -137,7 +148,14 @@ class WebEndpointsSmokeTest {
                 .thenReturn(new PageImpl<>(List.of(event)));
         when(eventService.getRandomEvents(anyInt())).thenReturn(List.of(event));
         when(eventService.getEventById(1)).thenReturn(event);
+        when(eventService.getEventById(2)).thenReturn(completedEvent);
         when(eventService.getEventById(999)).thenReturn(null);
+        lenient().when(eventService.hasAvailableTicketsForEvent(1)).thenReturn(true);
+        lenient().when(eventService.hasAvailableTicketsForEvent(2)).thenReturn(false);
+        lenient().when(eventService.isCompletedEvent(any(Event.class))).thenAnswer(invocation -> {
+            Event candidate = invocation.getArgument(0);
+            return candidate != null && candidate.getDate() != null && candidate.getDate().isBefore(LocalDate.now());
+        });
         when(eventService.getActiveEventsFiltered(any(), any(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(event)));
         when(eventService.getCompletedEventsFiltered(any(), any(), anyInt(), anyInt()))
@@ -311,6 +329,10 @@ class WebEndpointsSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("events/adminCompletedEvents"));
 
+        mockMvc.perform(get("/admin/inactive").with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/adminInactiveEvents"));
+
         mockMvc.perform(get("/admin/event/new").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("events/adminEventForm"));
@@ -372,6 +394,14 @@ class WebEndpointsSmokeTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));
 
+        mockMvc.perform(get("/admin/event/activate/1").with(user("admin").roles("ADMIN")))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/inactive"));
+
+        mockMvc.perform(get("/admin/event/delete/1").with(user("admin").roles("ADMIN")))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/inactive"));
+
         mockMvc.perform(post("/admin/category/save")
                         .with(user("admin").roles("ADMIN"))
                         .with(csrf())
@@ -409,6 +439,21 @@ class WebEndpointsSmokeTest {
     }
 
     @Test
+    void deactivateEvent_withSoldTickets_shouldReturnAdminErrorFlow() throws Exception {
+        doThrow(new IllegalArgumentException("No se puede desactivar un evento que ya tiene boletas vendidas."))
+                .when(eventService).deactivateEvent(1);
+
+        mockMvc.perform(get("/admin/event/deactivate/1").with(user("admin").roles("ADMIN")))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin?deactivateError=true"));
+
+        mockMvc.perform(get("/admin/event/deactivate/1")
+                        .with(user("admin").roles("ADMIN"))
+                        .header("X-Requested-With", "XMLHttpRequest"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void purchaseFlowEndpoints_shouldRedirectAsExpected() throws Exception {
         mockMvc.perform(get("/event/1/purchase"))
                 .andExpect(status().is3xxRedirection())
@@ -431,5 +476,22 @@ class WebEndpointsSmokeTest {
                 .andExpect(status().isOk());
     }
 
-}
+    @Test
+    void completedEvent_shouldBeReadOnlyForUserActions() throws Exception {
+        mockMvc.perform(get("/event/2").with(user("user").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("isCompletedEvent", true));
 
+        mockMvc.perform(get("/event/2/purchase").with(user("user").roles("USER")))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/event/2"));
+
+        mockMvc.perform(post("/event/2/interest")
+                        .with(user("user").roles("USER"))
+                        .with(csrf())
+                        .header("X-Requested-With", "XMLHttpRequest"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+}

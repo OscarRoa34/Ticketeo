@@ -17,6 +17,7 @@
     width: 100%;
 }
 
+
 .event-image-col {
     position: relative;
     overflow: hidden;
@@ -123,6 +124,7 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
+
 .event-meta-label {
     font-size: 0.75rem;
     font-weight: 700;
@@ -226,6 +228,19 @@
 
 .event-actions .btn-danger.btn-action-full:hover:not(:disabled) {
     background-color: #c82333;
+}
+
+.event-actions .event-buy-btn.event-buy-btn-soldout {
+    background: #6b7280;
+    border: 1px solid #4b5563;
+    box-shadow: none;
+    color: #f9fafb;
+    cursor: not-allowed;
+}
+
+.event-actions .event-buy-btn.event-buy-btn-soldout:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .image-modal {

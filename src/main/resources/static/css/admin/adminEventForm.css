@@ -1,4 +1,4 @@
-        .event-form-page {
+.event-form-page {
             min-height: calc(100vh - 80px);
             padding: 40px 0 60px;
         }
@@ -350,6 +350,32 @@
             font-size: 0.78rem;
             color: #bbb;
             text-align: center;
+        }
+
+        .ef-sold-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #9f1239;
+            background: #ffe4e6;
+            border: 1px solid #fecdd3;
+            border-radius: 999px;
+            padding: 2px 8px;
+            margin-left: 4px;
+        }
+
+        .ef-ticket-type-label-locked {
+            color: #9f1239;
+        }
+
+        .ef-ticket-type-label-locked .ef-ticket-type-check {
+            accent-color: #e11d48;
+        }
+
+        .ef-input-locked {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            color: #6b7280;
+            cursor: not-allowed;
         }
 
         @media (max-width: 768px) {

@@ -6,6 +6,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticketeo | Administración</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .admin-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1200;
+            min-width: 320px;
+            max-width: 420px;
+            background: #fff;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #dc2626;
+            color: #991b1b;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+            padding: 12px 14px;
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .admin-toast.active {
+            display: flex;
+        }
+
+        .admin-toast-close {
+            margin-left: auto;
+            border: 0;
+            background: transparent;
+            font-size: 18px;
+            line-height: 1;
+            color: #991b1b;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .admin-toast-message {
+            margin: 0;
+            font-size: 0.92rem;
+            line-height: 1.35;
+        }
+    </style>
 </head>
 
 <body>
@@ -22,6 +63,7 @@
         <div class="admin-actions">
             <a th:href="@{/admin/event/new}" class="btn-primary">+ Nuevo Evento</a>
             <a th:href="@{/admin/completed}" class="btn-primary btn-trash">Eventos completados</a>
+            <a th:href="@{/admin/inactive}" class="btn-primary btn-trash">Eventos inactivos</a>
         </div>
     </div>
 
@@ -65,7 +107,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="event : ${events}"
+            <tr th:each="event : ${events}" th:data-id="${event.id}"
                 th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${hasTicketTypes and event.price != null}">
                 <td class="col-id" th:text="${event.id}">1</td>
                 <td class="col-img">
@@ -179,6 +221,11 @@
 
 </main>
 
+<div id="deactivateToast" class="admin-toast" role="status" aria-live="polite" aria-atomic="true">
+    <p class="admin-toast-message">No se puede desactivar un evento con historial de ventas.</p>
+    <button type="button" id="deactivateToastClose" class="admin-toast-close" aria-label="Cerrar aviso">&times;</button>
+</div>
+
 <div id="confirmModal" class="confirm-modal-overlay">
     <div class="confirm-modal">
         <div class="confirm-modal-icon">🔕</div>
@@ -233,8 +280,12 @@
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
     const deactivateButtons = document.querySelectorAll('.js-deactivate-btn');
     const eventsTableBody = document.querySelector('.admin-table tbody');
+    const deactivateToast = document.getElementById('deactivateToast');
+    const deactivateToastClose = document.getElementById('deactivateToastClose');
+    const hasDeactivateErrorParam = new URLSearchParams(window.location.search).has('deactivateError');
     let pendingDeleteUrl = null;
     let pendingDeleteRow = null;
+    let deactivateToastTimer = null;
 
     function showConfirmModal(url, row) {
         pendingDeleteUrl = url;
@@ -258,10 +309,16 @@
         }
 
         try {
+            hideDeactivateErrorNotice();
             const response = await fetch(pendingDeleteUrl, {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
+
+            if (response.status === 409) {
+                showDeactivateErrorNotice();
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Deactivate failed');
@@ -272,8 +329,39 @@
                 ensureEmptyState(7, 'No hay eventos registrados en el sistema. ¡Empieza creando uno!');
             }
         } catch (error) {
-            window.location.href = pendingDeleteUrl;
+            window.location.href = '/admin?deactivateError=true';
         }
+    }
+
+    function showDeactivateErrorNotice() {
+        if (!deactivateToast) {
+            return;
+        }
+
+        if (deactivateToastTimer) {
+            clearTimeout(deactivateToastTimer);
+        }
+
+        deactivateToast.classList.add('active');
+        deactivateToastTimer = setTimeout(hideDeactivateErrorNotice, 15000);
+    }
+
+    function hideDeactivateErrorNotice() {
+        if (deactivateToastTimer) {
+            clearTimeout(deactivateToastTimer);
+            deactivateToastTimer = null;
+        }
+        if (deactivateToast) {
+            deactivateToast.classList.remove('active');
+        }
+    }
+
+    if (deactivateToastClose) {
+        deactivateToastClose.addEventListener('click', hideDeactivateErrorNotice);
+    }
+
+    if (hasDeactivateErrorParam) {
+        showDeactivateErrorNotice();
     }
 
     confirmOkBtn.addEventListener('click', async function() {

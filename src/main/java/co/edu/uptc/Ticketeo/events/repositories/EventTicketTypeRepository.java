@@ -28,6 +28,8 @@ public interface EventTicketTypeRepository extends JpaRepository<EventTicketType
     @Query("SELECT DISTINCT ett.event.id FROM EventTicketType ett WHERE ett.ticketType.id = :ticketTypeId")
     List<Integer> findDistinctEventIdsByTicketTypeId(@Param("ticketTypeId") Integer ticketTypeId);
 
+    boolean existsByEvent_IdAndAvailableQuantityGreaterThan(Integer eventId, Integer quantity);
+
     void deleteByEvent_Id(Integer eventId);
 
     void deleteByTicketType_Id(Integer ticketTypeId);

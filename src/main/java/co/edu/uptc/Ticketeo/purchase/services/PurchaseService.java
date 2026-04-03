@@ -42,6 +42,9 @@ public class PurchaseService {
         if (event == null) {
             throw new IllegalArgumentException("No se encontro el evento.");
         }
+        if (eventService.isCompletedEvent(event)) {
+            throw new IllegalArgumentException("No se pueden comprar boletas de eventos completados.");
+        }
 
         User user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("No se encontro el usuario."));
 

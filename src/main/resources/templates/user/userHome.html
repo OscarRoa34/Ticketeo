@@ -19,7 +19,7 @@
 <div class="carousel-container" th:if="${not #lists.isEmpty(carouselEvents)}">
     <div class="carousel-wrapper">
         <div class="carousel-slide is-clickable" th:each="event, iterStat : ${carouselEvents}"
-             th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${hasTicketTypes and event.price != null}"
+             th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${availableTicketsByEventId != null and availableTicketsByEventId[event.id] == true}, isCompleted=${completedEventsById != null and completedEventsById[event.id] == true}"
              th:classappend="${iterStat.index == 0} ? 'active' : ''"
              th:attr="data-href=@{/event/{id}(id=${event.id})},aria-label=${'Ver detalles de ' + event.name}"
              tabindex="-1" role="link">
@@ -31,17 +31,19 @@
                 <h2 class="carousel-title" th:text="${event.name}">Nombre del Evento</h2>
                 <p class="carousel-description" th:text="${event.description}">Descripción del evento</p>
                 <div class="carousel-meta">
+                    <span class="carousel-meta-item" th:if="${isCompleted}">
+                        <span class="ticket-status-label ticket-status-completed">Completado</span>
+                    </span>
                     <span class="carousel-meta-item">
                         <span style="margin-right: 5px;">Fecha:</span>
                         <span th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">Fecha</span>
                     </span>
-                    <span class="carousel-meta-item" th:if="${hasAvailableTickets}">
+                    <span class="carousel-meta-item" th:if="${hasAvailableTickets and !isCompleted}">
                         <span style="margin-right: 5px;">Desde:</span>
                         <span class="price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">Precio</span>
                     </span>
-                    <span class="carousel-meta-item" th:if="${hasTicketTypes and !hasAvailableTickets}">
-                        <span style="margin-right: 5px;">Boletas:</span>
-                        <span class="ticket-status-label">Sin boletas</span>
+                    <span class="carousel-meta-item" th:if="${hasTicketTypes and !hasAvailableTickets and !isCompleted}">
+                        <span class="ticket-status-label ticket-status-soldout">Agotado</span>
                     </span>
                 </div>
                 <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary carousel-btn">Ver Detalles</a>
@@ -76,7 +78,7 @@
     <div class="events-grid">
 
         <article class="event-card is-clickable" th:each="event : ${events}"
-                 th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${hasTicketTypes and event.price != null}"
+                 th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${availableTicketsByEventId != null and availableTicketsByEventId[event.id] == true}, isCompleted=${completedEventsById != null and completedEventsById[event.id] == true}"
                  th:data-href="@{/event/{id}(id=${event.id})}" aria-label="Ver detalles del evento" tabindex="0" role="link">
 
             <img th:src="${event.imageUrl}" class="card-image" th:alt="${event.name}">
@@ -91,8 +93,9 @@
                 <p class="card-description" th:text="${event.description}">Descripción y detalles del evento.</p>
 
                 <div class="card-footer">
-                    <span th:if="${hasAvailableTickets}" class="price-tag" data-prefix="Desde " th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</span>
-                    <span th:if="${hasTicketTypes and !hasAvailableTickets}" class="ticket-status-label">Sin boletas</span>
+                    <span th:if="${isCompleted}" class="ticket-status-label ticket-status-completed">Completado</span>
+                    <span th:if="${hasAvailableTickets and !isCompleted}" class="price-tag" data-prefix="Desde " th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</span>
+                    <span th:if="${hasTicketTypes and !hasAvailableTickets and !isCompleted}" class="ticket-status-label ticket-status-soldout">Agotado</span>
 
                     <span class="btn-secondary card-link-hint">Ver Detalles</span>
                 </div>

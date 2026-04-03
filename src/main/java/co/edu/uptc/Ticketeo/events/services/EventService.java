@@ -3,8 +3,10 @@ package co.edu.uptc.Ticketeo.events.services;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +22,7 @@ import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.repositories.TicketTypeRepository;
 import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.purchase.repositories.PurchasedTicketRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,6 +33,7 @@ public class EventService {
     private final InterestReportRepository interestReportRepository;
     private final EventTicketTypeRepository eventTicketTypeRepository;
     private final TicketTypeRepository ticketTypeRepository;
+    private final PurchasedTicketRepository purchasedTicketRepository;
 
     public Event saveEvent(Event event) {
         return eventRepository.save(event);
@@ -38,18 +42,52 @@ public class EventService {
     @Transactional
     public Event saveEventWithTicketTypes(Event event, Map<Integer, Integer> ticketTypeQuantities, Map<Integer, Double> ticketTypePrices) {
         Event savedEvent = eventRepository.save(event);
+
+        Map<Integer, Integer> safeQuantities = ticketTypeQuantities != null ? new HashMap<>(ticketTypeQuantities) : new HashMap<>();
+        Map<Integer, Double> safePrices = ticketTypePrices != null ? new HashMap<>(ticketTypePrices) : new HashMap<>();
+
+        List<EventTicketType> currentAssignments = savedEvent.getId() != null
+                ? eventTicketTypeRepository.findByEvent_Id(savedEvent.getId())
+                : List.of();
+
+        Map<Integer, Boolean> soldTicketTypes = getSoldTicketTypesForEvent(savedEvent.getId());
+        Set<Integer> lockedTypeIds = new HashSet<>();
+        for (EventTicketType current : currentAssignments) {
+            Integer typeId = current.getTicketType() != null ? current.getTicketType().getId() : null;
+            if (typeId == null || !Boolean.TRUE.equals(soldTicketTypes.get(typeId))) {
+                continue;
+            }
+
+            Integer requestedQty = safeQuantities.get(typeId);
+            Double requestedPrice = safePrices.get(typeId);
+            if (requestedQty == null || !requestedQty.equals(current.getAvailableQuantity())) {
+                throw new IllegalArgumentException("No se puede modificar la cantidad de un tipo de boleta que ya tiene ventas.");
+            }
+            if (requestedPrice == null || Double.compare(requestedPrice, current.getTicketPrice()) != 0) {
+                throw new IllegalArgumentException("No se puede modificar el precio de un tipo de boleta que ya tiene ventas.");
+            }
+            lockedTypeIds.add(typeId);
+        }
+
         eventTicketTypeRepository.deleteByEvent_Id(savedEvent.getId());
 
-        if (ticketTypeQuantities == null || ticketTypeQuantities.isEmpty()) {
+        if (safeQuantities.isEmpty()) {
             recalculateMinimumAvailablePrice(savedEvent.getId());
             return eventRepository.findById(savedEvent.getId()).orElse(savedEvent);
         }
 
-        for (Map.Entry<Integer, Integer> entry : ticketTypeQuantities.entrySet()) {
+        for (Map.Entry<Integer, Integer> entry : safeQuantities.entrySet()) {
             Integer ticketTypeId = entry.getKey();
             Integer quantity = entry.getValue();
-            Double ticketPrice = ticketTypePrices != null ? ticketTypePrices.get(ticketTypeId) : null;
-            if (ticketTypeId == null || quantity == null || quantity <= 0 || ticketPrice == null || ticketPrice <= 0) {
+            Double ticketPrice = safePrices.get(ticketTypeId);
+            boolean isLockedType = lockedTypeIds.contains(ticketTypeId);
+            if (ticketTypeId == null || quantity == null || ticketPrice == null) {
+                continue;
+            }
+            if (!isLockedType && (quantity <= 0 || ticketPrice <= 0)) {
+                continue;
+            }
+            if (isLockedType && (quantity < 0 || ticketPrice < 0)) {
                 continue;
             }
 
@@ -199,8 +237,24 @@ public class EventService {
         return eventRepository.findById(id).orElse(null);
     }
 
+    public boolean isCompletedEvent(Event event) {
+        return event != null
+                && event.getDate() != null
+                && event.getDate().isBefore(LocalDate.now());
+    }
+
+    public boolean hasAvailableTicketsForEvent(Integer eventId) {
+        if (eventId == null) {
+            return false;
+        }
+        return eventTicketTypeRepository.existsByEvent_IdAndAvailableQuantityGreaterThan(eventId, 0);
+    }
+
     @Transactional
     public void deactivateEvent(Integer id) {
+        if (purchasedTicketRepository.existsByPurchase_EventId(id)) {
+            throw new IllegalArgumentException("No se puede desactivar un evento que ya tiene boletas vendidas.");
+        }
         eventRepository.findById(id).ifPresent(event -> {
             event.setIsActive(false);
             eventRepository.save(event);
@@ -233,5 +287,36 @@ public class EventService {
             case "date_desc" -> Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id"));
             default -> Sort.by(Sort.Order.desc("id"));
         };
+    }
+
+
+    public Map<Integer, Boolean> getSoldTicketTypesForEvent(Integer eventId) {
+        if (eventId == null) {
+            return Map.of();
+        }
+
+        List<EventTicketType> assignments = eventTicketTypeRepository.findByEvent_Id(eventId);
+        if (assignments.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<String, Long> soldCountByTypeName = new HashMap<>();
+        for (Object[] row : purchasedTicketRepository.countSoldTicketsByTypeNameForEvent(eventId)) {
+            if (row == null || row.length < 2 || row[0] == null || row[1] == null) {
+                continue;
+            }
+            soldCountByTypeName.put(String.valueOf(row[0]), ((Number) row[1]).longValue());
+        }
+
+        Map<Integer, Boolean> soldByTypeId = new HashMap<>();
+        for (EventTicketType assignment : assignments) {
+            if (assignment.getTicketType() == null || assignment.getTicketType().getId() == null) {
+                continue;
+            }
+            String typeName = assignment.getTicketType().getName();
+            boolean hasSales = typeName != null && soldCountByTypeName.getOrDefault(typeName, 0L) > 0;
+            soldByTypeId.put(assignment.getTicketType().getId(), hasSales);
+        }
+        return soldByTypeId;
     }
 }

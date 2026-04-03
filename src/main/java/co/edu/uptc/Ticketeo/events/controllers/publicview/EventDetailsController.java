@@ -37,7 +37,10 @@ public class EventDetailsController {
         if (event == null) {
             return "redirect:/?error=notfound";
         }
-        
+
+        boolean isCompletedEvent = eventService.isCompletedEvent(event);
+        boolean hasAvailableTicketsForEvent = eventService.hasAvailableTicketsForEvent(id);
+
         boolean isInterested = false;
         if (authentication != null && authentication.isAuthenticated()) {
             User user = userRepository.findByUsername(authentication.getName()).orElse(null);
@@ -45,9 +48,11 @@ public class EventDetailsController {
                 isInterested = interestReportService.isUserInterested(id, user.getId());
             }
         }
-        
+
         model.addAttribute("event", event);
         model.addAttribute("isInterested", isInterested);
+        model.addAttribute("isCompletedEvent", isCompletedEvent);
+        model.addAttribute("hasAvailableTicketsForEvent", hasAvailableTicketsForEvent);
         return "events/eventDetails";
     }
 
@@ -90,12 +95,7 @@ public class EventDetailsController {
         if (event != null && authentication != null && authentication.isAuthenticated()) {
             User user = userRepository.findByUsername(authentication.getName()).orElse(null);
             if (user != null) {
-                boolean interestedNow = interestReportService.toggleInterest(event, user);
-                if (interestedNow) {
-                    redirectAttributes.addFlashAttribute("successMessage", "¡Genial! Hemos registrado tu interés en " + event.getName());
-                } else {
-                    redirectAttributes.addFlashAttribute("successMessage", "Ya no estás interesado en " + event.getName());
-                }
+                interestReportService.toggleInterest(event, user);
             }
         }
 

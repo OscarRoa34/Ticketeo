@@ -60,6 +60,7 @@ class InterestReportServiceTest {
         assertTrue(savedReport.getRegistrationDate() != null);
     }
 
+
     @Test
     void isUserInterested_whenUserIdIsNull_returnsFalseWithoutRepositoryCall() {
         // Verifica que si el userId es null,
