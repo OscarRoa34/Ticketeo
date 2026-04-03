@@ -18,7 +18,10 @@
 
 <div class="carousel-container" th:if="${not #lists.isEmpty(carouselEvents)}">
     <div class="carousel-wrapper">
-        <div class="carousel-slide" th:each="event, iterStat : ${carouselEvents}" th:classappend="${iterStat.index == 0} ? 'active' : ''">
+        <div class="carousel-slide is-clickable" th:each="event, iterStat : ${carouselEvents}"
+             th:classappend="${iterStat.index == 0} ? 'active' : ''"
+             th:attr="data-href=@{/event/{id}(id=${event.id})}"
+             tabindex="-1" role="link" th:aria-label="|Ver detalles de ${event.name}|">
             <img th:src="${event.imageUrl}" th:alt="${event.name}" class="carousel-image">
             <div class="carousel-content">
                 <span th:if="${event.category != null}" class="category-badge carousel-category"
@@ -67,7 +70,7 @@
 
     <div class="events-grid">
 
-        <article class="event-card" th:each="event : ${events}">
+        <article class="event-card is-clickable" th:each="event : ${events}" th:attr="data-href=@{/event/{id}(id=${event.id})}" tabindex="0" role="link" th:aria-label="|Ver detalles de ${event.name}|">
 
             <img th:src="${event.imageUrl}" class="card-image" th:alt="${event.name}">
 
@@ -83,7 +86,7 @@
                 <div class="card-footer">
                     <span class="price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</span>
 
-                    <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary">Ver Detalles</a>
+                    <span class="btn-secondary card-link-hint">Ver Detalles</span>
                 </div>
             </div>
         </article>
@@ -169,6 +172,52 @@
         });
     }
 
+    function initClickableEventCards() {
+        const cards = document.querySelectorAll('.event-card.is-clickable[data-href]');
+        cards.forEach(card => {
+            const href = card.getAttribute('data-href');
+            if (!href) return;
+
+            card.addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.closest('a, button, input, select, textarea, form')) {
+                    return;
+                }
+                window.location.href = href;
+            });
+
+            card.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    window.location.href = href;
+                }
+            });
+        });
+    }
+
+    function initClickableCarouselSlides() {
+        const slides = document.querySelectorAll('.carousel-slide.is-clickable[data-href]');
+        slides.forEach(slide => {
+            const href = slide.getAttribute('data-href');
+            if (!href) return;
+
+            slide.addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.closest('a, button, input, select, textarea, form')) {
+                    return;
+                }
+                window.location.href = href;
+            });
+
+            slide.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    window.location.href = href;
+                }
+            });
+        });
+    }
+
     let currentSlide = 0;
     let carouselInterval;
 
@@ -181,8 +230,10 @@
         function showSlide(index) {
             slides.forEach((slide, i) => {
                 slide.classList.remove('active');
+                slide.setAttribute('tabindex', '-1');
                 if (i === index) {
                     slide.classList.add('active');
+                    slide.setAttribute('tabindex', '0');
                 }
             });
 
@@ -209,6 +260,7 @@
         });
 
         carouselInterval = setInterval(nextSlide, 7000);
+        showSlide(currentSlide);
     }
 
     function initHamburger() {
@@ -232,6 +284,8 @@
         formatPrice();
         initCarousel();
         initHamburger();
+        initClickableEventCards();
+        initClickableCarouselSlides();
     });
 </script>
 </body>
