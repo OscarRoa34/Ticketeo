@@ -45,6 +45,15 @@
     padding: 40px;
 }
 
+.carousel-slide.is-clickable.active {
+    cursor: pointer;
+}
+
+.carousel-slide.is-clickable.active:focus-visible {
+    outline: 3px solid rgba(124, 58, 237, 0.45);
+    outline-offset: -3px;
+}
+
 .carousel-slide.active {
     opacity: 1;
     z-index: 1;

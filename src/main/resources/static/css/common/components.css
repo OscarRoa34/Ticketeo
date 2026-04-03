@@ -122,6 +122,15 @@
     position: relative;
 }
 
+.event-card.is-clickable {
+    cursor: pointer;
+}
+
+.event-card.is-clickable:focus-visible {
+    outline: 3px solid rgba(124, 58, 237, 0.45);
+    outline-offset: 3px;
+}
+
 .event-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 20px rgba(15, 48, 87, 0.15);
@@ -161,6 +170,10 @@
     justify-content: space-between;
     align-items: center;
     margin-top: auto;
+}
+
+.card-link-hint {
+    pointer-events: none;
 }
 
 .price-tag {
@@ -347,5 +360,3 @@
     color: #34d399;
     border: 1.5px solid #059669;
 }
-
-
