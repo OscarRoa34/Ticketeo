@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminEventController {
 
     private static final int PAGE_SIZE = 6;
+    private static final Pattern NON_DIGIT_PATTERN = Pattern.compile("[^\\d]");
 
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
@@ -78,6 +80,7 @@ public class AdminEventController {
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
         model.addAttribute("ticketQuantities", Map.<Integer, Integer>of());
+        model.addAttribute("ticketPrices", Map.<Integer, Double>of());
         model.addAttribute("draft", draft);
         return "events/adminEventForm";
     }
@@ -92,6 +95,7 @@ public class AdminEventController {
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
         model.addAttribute("ticketQuantities", eventService.getTicketTypeQuantitiesForEvent(id));
+        model.addAttribute("ticketPrices", eventService.getTicketTypePricesForEvent(id));
         model.addAttribute("draft", !Boolean.TRUE.equals(event.getIsActive()));
         return "events/adminEventForm";
     }
@@ -110,7 +114,8 @@ public class AdminEventController {
         event.setIsActive(!draft);
 
         Map<Integer, Integer> ticketQuantities = extractTicketQuantities(ticketTypeIds, allParams);
-        eventService.saveEventWithTicketTypes(event, ticketQuantities);
+        Map<Integer, Double> ticketPrices = extractTicketPrices(ticketTypeIds, allParams);
+        eventService.saveEventWithTicketTypes(event, ticketQuantities, ticketPrices);
         return draft ? "redirect:/admin/inactive" : "redirect:/admin";
     }
 
@@ -182,5 +187,33 @@ public class AdminEventController {
             }
         }
         return ticketQuantities;
+    }
+
+    private Map<Integer, Double> extractTicketPrices(List<Integer> ticketTypeIds, Map<String, String> allParams) {
+        Map<Integer, Double> ticketPrices = new HashMap<>();
+        if (ticketTypeIds == null || ticketTypeIds.isEmpty()) {
+            return ticketPrices;
+        }
+
+        for (Integer ticketTypeId : ticketTypeIds) {
+            String priceValue = allParams.get("ticketPrice_" + ticketTypeId);
+            if (priceValue == null || priceValue.isBlank()) {
+                continue;
+            }
+
+            String normalized = NON_DIGIT_PATTERN.matcher(priceValue).replaceAll("");
+            if (normalized.isBlank()) {
+                continue;
+            }
+
+            try {
+                double price = Double.parseDouble(normalized);
+                if (price > 0) {
+                    ticketPrices.put(ticketTypeId, price);
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return ticketPrices;
     }
 }

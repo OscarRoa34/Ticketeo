@@ -36,10 +36,14 @@
                         <span class="event-meta-value"
                             th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">01/01/2026</span>
                     </div>
-                    <div class="event-meta-item">
-                        <span class="event-meta-label">Precio</span>
+                    <div class="event-meta-item price-highlight" th:if="${not #lists.isEmpty(event.ticketTypes) and event.price != null}">
+                        <span class="event-meta-label">Desde</span>
                         <span class="event-meta-value price-tag" th:data-price="${event.price}"
                             th:text="${(event.price == null or event.price == 0) ? 'Gratis' : '$' + event.price}">$0</span>
+                    </div>
+                    <div class="event-meta-item" th:if="${not #lists.isEmpty(event.ticketTypes) and event.price == null}">
+                        <span class="event-meta-label">Boletas</span>
+                        <span class="event-meta-value ticket-status-label">Sin boletas</span>
                     </div>
                 </div>
 
@@ -52,6 +56,11 @@
 
                 <div class="event-actions">
                     <th:block sec:authorize="isAuthenticated()">
+                        <a th:href="@{/event/{id}/purchase(id=${event.id})}" class="btn-primary btn-action-full event-buy-btn"
+                            style="text-align: center; display: block; text-decoration: none;">
+                            Comprar boletos
+                        </a>
+
                         <form th:action="@{/event/{id}/interest(id=${event.id})}" method="post" id="interestForm">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <button type="submit"
@@ -65,6 +74,12 @@
                     </th:block>
 
                     <th:block sec:authorize="isAnonymous()">
+                        <a th:href="@{/login}" class="btn-primary btn-action-full event-buy-btn"
+                            title="Inicia sesión para comprar boletos"
+                            style="text-align: center; display: block; text-decoration: none;">
+                            Inicia sesión para comprar
+                        </a>
+
                         <a th:href="@{/login}" class="btn-primary btn-action-full"
                             title="Inicia sesión para mostrar interés"
                             style="text-align: center; display: block; text-decoration: none;">
@@ -83,7 +98,7 @@
 
     <div class="image-modal" id="imageModal">
         <span class="image-modal-close" id="modalClose">&times;</span>
-        <img class="image-modal-img" id="modalImg">
+        <img class="image-modal-img" id="modalImg" src="/images/logo.svg" alt="Vista previa de imagen del evento">
     </div>
 
     <div th:replace="~{fragments/footer :: footer}"></div>

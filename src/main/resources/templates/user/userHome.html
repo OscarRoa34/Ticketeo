@@ -19,9 +19,10 @@
 <div class="carousel-container" th:if="${not #lists.isEmpty(carouselEvents)}">
     <div class="carousel-wrapper">
         <div class="carousel-slide is-clickable" th:each="event, iterStat : ${carouselEvents}"
+             th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${hasTicketTypes and event.price != null}"
              th:classappend="${iterStat.index == 0} ? 'active' : ''"
-             th:attr="data-href=@{/event/{id}(id=${event.id})}"
-             tabindex="-1" role="link" th:aria-label="|Ver detalles de ${event.name}|">
+             th:attr="data-href=@{/event/{id}(id=${event.id})},aria-label=${'Ver detalles de ' + event.name}"
+             tabindex="-1" role="link">
             <img th:src="${event.imageUrl}" th:alt="${event.name}" class="carousel-image">
             <div class="carousel-content">
                 <span th:if="${event.category != null}" class="category-badge carousel-category"
@@ -34,9 +35,13 @@
                         <span style="margin-right: 5px;">Fecha:</span>
                         <span th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">Fecha</span>
                     </span>
-                    <span class="carousel-meta-item">
-                        <span style="margin-right: 5px;">Precio:</span>
+                    <span class="carousel-meta-item" th:if="${hasAvailableTickets}">
+                        <span style="margin-right: 5px;">Desde:</span>
                         <span class="price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">Precio</span>
+                    </span>
+                    <span class="carousel-meta-item" th:if="${hasTicketTypes and !hasAvailableTickets}">
+                        <span style="margin-right: 5px;">Boletas:</span>
+                        <span class="ticket-status-label">Sin boletas</span>
                     </span>
                 </div>
                 <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary carousel-btn">Ver Detalles</a>
@@ -70,7 +75,9 @@
 
     <div class="events-grid">
 
-        <article class="event-card is-clickable" th:each="event : ${events}" th:attr="data-href=@{/event/{id}(id=${event.id})}" tabindex="0" role="link" th:aria-label="|Ver detalles de ${event.name}|">
+        <article class="event-card is-clickable" th:each="event : ${events}"
+                 th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${hasTicketTypes and event.price != null}"
+                 th:data-href="@{/event/{id}(id=${event.id})}" aria-label="Ver detalles del evento" tabindex="0" role="link">
 
             <img th:src="${event.imageUrl}" class="card-image" th:alt="${event.name}">
 
@@ -84,7 +91,8 @@
                 <p class="card-description" th:text="${event.description}">Descripción y detalles del evento.</p>
 
                 <div class="card-footer">
-                    <span class="price-tag" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</span>
+                    <span th:if="${hasAvailableTickets}" class="price-tag" data-prefix="Desde " th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</span>
+                    <span th:if="${hasTicketTypes and !hasAvailableTickets}" class="ticket-status-label">Sin boletas</span>
 
                     <span class="btn-secondary card-link-hint">Ver Detalles</span>
                 </div>
@@ -159,15 +167,16 @@
         const priceElements = document.querySelectorAll('.price-tag');
         priceElements.forEach(el => {
             const price = el.getAttribute('data-price');
+            const prefix = el.getAttribute('data-prefix') || '';
             if (price && price !== 'null' && parseFloat(price) !== 0) {
                 const formattedPrice = new Intl.NumberFormat('es-CO', {
                     style: 'currency',
                     currency: 'COP',
                     minimumFractionDigits: 0
                 }).format(parseFloat(price));
-                el.textContent = formattedPrice;
+                el.textContent = prefix + formattedPrice;
             } else if (!price || price === 'null' || parseFloat(price) === 0) {
-                el.textContent = 'Gratis';
+                el.textContent = prefix ? (prefix + 'Gratis') : 'Gratis';
             }
         });
     }

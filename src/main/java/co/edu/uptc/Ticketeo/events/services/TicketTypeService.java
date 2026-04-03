@@ -20,6 +20,7 @@ public class TicketTypeService {
 
     private final TicketTypeRepository ticketTypeRepository;
     private final EventTicketTypeRepository eventTicketTypeRepository;
+    private final EventService eventService;
 
     public TicketType saveTicketType(TicketType ticketType) {
         return ticketTypeRepository.save(ticketType);
@@ -40,7 +41,11 @@ public class TicketTypeService {
 
     @Transactional
     public void deleteTicketType(Integer id) {
+        List<Integer> impactedEventIds = eventTicketTypeRepository.findDistinctEventIdsByTicketTypeId(id);
         eventTicketTypeRepository.deleteByTicketType_Id(id);
         ticketTypeRepository.deleteById(id);
+        if (impactedEventIds != null) {
+            impactedEventIds.forEach(eventService::recalculateMinimumAvailablePrice);
+        }
     }
 }

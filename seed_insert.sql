@@ -10,7 +10,7 @@ BEGIN
     SELECT id_categoria INTO cat_teatro     FROM categoria_eventos WHERE LOWER(nombre_categoria) = 'teatro'     LIMIT 1;
 
     FOR i IN 1..1000 LOOP
-        INSERT INTO eventos (id_evento, id_categoria, nombre_evento, fecha_evento, valor_evento, descripcion_evento, imagen_evento, estado)
+        INSERT INTO eventos (id_evento, id_categoria, nombre_evento, fecha_evento, valor_minimo_evento, descripcion_evento, imagen_evento, estado)
         VALUES (
             nextval('evento_seq'),
             CASE (i % 3)

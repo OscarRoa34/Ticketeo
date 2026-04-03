@@ -23,7 +23,8 @@
 
         <div class="events-grid">
 
-            <article class="event-card" th:each="event : ${events}">
+            <article class="event-card" th:each="event : ${events}"
+                     th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${hasTicketTypes and event.price != null}">
 
                 <img th:src="${event.imageUrl}" class="card-image" th:alt="${event.name}">
 
@@ -37,8 +38,9 @@
                     <p class="card-description" th:text="${event.description}">Descripción y detalles del evento.</p>
 
                     <div class="card-footer">
-                        <span class="price-tag"
-                              th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$ ' + #numbers.formatDecimal(event.price, 0, 'POINT', 0, 'COMMA')}">$0</span>
+                        <span class="price-tag" th:if="${hasAvailableTickets}"
+                              th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : 'Desde ' + '$ ' + #numbers.formatDecimal(event.price, 0, 'POINT', 0, 'COMMA')}">$0</span>
+                        <span class="ticket-status-label" th:if="${hasTicketTypes and !hasAvailableTickets}">Sin boletas</span>
 
                         <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary">Ver Detalles</a>
                     </div>

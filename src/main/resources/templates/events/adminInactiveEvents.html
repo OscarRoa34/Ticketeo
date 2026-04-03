@@ -27,12 +27,14 @@
 
     <div class="admin-search-bar">
         <form th:action="@{/admin/inactive}" method="get" class="admin-search-form-fino">
-            <select name="categoryId" class="admin-search-select-fino">
+            <label for="inactiveCategoryFilter" style="display:none;">Filtrar por categoría</label>
+            <select id="inactiveCategoryFilter" name="categoryId" class="admin-search-select-fino">
                 <option value="">Todas las categorías</option>
                 <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
                         th:selected="${currentCategory != null and currentCategory == cat.id}"></option>
             </select>
-            <input type="text" name="search" class="admin-search-input-fino"
+            <label for="inactiveSearchInput" style="display:none;">Buscar evento</label>
+            <input id="inactiveSearchInput" type="text" name="search" class="admin-search-input-fino"
                    placeholder="Buscar evento por nombre..." th:value="${search}">
             <button type="submit" class="admin-search-btn-fino">Buscar</button>
             <a th:if="${(search != null and !search.isEmpty()) or currentCategory != null}"
@@ -58,12 +60,13 @@
                 <th>Nombre del Evento</th>
                 <th>Categoría</th>
                 <th>Fecha</th>
-                <th>Valor</th>
+                <th>Boletas</th>
                 <th class="text-center col-actions-header col-actions-header-triple">Acciones</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="event : ${events}" th:data-id="${event.id}" class="inactive-row">
+            <tr th:each="event : ${events}" th:data-id="${event.id}" class="inactive-row"
+                th:with="hasTicketTypes=${not #lists.isEmpty(event.ticketTypes)}, hasAvailableTickets=${hasTicketTypes and event.price != null}">
 
                 <td class="col-id" th:text="${event.id}">1</td>
 
@@ -82,7 +85,10 @@
 
                 <td th:text="${#temporals.format(event.date, 'dd/MM/yyyy')}">15/03/2026</td>
 
-                <td class="col-price" th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : '$' + event.price}">$0</td>
+                <td>
+                    <span class="col-price" th:if="${hasAvailableTickets}" data-prefix="Desde " th:data-price="${event.price}" th:text="${(event.price == null or event.price == 0.0) ? 'Gratis' : 'Desde $ ' + #numbers.formatDecimal(event.price, 0, 'POINT', 0, 'COMMA')}">$0</span>
+                    <span class="ticket-status-label" th:if="${hasTicketTypes and !hasAvailableTickets}">Sin boletas</span>
+                </td>
 
                 <td class="col-actions col-actions-triple">
                     <div class="row-actions">
@@ -98,7 +104,9 @@
                                     data-date=${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : 'Sin fecha'},
                                     data-price=${event.price},
                                     data-image=${event.imageUrl},
-                                    data-state='Inactivo'">
+                                    data-state='Inactivo',
+                                    data-has-ticket-types=${hasTicketTypes},
+                                    data-sold-out=${hasTicketTypes and !hasAvailableTickets}">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -203,7 +211,7 @@
 <!-- Modal imagen -->
 <div id="imageViewer" class="modal-overlay">
     <span class="close-btn">&times;</span>
-    <img class="modal-content" id="fullImage">
+    <img class="modal-content" id="fullImage" src="/images/logo.svg" alt="Vista previa del evento">
 </div>
 
 <div id="eventDetailsModal" class="event-details-overlay">
@@ -211,7 +219,7 @@
         <button type="button" class="event-details-close" id="eventDetailsCloseBtn" aria-label="Cerrar">&times;</button>
         <div class="event-details-grid">
             <div class="event-details-image-wrap">
-                <img id="detailsImage" alt="Imagen del evento" class="event-details-image">
+                <img id="detailsImage" src="/images/logo.svg" alt="Imagen del evento" class="event-details-image">
             </div>
             <div class="event-details-content">
                 <div class="event-details-headline">
@@ -223,7 +231,7 @@
                 <div class="event-details-meta">
                     <div><strong>ID:</strong> <span id="detailsId">-</span></div>
                     <div><strong>Fecha:</strong> <span id="detailsDate">-</span></div>
-                    <div><strong>Valor:</strong> <span id="detailsPrice">-</span></div>
+                    <div><strong>Boletas:</strong> <span id="detailsPrice">-</span></div>
                     <div><strong>Tickets:</strong> <span id="detailsTicketsSummary">Sin tickets</span></div>
                 </div>
             </div>
@@ -394,15 +402,24 @@
     closeBtn.onclick = function () { modal.style.display = 'none'; };
     modal.onclick = function (e) { if (e.target === modal) modal.style.display = 'none'; };
 
-    function formatPriceValue(price) {
-        if (!price || price === 'null' || parseFloat(price) === 0) {
-            return 'Gratis';
+    function formatPriceValue(price, hasTicketTypes, isSoldOut) {
+        const hasTypes = hasTicketTypes === true || hasTicketTypes === 'true';
+        const soldOut = isSoldOut === true || isSoldOut === 'true';
+
+        if (!hasTypes) {
+            return '-';
         }
-        return new Intl.NumberFormat('es-CO', {
+        if (soldOut) {
+            return 'Sin boletas';
+        }
+        if (!price || price === 'null' || parseFloat(price) === 0) {
+            return 'Desde Gratis';
+        }
+        return 'Desde ' + new Intl.NumberFormat('es-CO', {
             style: 'currency',
             currency: 'COP',
             minimumFractionDigits: 0
-        }).format(price);
+        }).format(parseFloat(price));
     }
 
     function renderAssignedTickets(button) {
@@ -443,7 +460,7 @@
             detailsDescription.textContent = this.dataset.description || 'Sin descripción';
             detailsCategory.textContent = this.dataset.category || 'Sin categoría';
             detailsDate.textContent = this.dataset.date || 'Sin fecha';
-            detailsPrice.textContent = formatPriceValue(this.dataset.price);
+            detailsPrice.textContent = formatPriceValue(this.dataset.price, this.dataset.hasTicketTypes, this.dataset.soldOut);
             detailsState.textContent = this.dataset.state || '-';
             detailsImage.src = this.dataset.image || '/images/logo.svg';
             renderAssignedTickets(this);
@@ -465,11 +482,11 @@
         document.querySelectorAll('.col-price').forEach(el => {
             const price = el.getAttribute('data-price');
             if (price && price !== 'null' && price !== '0.0' && parseFloat(price) !== 0) {
-                el.textContent = new Intl.NumberFormat('es-CO', {
+                el.textContent = (el.getAttribute('data-prefix') || '') + new Intl.NumberFormat('es-CO', {
                     style: 'currency', currency: 'COP', minimumFractionDigits: 0
-                }).format(price);
+                }).format(parseFloat(price));
             } else if (!price || price === 'null' || parseFloat(price) === 0) {
-                el.textContent = 'Gratis';
+                el.textContent = 'Desde Gratis';
             }
         });
     }
