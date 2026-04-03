@@ -36,18 +36,20 @@ public class EventService {
     }
 
     @Transactional
-    public Event saveEventWithTicketTypes(Event event, Map<Integer, Integer> ticketTypeQuantities) {
+    public Event saveEventWithTicketTypes(Event event, Map<Integer, Integer> ticketTypeQuantities, Map<Integer, Double> ticketTypePrices) {
         Event savedEvent = eventRepository.save(event);
         eventTicketTypeRepository.deleteByEvent_Id(savedEvent.getId());
 
         if (ticketTypeQuantities == null || ticketTypeQuantities.isEmpty()) {
-            return savedEvent;
+            recalculateMinimumAvailablePrice(savedEvent.getId());
+            return eventRepository.findById(savedEvent.getId()).orElse(savedEvent);
         }
 
         for (Map.Entry<Integer, Integer> entry : ticketTypeQuantities.entrySet()) {
             Integer ticketTypeId = entry.getKey();
             Integer quantity = entry.getValue();
-            if (ticketTypeId == null || quantity == null || quantity <= 0) {
+            Double ticketPrice = ticketTypePrices != null ? ticketTypePrices.get(ticketTypeId) : null;
+            if (ticketTypeId == null || quantity == null || quantity <= 0 || ticketPrice == null || ticketPrice <= 0) {
                 continue;
             }
 
@@ -60,10 +62,26 @@ public class EventService {
                     .event(savedEvent)
                     .ticketType(ticketType)
                     .availableQuantity(quantity)
+                    .ticketPrice(ticketPrice)
                     .build();
             eventTicketTypeRepository.save(eventTicketType);
         }
-        return savedEvent;
+
+        recalculateMinimumAvailablePrice(savedEvent.getId());
+        return eventRepository.findById(savedEvent.getId()).orElse(savedEvent);
+    }
+
+    @Transactional
+    public void recalculateMinimumAvailablePrice(Integer eventId) {
+        if (eventId == null) {
+            return;
+        }
+
+        eventRepository.findById(eventId).ifPresent(event -> {
+            Double minimumAvailablePrice = eventTicketTypeRepository.findMinimumAvailableTicketPriceByEventId(eventId);
+            event.setPrice(minimumAvailablePrice);
+            eventRepository.save(event);
+        });
     }
 
     public Map<Integer, Integer> getTicketTypeQuantitiesForEvent(Integer eventId) {
@@ -79,6 +97,21 @@ public class EventService {
             }
         }
         return quantities;
+    }
+
+    public Map<Integer, Double> getTicketTypePricesForEvent(Integer eventId) {
+        if (eventId == null) {
+            return Map.of();
+        }
+
+        List<EventTicketType> assignments = eventTicketTypeRepository.findByEvent_Id(eventId);
+        Map<Integer, Double> prices = new HashMap<>();
+        for (EventTicketType assignment : assignments) {
+            if (assignment.getTicketType() != null && assignment.getTicketType().getId() != null) {
+                prices.put(assignment.getTicketType().getId(), assignment.getTicketPrice());
+            }
+        }
+        return prices;
     }
 
     public List<Event> getAllEvents() {
@@ -190,13 +223,15 @@ public class EventService {
     }
 
     private Sort resolveSort(String sortType) {
-        if (sortType == null) return Sort.by("id").descending();
+        if (sortType == null) {
+            return Sort.by(Sort.Order.desc("id"));
+        }
         return switch (sortType) {
-            case "price_asc"  -> Sort.by("price").ascending();
-            case "price_desc" -> Sort.by("price").descending();
-            case "date_asc"   -> Sort.by("date").ascending();
-            case "date_desc"  -> Sort.by("date").descending();
-            default           -> Sort.by("id").descending();
+            case "price_asc" -> Sort.by(Sort.Order.asc("price").nullsLast(), Sort.Order.desc("date"), Sort.Order.desc("id"));
+            case "price_desc" -> Sort.by(Sort.Order.desc("price").nullsLast(), Sort.Order.desc("date"), Sort.Order.desc("id"));
+            case "date_asc" -> Sort.by(Sort.Order.asc("date"), Sort.Order.desc("id"));
+            case "date_desc" -> Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id"));
+            default -> Sort.by(Sort.Order.desc("id"));
         };
     }
 }

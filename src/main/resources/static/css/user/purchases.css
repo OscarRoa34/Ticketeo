@@ -1,0 +1,252 @@
+.purchases-main {
+    padding-top: 38px;
+    padding-bottom: 34px;
+}
+
+.purchases-shell {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.15);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+}
+
+.purchases-shell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8B5CF6, #4ADE80, #8B5CF6);
+    z-index: 1;
+}
+
+.purchases-header,
+.purchases-divider,
+.purchase-list,
+.purchase-empty {
+    position: relative;
+    z-index: 2;
+}
+
+.purchases-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.purchases-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(34, 197, 94, 0.18));
+}
+
+.purchases-header-icon img {
+    width: 32px;
+    height: 32px;
+}
+
+.purchases-header-text h1 {
+    margin: 0;
+    color: #1f2240;
+    font-size: 1.85rem;
+    font-weight: 600;
+}
+
+.purchases-header-text p {
+    margin: 6px 0 0;
+    color: #6a7090;
+    font-size: 0.92rem;
+}
+
+.purchases-divider {
+    margin: 18px 0 20px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.45), rgba(74, 222, 128, 0.35), rgba(139, 92, 246, 0.08));
+}
+
+.purchase-list {
+    display: grid;
+    gap: 20px;
+}
+
+.purchase-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.purchase-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.85), rgba(52, 211, 153, 0.75));
+}
+
+.purchase-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.purchase-title {
+    margin: 0;
+    color: #1f2240;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.purchase-meta {
+    margin: 4px 0 0;
+    color: #66708f;
+    font-size: 0.9rem;
+}
+
+.purchase-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(130px, 1fr));
+    gap: 10px;
+    padding: 10px 0 14px;
+    border-bottom: 1px dashed rgba(116, 123, 177, 0.34);
+    margin-bottom: 12px;
+    color: #22263d;
+}
+
+.purchase-total-price {
+    color: #166534;
+    font-weight: 700;
+}
+
+.ticket-table-wrap {
+    overflow-x: auto;
+}
+
+.ticket-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+.ticket-table th,
+.ticket-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(130, 138, 186, 0.25);
+    text-align: left;
+    color: #22263d;
+}
+
+.ticket-table th {
+    color: #484f73;
+    font-weight: 600;
+}
+
+.qr-code-cell {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.8rem;
+}
+
+.purchase-print-all-btn {
+    background: linear-gradient(135deg, #1f7a4f, #176043);
+    border: 1px solid rgba(23, 96, 67, 0.88);
+    box-shadow: 0 8px 14px rgba(23, 96, 67, 0.22);
+    color: #f0fdf4;
+}
+
+.purchase-print-all-btn:hover {
+    background: linear-gradient(135deg, #176043, #0f5132);
+    color: #f0fdf4;
+}
+
+.purchase-print-ticket-btn {
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    background: #f7f3ff;
+    color: #6d28d9;
+}
+
+.purchase-print-ticket-btn:hover {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.purchase-empty {
+    text-align: center;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 50px 20px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.purchase-empty-title {
+    margin: 0 0 8px;
+    color: #242743;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.purchase-empty-text {
+    margin: 0 0 18px;
+    color: #5f6483;
+}
+
+.purchase-empty-btn {
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    background: #f7f3ff;
+    color: #6d28d9;
+}
+
+.purchase-empty-btn:hover {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+@media (max-width: 900px) {
+    .purchases-shell {
+        padding: 22px;
+    }
+
+    .purchase-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .purchases-header {
+        align-items: flex-start;
+    }
+
+    .purchases-header-text h1 {
+        font-size: 1.5rem;
+    }
+
+    .purchase-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .purchase-print-all-btn,
+    .purchase-print-ticket-btn,
+    .purchase-empty-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .purchase-summary {
+        grid-template-columns: 1fr;
+    }
+}
+

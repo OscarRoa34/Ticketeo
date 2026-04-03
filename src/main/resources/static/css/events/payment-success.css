@@ -1,0 +1,238 @@
+.payment-success-container {
+    display: flex;
+    justify-content: center;
+    padding: 56px 20px 70px;
+}
+
+.payment-success-card {
+    width: 100%;
+    max-width: 600px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    border-radius: 20px;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    padding: 34px;
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-success-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8B5CF6, #4ADE80, #8B5CF6);
+    z-index: 1;
+}
+
+.success-check-wrap,
+.success-header,
+.success-divider,
+.success-summary,
+.success-counter,
+.success-actions {
+    position: relative;
+    z-index: 2;
+}
+
+.success-check-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.success-check-icon {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 2.3rem;
+    font-weight: 800;
+    color: #f0fdf4;
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    border: 4px solid rgba(240, 253, 244, 0.96);
+    box-shadow: 0 14px 28px rgba(21, 128, 61, 0.32), 0 0 0 6px rgba(74, 222, 128, 0.16);
+    animation: successPopIn 0.55s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes successPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+    65% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.success-header {
+    text-align: center;
+}
+
+.payment-success-card h1 {
+    margin: 0;
+    color: #1f2240;
+    font-size: 2.05rem;
+}
+
+.success-caption {
+    margin: 8px 0 0;
+    color: #40634f;
+    font-weight: 600;
+}
+
+.success-event-name {
+    margin: 6px 0 0;
+    color: #596281;
+    font-weight: 500;
+}
+
+.success-divider {
+    margin: 20px 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.45), rgba(74, 222, 128, 0.35), rgba(139, 92, 246, 0.08));
+}
+
+.success-summary {
+    border: 1px solid rgba(34, 197, 94, 0.34);
+    border-radius: 14px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(236, 253, 245, 0.96));
+}
+
+.success-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--black-2);
+    margin-bottom: 12px;
+}
+
+.success-row:last-child {
+    margin-bottom: 0;
+}
+
+.success-total {
+    border-top: 1px solid rgba(52, 211, 153, 0.35);
+    padding-top: 12px;
+}
+
+.success-ticket-breakdown {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px dashed rgba(16, 185, 129, 0.4);
+    background: rgba(236, 253, 245, 0.75);
+}
+
+.success-breakdown-title {
+    margin: 0 0 8px;
+    color: #166534;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.success-breakdown-list {
+    display: grid;
+    gap: 6px;
+}
+
+.success-breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1f2240;
+    font-size: 0.92rem;
+}
+
+.success-breakdown-name {
+    color: #374151;
+}
+
+.success-breakdown-qty {
+    color: #166534;
+    font-weight: 700;
+}
+
+.success-total .price-tag {
+    color: #166534;
+    font-size: 1.18rem;
+    font-weight: 700;
+}
+
+.success-counter {
+    margin: 20px 0 0;
+    color: #5f6788;
+    text-align: center;
+}
+
+#countdown {
+    color: #166534;
+    font-weight: 700;
+}
+
+.success-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.success-actions .btn-primary,
+.success-actions .btn-secondary {
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.success-actions .btn-primary {
+    background: linear-gradient(135deg, #1f7a4f, #176043);
+    border: 1px solid rgba(23, 96, 67, 0.88);
+    box-shadow: 0 10px 16px rgba(23, 96, 67, 0.26);
+    color: #f0fdf4;
+}
+
+.success-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #176043, #0f5132);
+    color: #f0fdf4;
+}
+
+@media (max-width: 640px) {
+    .payment-success-card {
+        padding: 24px;
+    }
+
+    .success-check-icon {
+        width: 74px;
+        height: 74px;
+        font-size: 2rem;
+    }
+
+    .success-actions {
+        flex-direction: column;
+    }
+
+    .success-actions .btn-primary,
+    .success-actions .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .success-check-icon {
+        animation: none;
+    }
+}
+

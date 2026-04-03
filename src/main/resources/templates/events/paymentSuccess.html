@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Pago exitoso</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/events/payment-success.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-user}"></div>
+
+<main class="payment-success-container">
+    <section class="payment-success-card" role="status" aria-live="polite">
+        <div class="success-check-wrap" aria-hidden="true">
+            <div class="success-check-icon">✓</div>
+        </div>
+
+        <header class="success-header">
+            <h1>Pago exitoso</h1>
+            <p class="success-caption">Tu compra fue confirmada correctamente.</p>
+            <p class="success-event-name" th:text="${event.name}">Nombre del evento</p>
+        </header>
+
+        <div class="success-divider"></div>
+
+        <div class="success-summary">
+            <div class="success-row">
+                <span>Boletos comprados</span>
+                <strong th:text="${tickets}">0</strong>
+            </div>
+            <div class="success-row">
+                <span>Método de pago</span>
+                <strong th:text="${paymentMethod}">Tarjeta</strong>
+            </div>
+            <div class="success-ticket-breakdown" th:if="${ticketTypeBreakdown != null and !#maps.isEmpty(ticketTypeBreakdown)}">
+                <p class="success-breakdown-title">Detalle por tipo</p>
+                <div class="success-breakdown-list">
+                    <div class="success-breakdown-item" th:each="entry : ${ticketTypeBreakdown}">
+                        <span class="success-breakdown-name" th:text="${entry.key}">General</span>
+                        <strong class="success-breakdown-qty" th:text="${entry.value} + ' boleta(s)'">1 boleta(s)</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="success-row success-total">
+                <span>Total</span>
+                <strong class="price-tag" id="successTotal" th:data-total="${total}" th:text="${total}">$0</strong>
+            </div>
+        </div>
+
+        <p class="success-counter">Esta pantalla se cerrará en <span id="countdown">30</span> segundos.</p>
+
+        <div class="success-actions">
+            <a th:href="@{/user}" class="btn-primary" id="closeNowBtn">Volver ahora</a>
+            <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary">Volver al evento</a>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    function formatTotal() {
+        const totalElement = document.getElementById('successTotal');
+        const raw = totalElement ? parseFloat(totalElement.getAttribute('data-total') || '0') : 0;
+        if (!totalElement) {
+            return;
+        }
+        totalElement.textContent = new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0
+        }).format(raw);
+    }
+
+    function setupCountdown() {
+        const countdownEl = document.getElementById('countdown');
+        let remaining = 30;
+
+        const timer = setInterval(() => {
+            remaining -= 1;
+            countdownEl.textContent = String(remaining);
+            if (remaining <= 0) {
+                clearInterval(timer);
+                window.location.href = '/user';
+            }
+        }, 1000);
+    }
+
+    function initHamburger() {
+        const pairs = [
+            { btn: 'navHamburgerGuest', collapse: 'navCollapseGuest' },
+            { btn: 'navHamburgerUser', collapse: 'navCollapseUser' }
+        ];
+        pairs.forEach(({ btn, collapse }) => {
+            const b = document.getElementById(btn);
+            const c = document.getElementById(collapse);
+            if (b && c) {
+                b.addEventListener('click', () => {
+                    const isOpen = c.classList.toggle('open');
+                    b.classList.toggle('open', isOpen);
+                });
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        formatTotal();
+        setupCountdown();
+        initHamburger();
+    });
+</script>
+
+</body>
+
+</html>
+

@@ -164,7 +164,7 @@
 
         .ef-ticket-type-row {
             display: grid;
-            grid-template-columns: 1fr 130px;
+            grid-template-columns: 1fr 110px 150px;
             gap: 12px;
             align-items: center;
             padding: 8px;
@@ -189,6 +189,15 @@
 
         .ef-ticket-qty {
             padding: 8px 10px;
+            font-size: 0.88rem;
+        }
+
+        .ef-ticket-price-wrapper {
+            position: relative;
+        }
+
+        .ef-ticket-price-wrapper .ef-input {
+            padding-left: 28px;
             font-size: 0.88rem;
         }
 

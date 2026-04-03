@@ -45,4 +45,7 @@ public class EventTicketType {
 
     @Column(name = "cantidad_disponible", nullable = false)
     private Integer availableQuantity;
+
+    @Column(name = "precio_boleto")
+    private Double ticketPrice;
 }

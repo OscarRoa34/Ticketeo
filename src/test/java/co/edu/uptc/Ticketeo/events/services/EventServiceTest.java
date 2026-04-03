@@ -112,6 +112,18 @@ class EventServiceTest {
     }
 
     @Test
+    void recalculateMinimumAvailablePrice_existingEvent_updatesStoredPrice() {
+        Event event = Event.builder().id(22).name("Dynamic Price Event").price(50000.0).build();
+        when(eventRepository.findById(22)).thenReturn(Optional.of(event));
+        when(eventTicketTypeRepository.findMinimumAvailableTicketPriceByEventId(22)).thenReturn(70000.0);
+
+        eventService.recalculateMinimumAvailablePrice(22);
+
+        assertEquals(70000.0, event.getPrice());
+        verify(eventRepository).save(event);
+    }
+
+    @Test
     void deleteEvent_deletesInterestReportBeforeEvent() {
         // Verifica que al eliminar un evento,
         // primero se eliminan los intereses asociados y luego el evento.

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Mis Compras</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/user/purchases.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-user}"></div>
+
+<main class="container main-content purchases-main">
+    <section class="purchases-shell">
+        <header class="purchases-header">
+            <div class="purchases-header-icon">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo">
+            </div>
+            <div class="purchases-header-text">
+                <h1>Mis Compras</h1>
+                <p>Consulta tus compras, revisa cada boleto y descarga tus PDF con QR.</p>
+            </div>
+        </header>
+
+        <div class="purchases-divider"></div>
+
+        <section class="purchase-list" th:if="${not #lists.isEmpty(purchases)}">
+        <article class="purchase-card" th:each="purchase : ${purchases}">
+            <div class="purchase-card-header">
+                <div>
+                    <h2 class="purchase-title" th:text="${purchase.eventName}">Nombre del evento</h2>
+                    <p class="purchase-meta" th:text="'Compra #' + ${purchase.id} + ' - ' + ${#temporals.format(purchase.purchaseDate, 'dd/MM/yyyy HH:mm')}">Compra</p>
+                </div>
+                <a class="btn-primary purchase-print-all-btn" th:href="@{/user/purchases/{id}/print(id=${purchase.id})}">Imprimir todos</a>
+            </div>
+
+            <div class="purchase-summary">
+                <span><strong>Fecha evento:</strong> <span th:text="${purchase.eventDate != null ? #temporals.format(purchase.eventDate, 'dd/MM/yyyy') : 'Por definir'}">Fecha</span></span>
+                <span><strong>Método:</strong> <span th:text="${purchase.paymentMethod.label}">Metodo</span></span>
+                <span><strong>Boletos:</strong> <span th:text="${purchase.totalTickets}">0</span></span>
+                <span><strong>Total:</strong> <span class="purchase-total-price" th:text="${'$ ' + #numbers.formatDecimal(purchase.totalPaid, 0, 'POINT', 0, 'COMMA')}">$0</span></span>
+            </div>
+
+            <div class="ticket-table-wrap">
+                <table class="ticket-table">
+                    <thead>
+                    <tr>
+                        <th>Boleto</th>
+                        <th>Tipo</th>
+                        <th>Precio</th>
+                        <th>QR</th>
+                        <th>Accion</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ticket, iter : ${purchase.tickets}">
+                        <td th:text="${iter.count}">1</td>
+                        <td th:text="${ticket.ticketTypeName}">General</td>
+                        <td th:text="${'$ ' + #numbers.formatDecimal(ticket.unitPrice, 0, 'POINT', 0, 'COMMA')}">$0</td>
+                        <td class="qr-code-cell" th:text="${ticket.qrCode}">QR-CODE</td>
+                        <td>
+                            <a class="btn-secondary purchase-print-ticket-btn" th:href="@{/user/tickets/{id}/print(id=${ticket.id})}">Imprimir boleto</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+        </section>
+
+        <section class="purchase-empty" th:if="${#lists.isEmpty(purchases)}">
+            <p class="purchase-empty-title">Aún no tienes compras registradas</p>
+            <p class="purchase-empty-text">Cuando compres boletos, aquí aparecerá el historial con opción de impresión PDF.</p>
+            <a th:href="@{/user}" class="btn-secondary purchase-empty-btn">Explorar eventos</a>
+        </section>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+
+</html>
+

@@ -39,7 +39,7 @@ public class Event {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "id_categoria", nullable = true)
+    @JoinColumn(name = "id_categoria")
     private EventCategory category;
 
     @Column(name = "nombre_evento", nullable = false, length = 150)
@@ -49,7 +49,7 @@ public class Event {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
 
-    @Column(name = "valor_evento")
+    @Column(name = "valor_minimo_evento")
     private Double price;
 
     @Column(name = "descripcion_evento", length = 500)

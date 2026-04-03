@@ -38,9 +38,18 @@ import co.edu.uptc.Ticketeo.events.controllers.admin.AdminEventController;
 import co.edu.uptc.Ticketeo.events.controllers.admin.AdminTicketTypeController;
 import co.edu.uptc.Ticketeo.events.controllers.publicview.EventDetailsController;
 import co.edu.uptc.Ticketeo.events.controllers.publicview.PublicViewHomeController;
+import co.edu.uptc.Ticketeo.events.controllers.publicview.EventPurchaseController;
+import co.edu.uptc.Ticketeo.purchase.controllers.UserPurchaseController;
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.models.TicketType;
+import co.edu.uptc.Ticketeo.events.models.EventTicketType;
+import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
+import co.edu.uptc.Ticketeo.purchase.models.PaymentMethod;
+import co.edu.uptc.Ticketeo.purchase.models.Purchase;
+import co.edu.uptc.Ticketeo.purchase.models.PurchasedTicket;
+import co.edu.uptc.Ticketeo.purchase.services.PurchaseService;
+import co.edu.uptc.Ticketeo.purchase.services.TicketPdfService;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.services.TicketTypeService;
@@ -58,6 +67,8 @@ import co.edu.uptc.Ticketeo.user.services.UserService;
         RegisterController.class,
         PublicViewHomeController.class,
         EventDetailsController.class,
+        EventPurchaseController.class,
+        UserPurchaseController.class,
         AdminEventController.class,
         AdminCategoryController.class,
         AdminTicketTypeController.class,
@@ -86,6 +97,15 @@ class WebEndpointsSmokeTest {
     private InterestReportService interestReportService;
 
     @MockitoBean
+    private EventTicketTypeRepository eventTicketTypeRepository;
+
+    @MockitoBean
+    private PurchaseService purchaseService;
+
+    @MockitoBean
+    private TicketPdfService ticketPdfService;
+
+    @MockitoBean
     private UserService userService;
 
     @MockitoBean
@@ -105,6 +125,14 @@ class WebEndpointsSmokeTest {
                 .category(category)
                 .build();
 
+        EventTicketType eventTicketType = EventTicketType.builder()
+                .id(1)
+                .event(event)
+                .ticketType(ticketType)
+                .availableQuantity(100)
+                .ticketPrice(45000.0)
+                .build();
+
         when(eventService.getEventsFiltered(any(), any(), anyInt(), anyInt(), any()))
                 .thenReturn(new PageImpl<>(List.of(event)));
         when(eventService.getRandomEvents(anyInt())).thenReturn(List.of(event));
@@ -117,6 +145,8 @@ class WebEndpointsSmokeTest {
         when(eventService.getInactiveEventsFiltered(any(), any(), anyInt(), anyInt()))
                 .thenReturn(new PageImpl<>(List.of(event)));
         when(eventService.saveEvent(any(Event.class))).thenReturn(event);
+        when(eventTicketTypeRepository.findByEvent_Id(1)).thenReturn(List.of(eventTicketType));
+        when(eventTicketTypeRepository.findByEvent_Id(999)).thenReturn(List.of());
 
         when(eventCategoryService.getAllCategories()).thenReturn(List.of(category));
         when(eventCategoryService.getEventCategoryById(1)).thenReturn(category);
@@ -135,6 +165,35 @@ class WebEndpointsSmokeTest {
         when(interestReportService.getEventInterestRanking()).thenReturn(List.of());
 
         when(userService.getAllUsers(anyInt(), anyInt())).thenReturn(new PageImpl<>(List.of(user)));
+
+        Purchase purchase = Purchase.builder()
+                .id(1L)
+                .user(user)
+                .eventId(1)
+                .eventName("Rock Fest")
+                .eventDate(event.getDate())
+                .paymentMethod(PaymentMethod.CARD)
+                .purchaseDate(java.time.LocalDateTime.now())
+                .totalPaid(90000.0)
+                .totalTickets(2)
+                .build();
+        PurchasedTicket purchasedTicket = PurchasedTicket.builder()
+                .id(1L)
+                .purchase(purchase)
+                .ticketTypeName("VIP")
+                .unitPrice(45000.0)
+                .qrCode("TK-1-1-ABCD1234")
+                .build();
+        purchase.setTickets(List.of(purchasedTicket));
+
+        when(purchaseService.getUserPurchases("user")).thenReturn(List.of(purchase));
+        when(purchaseService.getUserPurchase(1L, "user")).thenReturn(purchase);
+        when(purchaseService.getUserTicket(1L, "user")).thenReturn(purchasedTicket);
+        when(purchaseService.processPurchase(anyInt(), any(), any(), any()))
+                .thenReturn(new PurchaseService.PurchaseCheckoutResult(1L, 2, 90000L, "CARD", java.util.Map.of("VIP", 2)));
+
+        when(ticketPdfService.generatePurchaseTicketsPdf(any(Purchase.class))).thenReturn("pdf-purchase".getBytes());
+        when(ticketPdfService.generateSingleTicketPdf(any(PurchasedTicket.class))).thenReturn("pdf-ticket".getBytes());
 
         doNothing().when(eventService).deactivateEvent(anyInt());
         doNothing().when(eventService).reactivateEvent(anyInt());
@@ -196,6 +255,22 @@ class WebEndpointsSmokeTest {
         mockMvc.perform(get("/event/1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("events/eventDetails"));
+
+        mockMvc.perform(get("/event/1/purchase").with(user("user").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/eventPurchase"));
+
+        mockMvc.perform(get("/event/1/purchase/success")
+                        .with(user("user").roles("USER"))
+                        .param("tickets", "2")
+                        .param("total", "90000")
+                        .param("paymentMethod", "CARD"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("events/paymentSuccess"));
+
+        mockMvc.perform(get("/user/purchases").with(user("user").roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("user/userPurchases"));
 
         mockMvc.perform(get("/event/999"))
                 .andExpect(status().is3xxRedirection())
@@ -327,9 +402,34 @@ class WebEndpointsSmokeTest {
                         .param("description", "prueba")
                         .param("ticketTypeIds", "1")
                         .param("ticketQuantity_1", "50")
+                        .param("ticketPrice_1", "15000")
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));
     }
 
+    @Test
+    void purchaseFlowEndpoints_shouldRedirectAsExpected() throws Exception {
+        mockMvc.perform(get("/event/1/purchase"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+
+        mockMvc.perform(post("/event/1/purchase/pay")
+                        .with(user("user").roles("USER"))
+                        .with(csrf())
+                        .param("paymentMethod", "CARD")
+                        .param("qty_1", "2"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/event/1/purchase/success?tickets=2&total=90000&paymentMethod=CARD"));
+
+        mockMvc.perform(get("/user/purchases/1/print")
+                        .with(user("user").roles("USER")))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/user/tickets/1/print")
+                        .with(user("user").roles("USER")))
+                .andExpect(status().isOk());
+    }
+
 }
+

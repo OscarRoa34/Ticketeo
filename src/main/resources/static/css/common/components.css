@@ -177,9 +177,16 @@
 }
 
 .price-tag {
-    color: var(--primary);
+    color: var(--success);
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: 0.98rem;
+    white-space: nowrap;
+}
+
+.ticket-status-label {
+    color: #ef4444;
+    font-weight: 700;
+    font-size: 0.95rem;
 }
 
 

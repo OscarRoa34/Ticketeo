@@ -66,24 +66,13 @@
                     </div>
 
                     <div class="ef-group">
-                        <label for="price" class="ef-label">Valor de la Entrada</label>
-                        <div class="ef-price-wrapper">
-                            <span class="ef-price-prefix">$</span>
-                            <input type="text" id="price" class="ef-input"
-                                   th:value="${event.price != null && event.price > 0 ? #numbers.formatInteger(event.price, 1, 'POINT') : ''}"
-                                   placeholder="Dejar vacío si es gratis" autocomplete="off">
-                            <input type="hidden" id="priceHidden" th:field="*{price}">
-                        </div>
-                    </div>
-
-                    <div class="ef-group">
                         <label for="description" class="ef-label">Descripción</label>
                         <textarea id="description" th:field="*{description}" class="ef-textarea"
                                   placeholder="Escribe los detalles del evento: artistas, horario, lugar..."></textarea>
                     </div>
 
                     <div class="ef-group">
-                        <label for="ticketTypeSearch" class="ef-label">Tipos de Ticket y Cantidad Disponible</label>
+                        <label for="ticketTypeSearch" class="ef-label">Tipos de Ticket, Cantidad y Precio</label>
                         <input type="text" id="ticketTypeSearch" class="ef-input" placeholder="Buscar tipo de ticket...">
 
                         <div class="ef-ticket-types" id="ticketTypeList">
@@ -97,14 +86,30 @@
                                            th:checked="${ticketQuantities[ticketType.id] != null}">
                                     <span th:text="${ticketType.name}">VIP</span>
                                 </label>
+
                                 <input type="number"
                                        min="1"
                                        class="ef-input ef-ticket-qty"
-                                        th:name="${ticketQuantities[ticketType.id] != null ? 'ticketQuantity_' + ticketType.id : null}"
-                                        th:attr="data-param-name=${'ticketQuantity_' + ticketType.id}"
+                                       th:name="${ticketQuantities[ticketType.id] != null ? 'ticketQuantity_' + ticketType.id : null}"
+                                       th:attr="data-param-name=${'ticketQuantity_' + ticketType.id}"
                                        th:value="${ticketQuantities[ticketType.id]}"
                                        th:disabled="${ticketQuantities[ticketType.id] == null}"
                                        placeholder="Cantidad">
+
+                                <div class="ef-ticket-price-wrapper">
+                                    <span class="ef-price-prefix">$</span>
+                                    <input type="text"
+                                           class="ef-input ef-ticket-price-display"
+                                           th:id="${'ticketPriceDisplay_' + ticketType.id}"
+                                           th:value="${ticketPrices[ticketType.id] != null && ticketPrices[ticketType.id] > 0 ? #numbers.formatInteger(ticketPrices[ticketType.id], 1, 'POINT') : ''}"
+                                           th:disabled="${ticketQuantities[ticketType.id] == null}"
+                                           placeholder="Precio">
+                                    <input type="hidden"
+                                           class="ef-ticket-price-hidden"
+                                           th:name="${ticketQuantities[ticketType.id] != null ? 'ticketPrice_' + ticketType.id : null}"
+                                           th:attr="data-param-name=${'ticketPrice_' + ticketType.id},data-display-id=${'ticketPriceDisplay_' + ticketType.id}"
+                                           th:value="${ticketPrices[ticketType.id]}">
+                                </div>
                             </div>
                             <p th:if="${#lists.isEmpty(ticketTypes)}" class="ef-ticket-empty">
                                 No hay tipos de ticket creados. Primero crea uno en el módulo Tipos de Ticket.
@@ -151,8 +156,6 @@
     const fileInput = document.getElementById('imageFile');
     const imgPreview = document.getElementById('imagePreview');
     const placeholder = document.getElementById('imagePlaceholder');
-    const priceDisplay = document.getElementById('price');
-    const priceHidden = document.getElementById('priceHidden');
     const ticketTypeSearch = document.getElementById('ticketTypeSearch');
     const ticketTypeRows = document.querySelectorAll('.ef-ticket-type-row');
     const ticketTypeChecks = document.querySelectorAll('.ef-ticket-type-check');
@@ -180,47 +183,61 @@
         return str.replace(/[^\d]/g, '');
     }
 
-    priceDisplay.addEventListener('input', function () {
-        const raw = rawNumber(this.value);
+    function syncFormattedPrice(displayInput, hiddenInput) {
+        const raw = rawNumber(displayInput.value);
         if (raw) {
-            this.value = parseInt(raw, 10).toLocaleString('es-CO');
-            priceHidden.value = raw;
+            displayInput.value = parseInt(raw, 10).toLocaleString('es-CO');
+            hiddenInput.value = raw;
         } else {
-            this.value = '';
-            priceHidden.value = '';
+            displayInput.value = '';
+            hiddenInput.value = '';
         }
-    });
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
-        const hiddenVal = priceHidden.value;
-        if (hiddenVal && hiddenVal !== '') {
-            const num = parseFloat(hiddenVal);
-            if (!isNaN(num) && num > 0) {
-                priceHidden.value = Math.round(num).toString();
-            } else {
-                priceHidden.value = '';
-                priceDisplay.value = '';
-            }
-        }
-
         ticketTypeChecks.forEach(function (check) {
-            const qtyInput = check.closest('.ef-ticket-type-row').querySelector('.ef-ticket-qty');
+            const row = check.closest('.ef-ticket-type-row');
+            const qtyInput = row.querySelector('.ef-ticket-qty');
+            const priceDisplayInput = row.querySelector('.ef-ticket-price-display');
+            const priceHiddenInput = row.querySelector('.ef-ticket-price-hidden');
+
             qtyInput.disabled = !check.checked;
+            priceDisplayInput.disabled = !check.checked;
+
             if (check.checked) {
                 qtyInput.name = qtyInput.dataset.paramName;
+                priceHiddenInput.name = priceHiddenInput.dataset.paramName;
             } else {
                 qtyInput.removeAttribute('name');
+                priceHiddenInput.removeAttribute('name');
             }
+
             if (check.checked && (!qtyInput.value || qtyInput.value === '0')) {
                 qtyInput.value = '1';
             }
 
+            if (priceHiddenInput.value) {
+                const parsedHiddenPrice = parseFloat(priceHiddenInput.value);
+                if (!isNaN(parsedHiddenPrice) && parsedHiddenPrice > 0) {
+                    const roundedPrice = Math.round(parsedHiddenPrice);
+                    priceHiddenInput.value = String(roundedPrice);
+                    priceDisplayInput.value = roundedPrice.toLocaleString('es-CO');
+                }
+            }
+
+            priceDisplayInput.addEventListener('input', function () {
+                syncFormattedPrice(priceDisplayInput, priceHiddenInput);
+            });
+
             check.addEventListener('change', function () {
                 qtyInput.disabled = !this.checked;
+                priceDisplayInput.disabled = !this.checked;
                 if (this.checked) {
                     qtyInput.name = qtyInput.dataset.paramName;
+                    priceHiddenInput.name = priceHiddenInput.dataset.paramName;
                 } else {
                     qtyInput.removeAttribute('name');
+                    priceHiddenInput.removeAttribute('name');
                 }
                 if (this.checked && (!qtyInput.value || qtyInput.value === '0')) {
                     qtyInput.value = '1';
