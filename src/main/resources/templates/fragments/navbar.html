@@ -175,7 +175,7 @@
             </a>
 
             <ul class="nav-links">
-                <li><a th:href="@{/admin}" class="nav-item" th:classappend="${currentUri == '/admin' or currentUri == '/admin/completed' or currentUri == '/admin/event/new' or currentUri.startsWith('/admin/event/edit/')} ? 'active' : ''">Eventos</a></li>
+                <li><a th:href="@{/admin}" class="nav-item" th:classappend="${currentUri == '/admin' or currentUri == '/admin/completed' or currentUri == '/admin/inactive' or currentUri == '/admin/event/new' or currentUri.startsWith('/admin/event/edit/')} ? 'active' : ''">Eventos</a></li>
                 <li><a th:href="@{/admin/category}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/category')} ? 'active' : ''">Categorías</a></li>
                 <li><a th:href="@{/admin/ticket-type}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/ticket-type')} ? 'active' : ''">Tipos de Ticket</a></li>
                 <li><a th:href="@{/admin/users}" class="nav-item" th:classappend="${currentUri.startsWith('/admin/users')} ? 'active' : ''">Usuarios</a></li>

@@ -1,5 +1,9 @@
 package co.edu.uptc.Ticketeo.events.controllers.publicview;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -38,9 +42,12 @@ public class PublicViewHomeController {
         }
 
         Page<Event> eventPage = eventService.getEventsFiltered(search, categoryId, page, PAGE_SIZE, sort);
+        List<Event> carouselEvents = eventService.getRandomEvents(5);
 
         model.addAttribute("events", eventPage.getContent());
-        model.addAttribute("carouselEvents", eventService.getRandomEvents(5));
+        model.addAttribute("carouselEvents", carouselEvents);
+        model.addAttribute("availableTicketsByEventId", buildAvailabilityMap(eventPage.getContent(), carouselEvents));
+        model.addAttribute("completedEventsById", buildCompletedMap(eventPage.getContent(), carouselEvents));
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", eventPage.getTotalPages());
@@ -50,5 +57,37 @@ public class PublicViewHomeController {
         model.addAttribute("currentSort", sort);
 
         return "user/userHome";
+    }
+
+    private Map<Integer, Boolean> buildAvailabilityMap(List<Event> listedEvents, List<Event> carouselEvents) {
+        Map<Integer, Boolean> result = new LinkedHashMap<>();
+        mergeAvailability(result, listedEvents);
+        mergeAvailability(result, carouselEvents);
+        return result;
+    }
+
+    private void mergeAvailability(Map<Integer, Boolean> target, List<Event> events) {
+        for (Event event : events) {
+            if (event == null || event.getId() == null || target.containsKey(event.getId())) {
+                continue;
+            }
+            target.put(event.getId(), eventService.hasAvailableTicketsForEvent(event.getId()));
+        }
+    }
+
+    private Map<Integer, Boolean> buildCompletedMap(List<Event> listedEvents, List<Event> carouselEvents) {
+        Map<Integer, Boolean> result = new LinkedHashMap<>();
+        mergeCompleted(result, listedEvents);
+        mergeCompleted(result, carouselEvents);
+        return result;
+    }
+
+    private void mergeCompleted(Map<Integer, Boolean> target, List<Event> events) {
+        for (Event event : events) {
+            if (event == null || event.getId() == null || target.containsKey(event.getId())) {
+                continue;
+            }
+            target.put(event.getId(), eventService.isCompletedEvent(event));
+        }
     }
 }

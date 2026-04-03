@@ -34,6 +34,9 @@
             El archivo es demasiado grande. Tamaño máximo permitido: 50MB.
         </div>
 
+        <div th:if="${errorMessage != null}" class="admin-alert admin-alert-error" style="margin: 0 40px 20px;"
+             th:text="${errorMessage}"></div>
+
         <form th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" />
             <input type="hidden" name="draft" th:value="${draft}">
@@ -78,13 +81,18 @@
                         <div class="ef-ticket-types" id="ticketTypeList">
                             <div class="ef-ticket-type-row" th:each="ticketType : ${ticketTypes}"
                                  th:attr="data-name=${#strings.toLowerCase(ticketType.name)}">
-                                <label class="ef-ticket-type-label">
+                                <label class="ef-ticket-type-label"
+                                       th:classappend="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true ? ' ef-ticket-type-label-locked' : ''}">
                                     <input type="checkbox"
                                            name="ticketTypeIds"
                                            th:value="${ticketType.id}"
                                            class="ef-ticket-type-check"
-                                           th:checked="${ticketQuantities[ticketType.id] != null}">
+                                           th:checked="${ticketQuantities[ticketType.id] != null}"
+                                           onclick="if (this.readOnly) return false;"
+                                           th:readonly="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true}"
+                                           th:attr="data-locked=${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true}">
                                     <span th:text="${ticketType.name}">VIP</span>
+                                    <span th:if="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true}" class="ef-sold-badge">Bloqueado por ventas</span>
                                 </label>
 
                                 <input type="number"
@@ -94,6 +102,8 @@
                                        th:attr="data-param-name=${'ticketQuantity_' + ticketType.id}"
                                        th:value="${ticketQuantities[ticketType.id]}"
                                        th:disabled="${ticketQuantities[ticketType.id] == null}"
+                                       th:readonly="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true}"
+                                       th:classappend="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true ? ' ef-input-locked' : ''}"
                                        placeholder="Cantidad">
 
                                 <div class="ef-ticket-price-wrapper">
@@ -101,8 +111,10 @@
                                     <input type="text"
                                            class="ef-input ef-ticket-price-display"
                                            th:id="${'ticketPriceDisplay_' + ticketType.id}"
-                                           th:value="${ticketPrices[ticketType.id] != null && ticketPrices[ticketType.id] > 0 ? #numbers.formatInteger(ticketPrices[ticketType.id], 1, 'POINT') : ''}"
+                                           th:value="${ticketPrices[ticketType.id] != null and ticketPrices[ticketType.id] gt 0 ? #numbers.formatInteger(ticketPrices[ticketType.id], 1, 'POINT') : ''}"
                                            th:disabled="${ticketQuantities[ticketType.id] == null}"
+                                           th:readonly="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true}"
+                                           th:classappend="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true ? ' ef-input-locked' : ''}"
                                            placeholder="Precio">
                                     <input type="hidden"
                                            class="ef-ticket-price-hidden"
@@ -200,6 +212,7 @@
             const qtyInput = row.querySelector('.ef-ticket-qty');
             const priceDisplayInput = row.querySelector('.ef-ticket-price-display');
             const priceHiddenInput = row.querySelector('.ef-ticket-price-hidden');
+            const isLocked = check.dataset.locked === 'true';
 
             qtyInput.disabled = !check.checked;
             priceDisplayInput.disabled = !check.checked;
@@ -212,7 +225,17 @@
                 priceHiddenInput.removeAttribute('name');
             }
 
-            if (check.checked && (!qtyInput.value || qtyInput.value === '0')) {
+            if (isLocked) {
+                check.checked = true;
+                qtyInput.disabled = false;
+                priceDisplayInput.disabled = false;
+                qtyInput.readOnly = true;
+                priceDisplayInput.readOnly = true;
+                qtyInput.name = qtyInput.dataset.paramName;
+                priceHiddenInput.name = priceHiddenInput.dataset.paramName;
+            }
+
+            if (check.checked && !isLocked && (!qtyInput.value || qtyInput.value === '0')) {
                 qtyInput.value = '1';
             }
 
@@ -226,10 +249,17 @@
             }
 
             priceDisplayInput.addEventListener('input', function () {
+                if (isLocked) {
+                    return;
+                }
                 syncFormattedPrice(priceDisplayInput, priceHiddenInput);
             });
 
             check.addEventListener('change', function () {
+                if (isLocked) {
+                    this.checked = true;
+                    return;
+                }
                 qtyInput.disabled = !this.checked;
                 priceDisplayInput.disabled = !this.checked;
                 if (this.checked) {

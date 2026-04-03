@@ -96,5 +96,16 @@ class PurchaseServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> purchaseService.processPurchase(1, "ana", Map.of(), "CARD"));
     }
+
+    @Test
+    void processPurchase_forCompletedEvent_throwsError() {
+        Event completedEvent = Event.builder().id(1).name("Evento finalizado").date(LocalDate.now().minusDays(1)).build();
+
+        when(eventService.getEventById(1)).thenReturn(completedEvent);
+        when(eventService.isCompletedEvent(completedEvent)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> purchaseService.processPurchase(1, "ana", Map.of(3, 1), "CARD"));
+    }
 }
 

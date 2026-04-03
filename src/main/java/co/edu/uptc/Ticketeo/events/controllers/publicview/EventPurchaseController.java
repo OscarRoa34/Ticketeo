@@ -51,6 +51,9 @@ public class EventPurchaseController {
         if (event == null) {
             return "redirect:/?error=notfound";
         }
+        if (eventService.isCompletedEvent(event)) {
+            return "redirect:/event/" + id;
+        }
 
         List<TicketOptionView> ticketOptions = loadTicketOptions(id, event);
 
@@ -75,6 +78,9 @@ public class EventPurchaseController {
         Event event = eventService.getEventById(id);
         if (event == null) {
             return "redirect:/?error=notfound";
+        }
+        if (eventService.isCompletedEvent(event)) {
+            return "redirect:/event/" + id;
         }
 
         User user = userRepository.findByUsername(authentication.getName()).orElse(null);

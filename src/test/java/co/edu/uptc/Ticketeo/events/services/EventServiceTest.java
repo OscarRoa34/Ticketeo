@@ -1,10 +1,12 @@
 package co.edu.uptc.Ticketeo.events.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,10 +24,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.models.EventTicketType;
+import co.edu.uptc.Ticketeo.events.models.TicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.repositories.TicketTypeRepository;
 import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.purchase.repositories.PurchasedTicketRepository;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +47,9 @@ class EventServiceTest {
 
     @Mock
     private TicketTypeRepository ticketTypeRepository;
+
+    @Mock
+    private PurchasedTicketRepository purchasedTicketRepository;
 
     @InjectMocks
     private EventService eventService;
@@ -92,6 +100,7 @@ class EventServiceTest {
         // Verifica que si el evento existe,
         // se marca como inactivo y se guarda en el repositorio.
         Event event = Event.builder().id(10).name("Expo").isActive(true).build();
+        when(purchasedTicketRepository.existsByPurchase_EventId(10)).thenReturn(false);
         when(eventRepository.findById(10)).thenReturn(Optional.of(event));
 
         eventService.deactivateEvent(10);
@@ -104,10 +113,21 @@ class EventServiceTest {
     void deactivateEvent_missingEvent_doesNotSave() {
         // Verifica que si el evento no existe,
         // no se intenta guardar ningún cambio en el repositorio.
+        when(purchasedTicketRepository.existsByPurchase_EventId(99)).thenReturn(false);
         when(eventRepository.findById(99)).thenReturn(Optional.empty());
 
         eventService.deactivateEvent(99);
 
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void deactivateEvent_withSoldTickets_throwsErrorAndDoesNotSave() {
+        when(purchasedTicketRepository.existsByPurchase_EventId(12)).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> eventService.deactivateEvent(12));
+
+        verify(eventRepository, never()).findById(12);
         verify(eventRepository, never()).save(any(Event.class));
     }
 
@@ -132,5 +152,28 @@ class EventServiceTest {
         verify(interestReportRepository).deleteByEventId(7);
         verify(eventTicketTypeRepository).deleteByEvent_Id(7);
         verify(eventRepository).deleteById(7);
+    }
+
+    @Test
+    void saveEventWithTicketTypes_whenSoldTypeChangesQuantity_throwsError() {
+        Event event = Event.builder().id(11).name("Festival").build();
+        TicketType vip = TicketType.builder().id(5).name("VIP").build();
+        EventTicketType existing = EventTicketType.builder()
+                .id(77)
+                .event(event)
+                .ticketType(vip)
+                .availableQuantity(20)
+                .ticketPrice(120000.0)
+                .build();
+
+        when(eventRepository.save(any(Event.class))).thenReturn(event);
+        when(eventTicketTypeRepository.findByEvent_Id(11)).thenReturn(List.of(existing));
+        when(purchasedTicketRepository.countSoldTicketsByTypeNameForEvent(11))
+                .thenReturn(List.<Object[]>of(new Object[]{"VIP", 1L}));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> eventService.saveEventWithTicketTypes(event, Map.of(5, 10), Map.of(5, 120000.0)));
+
+        verify(eventTicketTypeRepository, never()).deleteByEvent_Id(11);
     }
 }
