@@ -11,31 +11,47 @@
 
 <div th:replace="~{fragments/navbar :: navbar-admin}"></div>
 
-<main class="container admin-container">
+<main class="container admin-container tickets-report-page">
 
     <div class="admin-header">
         <div>
             <h1 class="admin-title">Boletas Vendidas por Evento</h1>
-            <p class="admin-subtitle">Selecciona un evento para ver cuántas entradas se han vendido por tipo y sus ganancias.</p>
+            <p class="admin-subtitle">Selecciona un evento y consulta cuántas boletas se vendieron por tipo y las ganancias obtenidas.</p>
         </div>
         <a th:href="@{/admin/reports}" class="btn-secondary">Volver a Reportes</a>
     </div>
 
-    <section class="report-filter-card">
-        <form class="report-filter-form" th:action="@{/admin/reports/tickets-sales-report-by-event}" method="get">
-            <label class="report-filter-label" for="eventId">Evento</label>
-            <select id="eventId" name="eventId" class="report-filter-select" required>
-                <option value="" th:selected="${selectedEventId == null}">Selecciona un evento</option>
-                <option th:each="event : ${events}"
-                        th:value="${event.id}"
-                        th:text="${event.name + (event.date != null ? ' | ' + #temporals.format(event.date, 'dd/MM/yyyy') : ' | Sin fecha')}"
-                        th:selected="${selectedEventId != null and selectedEventId == event.id}">
-                    Evento
-                </option>
-            </select>
-            <button type="submit" class="btn-primary report-filter-btn">Ver reporte</button>
-            <a th:if="${selectedEventId != null}" th:href="@{/admin/reports/tickets-sales-report-by-event}" class="btn-secondary report-filter-btn">Limpiar</a>
+    <section class="report-filter-card report-filter-polished">
+        <div class="report-filter-topline">
+            <h2>Selecciona un evento</h2>
+            <p>Busca por nombre y elige el evento para visualizar su reporte de ventas.</p>
+        </div>
+
+        <form id="eventFilterForm" class="report-filter-form report-filter-form-stacked"
+              th:action="@{/admin/reports/tickets-sales-report-by-event}" method="get" autocomplete="off">
+            <label class="report-filter-label" for="eventSearch">Buscar evento</label>
+
+            <div class="event-search-wrapper">
+                <input id="eventSearch" type="text" class="report-filter-select event-search-input"
+                       placeholder="Escribe el nombre del evento..."
+                       th:value="${selectedEvent != null ? selectedEvent.name + (selectedEvent.date != null ? ' | ' + #temporals.format(selectedEvent.date, 'dd/MM/yyyy') : ' | Sin fecha') : ''}">
+
+                <input id="eventId" type="hidden" name="eventId" th:value="${selectedEvent != null ? selectedEvent.id : ''}">
+
+                <div id="eventSuggestions" class="event-suggestions" role="listbox" aria-label="Eventos sugeridos"></div>
+            </div>
+
+            <div class="report-filter-actions">
+                <button id="viewReportButton" type="submit" class="btn-primary report-filter-btn"
+                        th:disabled="${selectedEvent == null}">Ver reporte</button>
+                <a th:if="${selectedEventId != null}" th:href="@{/admin/reports/tickets-sales-report-by-event}" class="btn-secondary report-filter-btn">Limpiar</a>
+            </div>
         </form>
+
+        <ul id="eventsSource" class="event-source" hidden>
+            <li th:each="event : ${events}"
+                th:attr="data-id=${event.id},data-name=${event.name},data-date=${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : 'Sin fecha'}"></li>
+        </ul>
     </section>
 
     <section th:if="${selectedEventId != null and selectedEvent == null}" class="report-help-state">
@@ -43,10 +59,10 @@
     </section>
 
     <section th:if="${selectedEvent == null and selectedEventId == null}" class="report-help-state">
-        <p>Selecciona un evento para generar el reporte de ventas de boletas.</p>
+        <p>Busca y selecciona un evento para generar el reporte.</p>
     </section>
 
-    <section th:if="${selectedEvent != null}" class="report-event-highlight">
+    <section th:if="${selectedEvent != null}" class="report-event-highlight report-event-simple report-event-summary">
         <div class="report-event-meta">
             <h2 th:text="${selectedEvent.name}">Nombre evento</h2>
             <p>
@@ -58,20 +74,25 @@
                   th:style="'color:' + ${selectedEvent.category.color} + '; border-color:' + ${selectedEvent.category.color} + ';'"></span>
         </div>
 
-        <div class="report-metrics">
-            <article class="report-metric-card">
-                <span class="report-metric-label">Boletas vendidas</span>
-                <strong class="report-metric-value" th:text="${totalTicketsSold}">0</strong>
+        <div class="report-event-totals">
+            <article class="report-total-item">
+                <span>Boletas vendidas</span>
+                <strong th:text="${totalTicketsSold}">0</strong>
             </article>
-            <article class="report-metric-card report-metric-emphasis">
-                <span class="report-metric-label">Ganancias</span>
-                <strong class="report-metric-value" th:text="${'$ ' + #numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</strong>
+            <article class="report-total-item">
+                <span>Ganancias totales</span>
+                <strong th:text="${'$ ' + #numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</strong>
             </article>
         </div>
     </section>
 
-    <div class="reports-card" th:if="${selectedEvent != null}">
-        <table class="reports-table">
+    <div class="reports-card report-table-shell" th:if="${selectedEvent != null}">
+        <header class="report-table-headline">
+            <h3>Detalle por Tipo de Boleta</h3>
+            <p>Resumen de unidades vendidas y ganancias por cada tipo de entrada del evento.</p>
+        </header>
+
+        <table class="reports-table report-sales-table">
             <thead>
             <tr>
                 <th>Tipo de boleta</th>
@@ -81,14 +102,14 @@
             </thead>
             <tbody>
             <tr th:each="row : ${salesRows}">
-                <td class="event-name-col">
+                <td class="event-name-col report-col-type">
                     <strong th:text="${row.ticketTypeName}">General</strong>
                 </td>
-                <td class="text-center">
+                <td class="text-center report-col-qty">
                     <span class="count-badge" th:text="${row.soldTickets}">0</span>
                     <span class="count-label">boletas</span>
                 </td>
-                <td class="text-center">
+                <td class="text-center report-col-money">
                     <span class="count-badge money-badge"
                           th:text="${'$ ' + #numbers.formatDecimal(row.totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</span>
                 </td>
@@ -97,12 +118,153 @@
                 <td colspan="3" class="empty-state">Este evento no tiene tipos de boleta configurados.</td>
             </tr>
             </tbody>
+            <tfoot th:if="${not #lists.isEmpty(salesRows)}">
+            <tr>
+                <td><strong>Total general</strong></td>
+                <td class="text-center"><strong th:text="${totalTicketsSold}">0</strong></td>
+                <td class="text-center"><strong th:text="${'$ ' + #numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</strong></td>
+            </tr>
+            </tfoot>
         </table>
     </div>
 
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    (function () {
+        const form = document.getElementById("eventFilterForm");
+        const searchInput = document.getElementById("eventSearch");
+        const hiddenEventId = document.getElementById("eventId");
+        const suggestionsBox = document.getElementById("eventSuggestions");
+        const submitButton = document.getElementById("viewReportButton");
+
+        if (!form || !searchInput || !hiddenEventId || !suggestionsBox || !submitButton) {
+            return;
+        }
+
+        const events = Array.from(document.querySelectorAll("#eventsSource li")).map((item) => {
+            const name = item.dataset.name || "";
+            const date = item.dataset.date || "Sin fecha";
+            return {
+                id: item.dataset.id || "",
+                nameLower: name.toLowerCase().trim(),
+                label: `${name} | ${date}`,
+                search: `${name} ${date}`.toLowerCase().trim()
+            };
+        });
+
+        let activeIndex = -1;
+        let currentMatches = [];
+
+        const updateSubmitState = () => {
+            submitButton.disabled = hiddenEventId.value.trim() === "";
+        };
+
+        const clearSuggestions = () => {
+            suggestionsBox.innerHTML = "";
+            suggestionsBox.classList.remove("is-visible");
+            activeIndex = -1;
+            currentMatches = [];
+        };
+
+        const selectEvent = (eventItem) => {
+            searchInput.value = eventItem.label;
+            hiddenEventId.value = eventItem.id;
+            clearSuggestions();
+            updateSubmitState();
+        };
+
+        const renderSuggestions = (matches) => {
+            if (matches.length === 0) {
+                clearSuggestions();
+                return;
+            }
+
+            suggestionsBox.innerHTML = "";
+            matches.forEach((eventItem) => {
+                const option = document.createElement("button");
+                option.type = "button";
+                option.className = "event-suggestion-item";
+                option.textContent = eventItem.label;
+                option.setAttribute("role", "option");
+                option.addEventListener("click", () => selectEvent(eventItem));
+                suggestionsBox.appendChild(option);
+            });
+
+            suggestionsBox.classList.add("is-visible");
+        };
+
+        const filterSuggestions = () => {
+            const term = searchInput.value.trim().toLowerCase();
+            hiddenEventId.value = "";
+            updateSubmitState();
+
+            if (term.length === 0) {
+                clearSuggestions();
+                return;
+            }
+
+            const exactMatch = events.find((eventItem) => eventItem.label.toLowerCase() === term || eventItem.nameLower === term);
+            if (exactMatch) {
+                hiddenEventId.value = exactMatch.id;
+                updateSubmitState();
+            }
+
+            currentMatches = events
+                .filter((eventItem) => eventItem.search.includes(term))
+                .slice(0, 8);
+
+            renderSuggestions(currentMatches);
+        };
+
+        searchInput.addEventListener("input", filterSuggestions);
+
+        searchInput.addEventListener("focus", () => {
+            if (searchInput.value.trim().length > 0) {
+                filterSuggestions();
+            }
+        });
+
+        searchInput.addEventListener("keydown", (evt) => {
+            const options = suggestionsBox.querySelectorAll(".event-suggestion-item");
+            if (!suggestionsBox.classList.contains("is-visible") || options.length === 0) {
+                return;
+            }
+
+            if (evt.key === "ArrowDown") {
+                evt.preventDefault();
+                activeIndex = (activeIndex + 1) % options.length;
+                options[activeIndex].focus();
+            } else if (evt.key === "ArrowUp") {
+                evt.preventDefault();
+                activeIndex = (activeIndex - 1 + options.length) % options.length;
+                options[activeIndex].focus();
+            } else if (evt.key === "Enter" && currentMatches.length > 0) {
+                evt.preventDefault();
+                selectEvent(currentMatches[0]);
+            } else if (evt.key === "Escape") {
+                clearSuggestions();
+            }
+        });
+
+        document.addEventListener("click", (evt) => {
+            if (!evt.target.closest(".event-search-wrapper")) {
+                clearSuggestions();
+            }
+        });
+
+        form.addEventListener("submit", (evt) => {
+            if (hiddenEventId.value.trim() === "") {
+                evt.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        updateSubmitState();
+    })();
+</script>
 
 </body>
 </html>

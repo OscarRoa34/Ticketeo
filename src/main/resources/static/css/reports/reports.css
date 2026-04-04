@@ -283,8 +283,198 @@
     color: var(--success);
 }
 
+.tickets-report-page {
+    margin-bottom: 28px;
+}
+
+.report-filter-polished {
+    border: 1px solid #e3e8f5;
+    box-shadow: 0 10px 22px rgba(15, 48, 87, 0.08);
+}
+
+.report-filter-topline {
+    margin-bottom: 14px;
+}
+
+.report-filter-topline h2 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.report-filter-topline p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.report-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.report-filter-form-stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.event-search-wrapper {
+    position: relative;
+}
+
+.event-search-input {
+    width: 100%;
+}
+
+.event-suggestions {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border: 1px solid #d7dbe7;
+    border-radius: 10px;
+    box-shadow: 0 12px 24px rgba(15, 48, 87, 0.14);
+    max-height: 240px;
+    overflow-y: auto;
+    display: none;
+}
+
+.event-suggestions.is-visible {
+    display: block;
+}
+
+.event-suggestion-item {
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #edf1fa;
+    background: transparent;
+    padding: 10px 12px;
+    color: var(--gray-1);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.event-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.event-suggestion-item:hover,
+.event-suggestion-item:focus {
+    background: #f5f7ff;
+    color: var(--primary);
+    outline: none;
+}
+
+.report-table-shell {
+    border: 1px solid #e2e8f5;
+    box-shadow: 0 14px 28px rgba(15, 48, 87, 0.08);
+}
+
+.report-table-headline {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #e6ebf7;
+    background: linear-gradient(180deg, #f8faff 0%, #ffffff 100%);
+}
+
+.report-table-headline h3 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.report-table-headline p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 0.86rem;
+}
+
+.report-sales-table thead th {
+    background: var(--primary);
+}
+
+.report-sales-table tbody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.report-sales-table tbody tr:hover {
+    transform: translateY(-1px);
+}
+
+.report-col-type strong {
+    letter-spacing: 0.01em;
+}
+
+.report-col-money .count-badge {
+    min-width: 120px;
+}
+
+.report-event-simple {
+    background: var(--white);
+    box-shadow: 0 8px 20px rgba(15, 48, 87, 0.08);
+    border: 1px solid #e2e8f5;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.report-event-simple .report-event-meta h2 {
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.report-event-simple .report-event-meta p {
+    color: var(--gray-1);
+    margin-bottom: 8px;
+}
+
+.report-event-summary .category-badge {
+    background: rgba(15, 48, 87, 0.05);
+}
+
+.report-event-totals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.report-total-item {
+    background: #f8faff;
+    border: 1px solid #e1e8f6;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.report-total-item span {
+    color: #64748b;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+}
+
+.report-total-item strong {
+    color: var(--primary);
+    font-size: 1.05rem;
+    line-height: 1.2;
+}
+
+.reports-table tfoot td {
+    background: #f8f9ff;
+    border-top: 2px solid #dfe4f6;
+    font-weight: 700;
+}
+
 @media (max-width: 720px) {
-    .report-filter-form {
+    .report-filter-actions {
         flex-direction: column;
         align-items: stretch;
     }
@@ -301,5 +491,27 @@
 
     .report-event-highlight {
         padding: 20px;
+    }
+
+    .report-event-totals {
+        width: 100%;
+        grid-template-columns: 1fr;
+    }
+
+    .report-col-money .count-badge {
+        min-width: 0;
+    }
+
+    .event-suggestions {
+        position: static;
+        margin-top: 8px;
+        max-height: 200px;
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 960px) {
+    .report-event-simple {
+        align-items: stretch;
     }
 }
