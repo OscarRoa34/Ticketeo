@@ -40,6 +40,26 @@
             </div>
         </div>
 
+        <div class="report-menu-card">
+            <div class="report-menu-card-banner">
+                <div class="report-menu-icon-circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 20h16"></path>
+                        <path d="M8 16V8"></path>
+                        <path d="M12 16V4"></path>
+                        <path d="M16 16v-6"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="report-menu-card-body">
+                <h3 class="report-menu-card-title">Boletas Vendidas por Evento</h3>
+                <p class="report-menu-card-description">Selecciona un evento y consulta cuántas boletas se vendieron por tipo y las ganancias generadas.</p>
+            </div>
+            <div class="report-menu-card-footer">
+                <a th:href="@{/admin/reports/tickets-sales-report-by-event}" class="btn-primary report-menu-btn">Ver Reporte</a>
+            </div>
+        </div>
+
     </div>
 
 </main>

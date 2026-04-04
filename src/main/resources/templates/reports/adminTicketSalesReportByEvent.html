@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Boletas Vendidas por Evento</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/reports/reports.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container admin-container">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Boletas Vendidas por Evento</h1>
+            <p class="admin-subtitle">Selecciona un evento para visualizar ventas por tipo de boleta y ganancias.</p>
+        </div>
+        <a th:href="@{/admin/reports}" class="btn-secondary">Volver a Reportes</a>
+    </div>
+
+    <section class="report-filter-card">
+        <form th:action="@{/admin/reports/tickets-sales-report-by-event}" method="get" class="report-filter-form" id="ticketSalesReportForm">
+            <div class="report-filter-group">
+                <label for="eventSearchInput" class="report-filter-label">Evento</label>
+
+                <div class="report-autocomplete" id="eventAutocomplete">
+                    <input id="eventSearchInput"
+                           type="text"
+                           class="report-filter-select"
+                           autocomplete="off"
+                           placeholder="Escribe para buscar por nombre, fecha o ID..."
+                           aria-autocomplete="list"
+                           aria-expanded="false"
+                           aria-controls="eventOptions"
+                           th:value="${selectedEvent != null ? selectedEvent.name + (selectedEvent.date != null ? ' - ' + #temporals.format(selectedEvent.date, 'dd/MM/yyyy') : '') + ' | ID ' + selectedEvent.id : ''}"
+                           required>
+
+                    <ul id="eventOptions" class="report-autocomplete-menu" role="listbox">
+                        <li th:each="event : ${events}"
+                            class="report-autocomplete-item"
+                            role="option"
+                            th:data-id="${event.id}"
+                            th:data-label="${event.name + (event.date != null ? ' - ' + #temporals.format(event.date, 'dd/MM/yyyy') : '') + ' | ID ' + event.id}"
+                            th:data-search="${#strings.toLowerCase(event.name + ' ' + (event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : '') + ' ' + event.id)}"
+                            th:text="${event.name + (event.date != null ? ' - ' + #temporals.format(event.date, 'dd/MM/yyyy') : '') + ' | ID ' + event.id}">
+                            Evento
+                        </li>
+                    </ul>
+
+                    <div id="eventOptionsEmpty" class="report-autocomplete-empty">No se encontraron eventos.</div>
+                </div>
+
+                <input id="eventId" name="eventId" type="hidden" th:value="${selectedEventId}">
+                <small class="report-filter-help">Escribe y selecciona una opción del desplegable para cargar el reporte.</small>
+
+                <div class="report-filter-actions">
+                    <button type="submit" class="btn-primary report-filter-btn">Ver Reporte</button>
+                    <a th:href="@{/admin/reports/tickets-sales-report-by-event}" class="btn-secondary report-filter-clear-btn">Limpiar</a>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section th:if="${selectedEvent != null}" class="report-summary-grid">
+        <div class="summary-pill">
+            <span class="summary-pill-label">Evento</span>
+            <strong th:text="${selectedEvent.name}">Nombre del evento</strong>
+        </div>
+        <div class="summary-pill">
+            <span class="summary-pill-label">Total boletas vendidas</span>
+            <strong th:text="${totalTicketsSold}">0</strong>
+        </div>
+        <div class="summary-pill">
+            <span class="summary-pill-label">Ganancias totales</span>
+            <strong th:text="${'$ ' + #numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</strong>
+        </div>
+    </section>
+
+    <div class="reports-card" th:if="${selectedEvent != null}">
+        <table class="reports-table">
+            <thead>
+            <tr>
+                <th class="text-center">#</th>
+                <th>Tipo de Boleta</th>
+                <th class="text-center">Cantidad Vendida</th>
+                <th class="text-center">Ganancias</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row, iterStat : ${ticketSales}">
+                <td class="rank-col" th:classappend="${iterStat.index < 3} ? 'rank-top'">
+                    <span class="rank-number" th:text="${iterStat.count}"></span>
+                </td>
+                <td class="event-name-col">
+                    <strong th:text="${row.ticketTypeName}">General</strong>
+                </td>
+                <td class="text-center">
+                    <span class="count-badge" th:text="${row.soldTickets}">0</span>
+                    <span class="count-label">Boletas</span>
+                </td>
+                <td class="text-center">
+                    <span class="count-badge revenue-badge"
+                          th:text="${'$ ' + #numbers.formatDecimal(row.totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</span>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(ticketSales)}">
+                <td colspan="4" class="empty-state">No hay boletas vendidas registradas para este evento.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="reports-card reports-empty-help" th:if="${selectedEvent == null}">
+        <p class="empty-state">Selecciona un evento para ver el detalle de ventas por tipo de boleta.</p>
+    </div>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('ticketSalesReportForm');
+        const autocomplete = document.getElementById('eventAutocomplete');
+        const input = document.getElementById('eventSearchInput');
+        const optionsMenu = document.getElementById('eventOptions');
+        const emptyState = document.getElementById('eventOptionsEmpty');
+        const hiddenInput = document.getElementById('eventId');
+
+        if (!form || !autocomplete || !input || !optionsMenu || !hiddenInput || !emptyState) {
+            return;
+        }
+
+        const options = Array.from(optionsMenu.querySelectorAll('.report-autocomplete-item'));
+        let activeIndex = -1;
+
+        const normalize = function (value) {
+            return (value || '')
+                .toString()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+        };
+
+        const getVisibleOptions = function () {
+            return options.filter(function (option) {
+                return !option.classList.contains('is-hidden');
+            });
+        };
+
+        const openMenu = function () {
+            autocomplete.classList.add('is-open');
+            input.setAttribute('aria-expanded', 'true');
+        };
+
+        const closeMenu = function () {
+            autocomplete.classList.remove('is-open');
+            input.setAttribute('aria-expanded', 'false');
+            options.forEach(function (option) {
+                option.classList.remove('is-active');
+            });
+            activeIndex = -1;
+        };
+
+        const highlightActive = function () {
+            const visibleOptions = getVisibleOptions();
+            options.forEach(function (option) {
+                option.classList.remove('is-active');
+            });
+
+            if (activeIndex >= 0 && activeIndex < visibleOptions.length) {
+                const activeOption = visibleOptions[activeIndex];
+                activeOption.classList.add('is-active');
+                activeOption.scrollIntoView({ block: 'nearest' });
+            }
+        };
+
+        const filterOptions = function () {
+            const searchText = normalize(input.value);
+            let visibleCount = 0;
+
+            options.forEach(function (option) {
+                const optionText = normalize(option.dataset.search || option.dataset.label || option.textContent);
+                const matches = searchText.length === 0 || optionText.includes(searchText);
+                option.classList.toggle('is-hidden', !matches);
+                if (matches) {
+                    visibleCount += 1;
+                }
+            });
+
+            emptyState.classList.toggle('is-visible', visibleCount === 0 && searchText.length > 0);
+
+            if (visibleCount > 0 || searchText.length > 0) {
+                openMenu();
+            } else {
+                closeMenu();
+            }
+
+            activeIndex = -1;
+            highlightActive();
+            return visibleCount;
+        };
+
+        const applyOption = function (option) {
+            if (!option) {
+                return false;
+            }
+            input.value = option.dataset.label || option.textContent;
+            hiddenInput.value = option.dataset.id || '';
+            input.setCustomValidity('');
+            closeMenu();
+            return Boolean(hiddenInput.value);
+        };
+
+        const syncSelection = function () {
+            const typedValue = normalize(input.value);
+            if (!typedValue) {
+                hiddenInput.value = '';
+                return false;
+            }
+
+            const exactMatch = options.find(function (option) {
+                return normalize(option.dataset.label || option.textContent) === typedValue;
+            });
+
+            if (exactMatch) {
+                return applyOption(exactMatch);
+            }
+
+            const partialMatches = options.filter(function (option) {
+                return normalize(option.dataset.label || option.textContent).includes(typedValue);
+            });
+
+            if (partialMatches.length === 1) {
+                return applyOption(partialMatches[0]);
+            }
+
+            hiddenInput.value = '';
+            return false;
+        };
+
+        input.addEventListener('input', function () {
+            input.setCustomValidity('');
+            hiddenInput.value = '';
+            filterOptions();
+        });
+
+        input.addEventListener('focus', function () {
+            filterOptions();
+        });
+
+        input.addEventListener('keydown', function (event) {
+            const visibleOptions = getVisibleOptions();
+
+            if (event.key === 'ArrowDown' && visibleOptions.length > 0) {
+                event.preventDefault();
+                activeIndex = activeIndex < visibleOptions.length - 1 ? activeIndex + 1 : 0;
+                highlightActive();
+                return;
+            }
+
+            if (event.key === 'ArrowUp' && visibleOptions.length > 0) {
+                event.preventDefault();
+                activeIndex = activeIndex > 0 ? activeIndex - 1 : visibleOptions.length - 1;
+                highlightActive();
+                return;
+            }
+
+            if (event.key === 'Enter' && autocomplete.classList.contains('is-open')) {
+                if (activeIndex >= 0 && activeIndex < visibleOptions.length) {
+                    event.preventDefault();
+                    applyOption(visibleOptions[activeIndex]);
+                    return;
+                }
+            }
+
+            if (event.key === 'Escape') {
+                closeMenu();
+            }
+        });
+
+        options.forEach(function (option) {
+            option.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+                applyOption(option);
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!autocomplete.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        input.addEventListener('blur', function () {
+            window.setTimeout(function () {
+                if (!autocomplete.contains(document.activeElement)) {
+                    closeMenu();
+                }
+            }, 120);
+        });
+
+        input.addEventListener('change', function () {
+            syncSelection();
+        });
+
+        form.addEventListener('submit', function (event) {
+            if (syncSelection()) {
+                return;
+            }
+
+            event.preventDefault();
+            input.setCustomValidity('Selecciona un evento valido de la lista.');
+            input.reportValidity();
+        });
+    });
+</script>
+
+</body>
+</html>
