@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.interest.services;
+package co.edu.uptc.Ticketeo.reports.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
-import co.edu.uptc.Ticketeo.interest.models.EventInterestDto;
-import co.edu.uptc.Ticketeo.interest.models.InterestReport;
-import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.reports.models.EventInterestDto;
+import co.edu.uptc.Ticketeo.reports.models.InterestReport;
+import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 import co.edu.uptc.Ticketeo.user.models.User;
 import lombok.RequiredArgsConstructor;
 

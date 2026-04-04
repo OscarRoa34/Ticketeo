@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.interest.repositories;
+package co.edu.uptc.Ticketeo.reports.repositories;
 
 import java.util.List;
 
@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import co.edu.uptc.Ticketeo.interest.models.EventInterestDto;
-import co.edu.uptc.Ticketeo.interest.models.InterestReport;
+import co.edu.uptc.Ticketeo.reports.models.EventInterestDto;
+import co.edu.uptc.Ticketeo.reports.models.InterestReport;
 
 @Repository
 public interface InterestReportRepository extends JpaRepository<InterestReport, Integer> {

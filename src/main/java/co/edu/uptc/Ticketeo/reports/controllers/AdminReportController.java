@@ -1,6 +1,6 @@
-package co.edu.uptc.Ticketeo.interest.controllers;
+package co.edu.uptc.Ticketeo.reports.controllers;
 
-import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
+import co.edu.uptc.Ticketeo.reports.services.InterestReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,12 +16,12 @@ public class AdminReportController {
 
     @GetMapping({"", "/"})
     public String showReportsMenu() {
-        return "interest/adminReportsMenu";
+        return "reports/adminReportsMenu";
     }
 
     @GetMapping("/interest")
     public String showInterestReport(Model model) {
         model.addAttribute("interestRanking", interestReportService.getEventInterestRanking());
-        return "interest/adminInterestReport";
+        return "reports/adminInterestReport";
     }
 }

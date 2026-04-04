@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.services.EventService;
-import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
+import co.edu.uptc.Ticketeo.reports.services.InterestReportService;
 import co.edu.uptc.Ticketeo.user.models.User;
 import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
