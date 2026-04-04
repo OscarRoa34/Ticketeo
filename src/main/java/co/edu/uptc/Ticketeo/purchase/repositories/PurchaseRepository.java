@@ -13,6 +13,9 @@ import co.edu.uptc.Ticketeo.purchase.models.Purchase;
 @Repository
 public interface PurchaseRepository extends JpaRepository<Purchase, Long> {
 
+        @Query("SELECT COALESCE(SUM(p.totalPaid), 0.0) FROM Purchase p")
+        Double getTotalCompanyRevenue();
+
     @Query("""
             SELECT DISTINCT p
             FROM Purchase p

@@ -38,7 +38,7 @@ public class PublicViewHomeController {
 
         if (authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()))) {
-            return "redirect:/admin";
+            return "redirect:/admin/dashboard";
         }
 
         Page<Event> eventPage = eventService.getEventsFiltered(search, categoryId, page, PAGE_SIZE, sort);

@@ -46,6 +46,72 @@
     font-size: 0.9rem;
 }
 
+.dashboard-admin-header {
+    margin-bottom: 22px;
+}
+
+.dashboard-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.dashboard-metric-card {
+    background: var(--white);
+    border: 1px solid var(--gray-5);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(26, 10, 74, 0.12);
+}
+
+.dashboard-metric-card-revenue {
+    border-top: 4px solid var(--success);
+}
+
+.dashboard-metric-card-active {
+    border-top: 4px solid var(--primary);
+}
+
+.dashboard-metric-card-completed {
+    border-top: 4px solid var(--secondary);
+}
+
+.dashboard-metric-card-users {
+    border-top: 4px solid var(--info);
+}
+
+.dashboard-metric-label {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+}
+
+.dashboard-metric-value {
+    margin: 0;
+    font-size: 1.85rem;
+    line-height: 1.1;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.dashboard-metric-help {
+    margin: 0;
+    font-size: 0.84rem;
+    color: var(--gray-1);
+}
+
 .admin-search-bar {
     margin-bottom: 20px;
     background: var(--white);
@@ -622,6 +688,16 @@ button.icon-action-btn {
     border-radius: 10px;
     padding: 11px 12px;
     background: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+    .dashboard-metric-card {
+        padding: 16px;
+    }
+
+    .dashboard-metric-value {
+        font-size: 1.6rem;
+    }
 }
 
 @media (max-width: 900px) {
