@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import co.edu.uptc.Ticketeo.purchase.models.PurchasedTicket;
+import co.edu.uptc.Ticketeo.reports.models.TicketTypeSalesAggregationDto;
 
 @Repository
 public interface PurchasedTicketRepository extends JpaRepository<PurchasedTicket, Long> {
@@ -31,4 +32,14 @@ public interface PurchasedTicketRepository extends JpaRepository<PurchasedTicket
             GROUP BY t.ticketTypeName
             """)
     List<Object[]> countSoldTicketsByTypeNameForEvent(@Param("eventId") Integer eventId);
+
+    @Query("""
+            SELECT t.ticketTypeName AS ticketTypeName,
+                   COUNT(t) AS soldTickets,
+                   COALESCE(SUM(t.unitPrice), 0) AS totalRevenue
+            FROM PurchasedTicket t
+            WHERE t.purchase.eventId = :eventId
+            GROUP BY t.ticketTypeName
+            """)
+    List<TicketTypeSalesAggregationDto> summarizeTicketSalesByTypeForEvent(@Param("eventId") Integer eventId);
 }
