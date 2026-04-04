@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Boletas Vendidas por Evento</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/reports/reports.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container admin-container">
+
+    <div class="admin-header">
+        <div>
+            <h1 class="admin-title">Boletas Vendidas por Evento</h1>
+            <p class="admin-subtitle">Selecciona un evento para ver cuántas entradas se han vendido por tipo y sus ganancias.</p>
+        </div>
+        <a th:href="@{/admin/reports}" class="btn-secondary">Volver a Reportes</a>
+    </div>
+
+    <section class="report-filter-card">
+        <form class="report-filter-form" th:action="@{/admin/reports/tickets-sales-report-by-event}" method="get">
+            <label class="report-filter-label" for="eventId">Evento</label>
+            <select id="eventId" name="eventId" class="report-filter-select" required>
+                <option value="" th:selected="${selectedEventId == null}">Selecciona un evento</option>
+                <option th:each="event : ${events}"
+                        th:value="${event.id}"
+                        th:text="${event.name + (event.date != null ? ' | ' + #temporals.format(event.date, 'dd/MM/yyyy') : ' | Sin fecha')}"
+                        th:selected="${selectedEventId != null and selectedEventId == event.id}">
+                    Evento
+                </option>
+            </select>
+            <button type="submit" class="btn-primary report-filter-btn">Ver reporte</button>
+            <a th:if="${selectedEventId != null}" th:href="@{/admin/reports/tickets-sales-report-by-event}" class="btn-secondary report-filter-btn">Limpiar</a>
+        </form>
+    </section>
+
+    <section th:if="${selectedEventId != null and selectedEvent == null}" class="report-help-state">
+        <p>El evento seleccionado no existe o fue eliminado. Selecciona otro evento para continuar.</p>
+    </section>
+
+    <section th:if="${selectedEvent == null and selectedEventId == null}" class="report-help-state">
+        <p>Selecciona un evento para generar el reporte de ventas de boletas.</p>
+    </section>
+
+    <section th:if="${selectedEvent != null}" class="report-event-highlight">
+        <div class="report-event-meta">
+            <h2 th:text="${selectedEvent.name}">Nombre evento</h2>
+            <p>
+                Fecha:
+                <strong th:text="${selectedEvent.date != null ? #temporals.format(selectedEvent.date, 'dd/MM/yyyy') : 'Por definir'}"></strong>
+            </p>
+            <span th:if="${selectedEvent.category != null}" class="category-badge"
+                  th:text="${selectedEvent.category.name}"
+                  th:style="'color:' + ${selectedEvent.category.color} + '; border-color:' + ${selectedEvent.category.color} + ';'"></span>
+        </div>
+
+        <div class="report-metrics">
+            <article class="report-metric-card">
+                <span class="report-metric-label">Boletas vendidas</span>
+                <strong class="report-metric-value" th:text="${totalTicketsSold}">0</strong>
+            </article>
+            <article class="report-metric-card report-metric-emphasis">
+                <span class="report-metric-label">Ganancias</span>
+                <strong class="report-metric-value" th:text="${'$ ' + #numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</strong>
+            </article>
+        </div>
+    </section>
+
+    <div class="reports-card" th:if="${selectedEvent != null}">
+        <table class="reports-table">
+            <thead>
+            <tr>
+                <th>Tipo de boleta</th>
+                <th class="text-center">Cantidad vendida</th>
+                <th class="text-center">Ganancias</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${salesRows}">
+                <td class="event-name-col">
+                    <strong th:text="${row.ticketTypeName}">General</strong>
+                </td>
+                <td class="text-center">
+                    <span class="count-badge" th:text="${row.soldTickets}">0</span>
+                    <span class="count-label">boletas</span>
+                </td>
+                <td class="text-center">
+                    <span class="count-badge money-badge"
+                          th:text="${'$ ' + #numbers.formatDecimal(row.totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</span>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(salesRows)}">
+                <td colspan="3" class="empty-state">Este evento no tiene tipos de boleta configurados.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

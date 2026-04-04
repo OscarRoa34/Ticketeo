@@ -160,3 +160,146 @@
     color: var(--gray-1);
     font-size: 1.1rem;
 }
+
+.report-filter-card {
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    padding: 22px;
+    margin-bottom: 22px;
+}
+
+.report-filter-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.report-filter-label {
+    font-weight: 700;
+    color: var(--black-2);
+    font-size: 0.92rem;
+}
+
+.report-filter-select {
+    min-width: 280px;
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid #d7dbe7;
+    border-radius: 9px;
+    font-size: 0.92rem;
+    color: var(--gray-1);
+    background: #fbfcff;
+}
+
+.report-filter-select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.report-filter-btn {
+    min-width: 120px;
+    text-align: center;
+}
+
+.report-help-state {
+    background: rgba(26, 10, 74, 0.05);
+    border: 1px dashed rgba(26, 10, 74, 0.25);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+    color: var(--gray-1);
+    font-weight: 500;
+}
+
+.report-event-highlight {
+    background: linear-gradient(135deg, rgba(26, 10, 74, 0.95) 0%, rgba(78, 37, 168, 0.92) 100%);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 26px rgba(26, 10, 74, 0.25);
+}
+
+.report-event-meta h2 {
+    margin: 0;
+    color: var(--white);
+    font-size: 1.35rem;
+}
+
+.report-event-meta p {
+    margin: 8px 0 14px;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 0.92rem;
+}
+
+.report-event-meta .category-badge {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.report-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    gap: 12px;
+    flex: 1;
+    max-width: 420px;
+}
+
+.report-metric-card {
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.report-metric-emphasis {
+    background: rgba(74, 222, 128, 0.14);
+    border-color: rgba(74, 222, 128, 0.28);
+}
+
+.report-metric-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.82);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.report-metric-value {
+    font-size: 1.2rem;
+    color: var(--white);
+    font-weight: 800;
+}
+
+.money-badge {
+    background: rgba(39, 174, 96, 0.12);
+    color: var(--success);
+}
+
+@media (max-width: 720px) {
+    .report-filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .report-filter-select {
+        min-width: 0;
+    }
+
+    .report-metrics {
+        width: 100%;
+        max-width: none;
+        grid-template-columns: 1fr;
+    }
+
+    .report-event-highlight {
+        padding: 20px;
+    }
+}
