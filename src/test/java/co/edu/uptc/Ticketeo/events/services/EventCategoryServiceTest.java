@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.repositories.EventCategoryRepository;
 import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
-import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 
 @ExtendWith(MockitoExtension.class)
 class EventCategoryServiceTest {

@@ -55,8 +55,8 @@ import co.edu.uptc.Ticketeo.purchase.services.TicketPdfService;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.services.TicketTypeService;
-import co.edu.uptc.Ticketeo.interest.controllers.AdminReportController;
-import co.edu.uptc.Ticketeo.interest.services.InterestReportService;
+import co.edu.uptc.Ticketeo.reports.controllers.AdminReportController;
+import co.edu.uptc.Ticketeo.reports.services.InterestReportService;
 import co.edu.uptc.Ticketeo.user.controllers.AdminUserController;
 import co.edu.uptc.Ticketeo.user.models.Role;
 import co.edu.uptc.Ticketeo.user.models.User;
@@ -367,11 +367,11 @@ class WebEndpointsSmokeTest {
 
         mockMvc.perform(get("/admin/reports").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("interest/adminReportsMenu"));
+                .andExpect(view().name("reports/adminReportsMenu"));
 
         mockMvc.perform(get("/admin/reports/interest").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())
-                .andExpect(view().name("interest/adminInterestReport"));
+                .andExpect(view().name("reports/adminInterestReport"));
 
         mockMvc.perform(get("/admin/users").with(user("admin").roles("ADMIN")))
                 .andExpect(status().isOk())

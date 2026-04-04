@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.repositories.EventCategoryRepository;
 import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
-import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service

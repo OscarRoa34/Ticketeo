@@ -29,7 +29,7 @@ import co.edu.uptc.Ticketeo.events.models.TicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.repositories.TicketTypeRepository;
-import co.edu.uptc.Ticketeo.interest.repositories.InterestReportRepository;
+import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 import co.edu.uptc.Ticketeo.purchase.repositories.PurchasedTicketRepository;
 
 

@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.interest.models;
+package co.edu.uptc.Ticketeo.reports.models;
 
 import java.time.LocalDateTime;
 
