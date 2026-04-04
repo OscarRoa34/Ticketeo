@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Dashboard Admin</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-admin}"></div>
+
+<main class="container admin-container">
+
+    <div class="admin-header dashboard-admin-header">
+        <div>
+            <h1 class="admin-title">Dashboard Administrativo</h1>
+            <p class="admin-subtitle">Resumen general de rendimiento de la plataforma.</p>
+        </div>
+    </div>
+
+    <section class="dashboard-metrics-grid" aria-label="Métricas principales de administración">
+        <article class="dashboard-metric-card dashboard-metric-card-revenue">
+            <p class="dashboard-metric-label">Ganancias Totales</p>
+            <p class="dashboard-metric-value" th:text="${totalCompanyRevenueFormatted}">$ 0</p>
+            <p class="dashboard-metric-help">Total acumulado por compras registradas.</p>
+        </article>
+
+        <article class="dashboard-metric-card dashboard-metric-card-active">
+            <p class="dashboard-metric-label">Eventos Activos</p>
+            <p class="dashboard-metric-value" th:text="${activeEventsCount}">0</p>
+            <p class="dashboard-metric-help">Eventos publicados y vigentes.</p>
+        </article>
+
+        <article class="dashboard-metric-card dashboard-metric-card-completed">
+            <p class="dashboard-metric-label">Eventos Pasados</p>
+            <p class="dashboard-metric-value" th:text="${completedEventsCount}">0</p>
+            <p class="dashboard-metric-help">Eventos cuya fecha ya transcurrió.</p>
+        </article>
+
+        <article class="dashboard-metric-card dashboard-metric-card-users">
+            <p class="dashboard-metric-label">Usuarios Registrados</p>
+            <p class="dashboard-metric-value" th:text="${registeredUsersCount}">0</p>
+            <p class="dashboard-metric-help">Total de cuentas de usuario sin rol admin.</p>
+        </article>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+
+</html>

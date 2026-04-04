@@ -13,7 +13,7 @@ public class RedirectController {
         if (authentication != null && authentication.isAuthenticated()) {
             for (GrantedAuthority authority : authentication.getAuthorities()) {
                 if (authority.getAuthority().equals("ROLE_ADMIN")) {
-                    return "redirect:/admin";
+                    return "redirect:/admin/dashboard";
                 }
             }
         }

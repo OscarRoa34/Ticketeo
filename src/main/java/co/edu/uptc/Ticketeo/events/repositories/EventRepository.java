@@ -39,6 +39,9 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
     @Query("SELECT e FROM Event e WHERE e.isActive = true AND (e.date IS NULL OR e.date >= :today)")
     Page<Event> findManageableActiveEvents(@Param("today") LocalDate today, Pageable pageable);
 
+    @Query("SELECT COUNT(e) FROM Event e WHERE e.isActive = true AND (e.date IS NULL OR e.date >= :today)")
+    long countManageableActiveEvents(@Param("today") LocalDate today);
+
     @Query("SELECT e FROM Event e WHERE e.isActive = true AND (e.date IS NULL OR e.date >= :today) AND LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     Page<Event> findManageableActiveEventsByName(@Param("name") String name, @Param("today") LocalDate today, Pageable pageable);
 
@@ -53,6 +56,9 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     @Query("SELECT e FROM Event e WHERE e.isActive = true AND e.date < :today")
     Page<Event> findCompletedEvents(@Param("today") LocalDate today, Pageable pageable);
+
+    @Query("SELECT COUNT(e) FROM Event e WHERE e.isActive = true AND e.date < :today")
+    long countCompletedEvents(@Param("today") LocalDate today);
 
     @Query("SELECT e FROM Event e WHERE e.isActive = true AND e.date < :today AND LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     Page<Event> findCompletedEventsByName(@Param("name") String name, @Param("today") LocalDate today, Pageable pageable);
