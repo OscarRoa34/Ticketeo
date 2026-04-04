@@ -50,7 +50,7 @@
 
         <ul id="eventsSource" class="event-source" hidden>
             <li th:each="event : ${events}"
-                th:attr="data-id=${event.id},data-name=${event.name},data-date=${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : 'Sin fecha'}"></li>
+                th:attr="data-id=${event.id},data-name=${event.name},data-date=${event.date != null ? #temporals.format(event.date, 'dd/MM/yyyy') : 'Sin fecha'},data-status=${eventStatusById[event.id] != null ? eventStatusById[event.id] : 'No disponible'}"></li>
         </ul>
     </section>
 
@@ -59,27 +59,45 @@
     </section>
 
     <section th:if="${selectedEvent == null and selectedEventId == null}" class="report-help-state">
-        <p>Busca y selecciona un evento para generar el reporte.</p>
+        <p style="color: white;">Busca y selecciona un evento para generar el reporte.</p>
     </section>
 
     <section th:if="${selectedEvent != null}" class="report-event-highlight report-event-simple report-event-summary">
         <div class="report-event-meta">
             <h2 th:text="${selectedEvent.name}">Nombre evento</h2>
-            <p>
-                Fecha:
-                <strong th:text="${selectedEvent.date != null ? #temporals.format(selectedEvent.date, 'dd/MM/yyyy') : 'Por definir'}"></strong>
-            </p>
-            <span th:if="${selectedEvent.category != null}" class="category-badge"
-                  th:text="${selectedEvent.category.name}"
-                  th:style="'color:' + ${selectedEvent.category.color} + '; border-color:' + ${selectedEvent.category.color} + ';'"></span>
         </div>
 
-        <div class="report-event-totals">
-            <article class="report-total-item">
+        <div class="report-event-facts report-event-facts-full">
+            <article class="report-event-fact">
+                <span>Fecha del evento</span>
+                <strong th:text="${selectedEvent.date != null ? #temporals.format(selectedEvent.date, 'dd/MM/yyyy') : 'Por definir'}">16/04/2026</strong>
+            </article>
+
+            <article class="report-event-fact">
+                <span>Estado del evento</span>
+                <strong>
+                    <span class="event-status-badge"
+                          th:classappend="${' ' + selectedEventStatusClass}"
+                          th:text="${selectedEventStatus}">Activo</span>
+                </strong>
+            </article>
+
+            <article class="report-event-fact">
+                <span>Categoría</span>
+                <strong th:if="${selectedEvent.category != null}">
+                    <span class="category-badge"
+                          th:text="${selectedEvent.category.name}"
+                          th:style="'color:' + ${selectedEvent.category.color} + '; border-color:' + ${selectedEvent.category.color} + ';'"></span>
+                </strong>
+                <strong th:if="${selectedEvent.category == null}" class="report-fact-empty">Sin categoría</strong>
+            </article>
+
+            <article class="report-event-fact report-event-fact-metric">
                 <span>Boletas vendidas</span>
                 <strong th:text="${totalTicketsSold}">0</strong>
             </article>
-            <article class="report-total-item">
+
+            <article class="report-event-fact report-event-fact-metric">
                 <span>Ganancias totales</span>
                 <strong th:text="${'$ ' + #numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')}">$ 0</strong>
             </article>
@@ -147,11 +165,12 @@
         const events = Array.from(document.querySelectorAll("#eventsSource li")).map((item) => {
             const name = item.dataset.name || "";
             const date = item.dataset.date || "Sin fecha";
+            const status = item.dataset.status || "No disponible";
             return {
                 id: item.dataset.id || "",
                 nameLower: name.toLowerCase().trim(),
-                label: `${name} | ${date}`,
-                search: `${name} ${date}`.toLowerCase().trim()
+                label: `${name} | ${date} | ${status}`,
+                search: `${name} ${date} ${status}`.toLowerCase().trim()
             };
         });
 
