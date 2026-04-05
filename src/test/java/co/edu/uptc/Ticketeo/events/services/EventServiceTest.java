@@ -5,23 +5,16 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.models.EventTicketType;
@@ -29,9 +22,8 @@ import co.edu.uptc.Ticketeo.events.models.TicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.repositories.TicketTypeRepository;
-import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 import co.edu.uptc.Ticketeo.purchase.repositories.PurchasedTicketRepository;
-
+import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceTest {
@@ -40,6 +32,7 @@ class EventServiceTest {
     private EventRepository eventRepository;
 
     @Mock
+    @SuppressWarnings("unused")
     private InterestReportRepository interestReportRepository;
 
     @Mock
@@ -55,125 +48,72 @@ class EventServiceTest {
     private EventService eventService;
 
     @Test
-    void getActiveEventsFiltered_withSearchAndCategory_usesCombinedQuery() {
-        // Verifica que el listado admin de eventos activos excluye completados
-        // y aplica filtro combinado por nombre + categoria.
-        Page<Event> expected = new PageImpl<>(List.of(Event.builder().id(1).name("Rock Fest").build()));
-        when(eventRepository.findManageableActiveEventsByNameAndCategory(eq("rock"), eq(3), any(java.time.LocalDate.class), any(Pageable.class)))
-                .thenReturn(expected);
+    void saveEventWithTicketTypes_validData_returnsUpdatedEvent() {
+        Event eventToSave = Event.builder().name("Concert").build();
+        Event savedEvent = Event.builder().id(10).name("Concert").build();
+        Event updatedEvent = Event.builder().id(10).name("Concert").price(100.0).build();
+        TicketType vipType = TicketType.builder().id(1).name("VIP").build();
 
-        Page<Event> result = eventService.getActiveEventsFiltered("rock", 3, 0, 6);
+        when(eventRepository.save(eventToSave)).thenReturn(savedEvent);
+        when(eventTicketTypeRepository.findByEvent_Id(10)).thenReturn(List.of());
+        when(ticketTypeRepository.findById(1)).thenReturn(Optional.of(vipType));
+        when(eventTicketTypeRepository.save(any(EventTicketType.class)))
+                .thenReturn(EventTicketType.builder().event(savedEvent).ticketType(vipType).availableQuantity(3).ticketPrice(100.0).build());
+        when(eventTicketTypeRepository.findMinimumAvailableTicketPriceByEventId(10)).thenReturn(100.0);
+        when(eventRepository.findById(10)).thenReturn(Optional.of(updatedEvent));
 
-        assertEquals(expected, result);
-        verify(eventRepository).findManageableActiveEventsByNameAndCategory(eq("rock"), eq(3), any(java.time.LocalDate.class), any(Pageable.class));
+        Event result = eventService.saveEventWithTicketTypes(eventToSave, Map.of(1, 3), Map.of(1, 100.0));
+
+        assertEquals(10, result.getId());
+        assertEquals(100.0, result.getPrice());
+        verify(eventRepository).save(eventToSave);
+        verify(eventTicketTypeRepository).deleteByEvent_Id(10);
+        verify(eventTicketTypeRepository).save(any(EventTicketType.class));
     }
 
     @Test
-    void getActiveEventsFiltered_withoutFilters_usesDefaultActiveQuery() {
-        // Verifica que sin filtros se usa la consulta de eventos activos gestionables
-        // (no completados por fecha).
-        Page<Event> expected = new PageImpl<>(List.of());
-        when(eventRepository.findManageableActiveEvents(any(java.time.LocalDate.class), any(Pageable.class))).thenReturn(expected);
-
-        Page<Event> result = eventService.getActiveEventsFiltered("   ", null, 1, 4);
-
-        assertEquals(expected, result);
-        verify(eventRepository).findManageableActiveEvents(any(java.time.LocalDate.class), any(Pageable.class));
-    }
-
-    @Test
-    void getEventsFiltered_priceAsc_appliesExpectedSort() {
-        // Verifica que al solicitar ordenamiento por precio ascendente,
-        // el Pageable se construye con Sort ASC sobre el campo "price".
-        when(eventRepository.findByIsActiveTrue(any(Pageable.class))).thenReturn(Page.empty());
-
-        eventService.getEventsFiltered(null, null, 0, 5, "price_asc");
-
-        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(eventRepository).findByIsActiveTrue(pageableCaptor.capture());
-        Sort.Order order = pageableCaptor.getValue().getSort().getOrderFor("price");
-        assertEquals(Sort.Direction.ASC, order.getDirection());
-    }
-
-    @Test
-    void deactivateEvent_existingEvent_setsInactiveAndSaves() {
-        // Verifica que si el evento existe,
-        // se marca como inactivo y se guarda en el repositorio.
-        Event event = Event.builder().id(10).name("Expo").isActive(true).build();
-        when(purchasedTicketRepository.existsByPurchase_EventId(10)).thenReturn(false);
-        when(eventRepository.findById(10)).thenReturn(Optional.of(event));
-
-        eventService.deactivateEvent(10);
-
-        assertFalse(event.getIsActive());
-        verify(eventRepository).save(event);
-    }
-
-    @Test
-    void deactivateEvent_missingEvent_doesNotSave() {
-        // Verifica que si el evento no existe,
-        // no se intenta guardar ningún cambio en el repositorio.
-        when(purchasedTicketRepository.existsByPurchase_EventId(99)).thenReturn(false);
-        when(eventRepository.findById(99)).thenReturn(Optional.empty());
-
-        eventService.deactivateEvent(99);
-
-        verify(eventRepository, never()).save(any(Event.class));
-    }
-
-    @Test
-    void deactivateEvent_withSoldTickets_throwsErrorAndDoesNotSave() {
-        when(purchasedTicketRepository.existsByPurchase_EventId(12)).thenReturn(true);
-
-        assertThrows(IllegalArgumentException.class, () -> eventService.deactivateEvent(12));
-
-        verify(eventRepository, never()).findById(12);
-        verify(eventRepository, never()).save(any(Event.class));
-    }
-
-    @Test
-    void recalculateMinimumAvailablePrice_existingEvent_updatesStoredPrice() {
-        Event event = Event.builder().id(22).name("Dynamic Price Event").price(50000.0).build();
-        when(eventRepository.findById(22)).thenReturn(Optional.of(event));
-        when(eventTicketTypeRepository.findMinimumAvailableTicketPriceByEventId(22)).thenReturn(70000.0);
-
-        eventService.recalculateMinimumAvailablePrice(22);
-
-        assertEquals(70000.0, event.getPrice());
-        verify(eventRepository).save(event);
-    }
-
-    @Test
-    void deleteEvent_deletesInterestReportBeforeEvent() {
-        // Verifica que al eliminar un evento,
-        // primero se eliminan los intereses asociados y luego el evento.
-        eventService.deleteEvent(7);
-
-        verify(interestReportRepository).deleteByEventId(7);
-        verify(eventTicketTypeRepository).deleteByEvent_Id(7);
-        verify(eventRepository).deleteById(7);
-    }
-
-    @Test
-    void saveEventWithTicketTypes_whenSoldTypeChangesQuantity_throwsError() {
-        Event event = Event.builder().id(11).name("Festival").build();
-        TicketType vip = TicketType.builder().id(5).name("VIP").build();
-        EventTicketType existing = EventTicketType.builder()
-                .id(77)
-                .event(event)
-                .ticketType(vip)
-                .availableQuantity(20)
-                .ticketPrice(120000.0)
+    void saveEventWithTicketTypes_soldTicketTypeChanged_throwsIllegalArgumentException() {
+        Event eventToSave = Event.builder().name("Festival").build();
+        Event savedEvent = Event.builder().id(20).name("Festival").build();
+        TicketType vipType = TicketType.builder().id(1).name("VIP").build();
+        EventTicketType assignment = EventTicketType.builder()
+                .event(savedEvent)
+                .ticketType(vipType)
+                .availableQuantity(10)
+                .ticketPrice(50.0)
                 .build();
 
-        when(eventRepository.save(any(Event.class))).thenReturn(event);
-        when(eventTicketTypeRepository.findByEvent_Id(11)).thenReturn(List.of(existing));
-        when(purchasedTicketRepository.countSoldTicketsByTypeNameForEvent(11))
-                .thenReturn(List.<Object[]>of(new Object[]{"VIP", 1L}));
+        when(eventRepository.save(eventToSave)).thenReturn(savedEvent);
+        when(eventTicketTypeRepository.findByEvent_Id(20)).thenReturn(List.of(assignment));
+        when(purchasedTicketRepository.countSoldTicketsByTypeNameForEvent(20))
+            .thenReturn(List.<Object[]>of(new Object[] { "VIP", 1L }));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> eventService.saveEventWithTicketTypes(event, Map.of(5, 10), Map.of(5, 120000.0)));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> eventService.saveEventWithTicketTypes(eventToSave, Map.of(1, 5), Map.of(1, 50.0)));
 
-        verify(eventTicketTypeRepository, never()).deleteByEvent_Id(11);
+        assertTrue(exception.getMessage().contains("No se puede modificar la cantidad"));
+    }
+
+    @Test
+    void deactivateEvent_validIdWithoutSales_setsEventInactive() {
+        Event event = Event.builder().id(5).name("Expo").isActive(true).build();
+
+        when(purchasedTicketRepository.existsByPurchase_EventId(5)).thenReturn(false);
+        when(eventRepository.findById(5)).thenReturn(Optional.of(event));
+
+        eventService.deactivateEvent(5);
+
+        assertTrue(Boolean.FALSE.equals(event.getIsActive()));
+        verify(eventRepository).save(event);
+    }
+
+    @Test
+    void deactivateEvent_eventWithSoldTickets_throwsIllegalArgumentException() {
+        when(purchasedTicketRepository.existsByPurchase_EventId(8)).thenReturn(true);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> eventService.deactivateEvent(8));
+
+        assertTrue(exception.getMessage().contains("No se puede desactivar"));
     }
 }

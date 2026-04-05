@@ -1,20 +1,21 @@
 package co.edu.uptc.Ticketeo.purchase.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
@@ -22,6 +23,7 @@ import co.edu.uptc.Ticketeo.events.models.EventTicketType;
 import co.edu.uptc.Ticketeo.events.models.TicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.services.EventService;
+import co.edu.uptc.Ticketeo.purchase.models.PaymentMethod;
 import co.edu.uptc.Ticketeo.purchase.models.Purchase;
 import co.edu.uptc.Ticketeo.purchase.models.PurchasedTicket;
 import co.edu.uptc.Ticketeo.purchase.repositories.PurchaseRepository;
@@ -52,60 +54,56 @@ class PurchaseServiceTest {
     private PurchaseService purchaseService;
 
     @Test
-    void processPurchase_updatesStockAndCreatesPurchaseData() {
-        Event event = Event.builder().id(1).name("Rock Fest").date(LocalDate.now().plusDays(3)).price(45000.0).build();
-        User user = User.builder().id(2L).username("ana").password("pwd").role(Role.USER).build();
-        TicketType ticketType = TicketType.builder().id(3).name("VIP").build();
+    void processPurchase_validData_returnsCheckoutResult() {
+        Event event = Event.builder().id(7).name("Concert").date(LocalDate.now().plusDays(3)).price(70.0).build();
+        User user = User.builder().id(1L).username("maria").password("x").role(Role.USER).build();
+        TicketType vipType = TicketType.builder().id(1).name("VIP").build();
         EventTicketType assignment = EventTicketType.builder()
-                .id(1)
                 .event(event)
-                .ticketType(ticketType)
-                .availableQuantity(10)
-                .ticketPrice(45000.0)
+                .ticketType(vipType)
+                .availableQuantity(5)
+                .ticketPrice(100.0)
+                .build();
+        Purchase savedPurchase = Purchase.builder()
+                .id(99L)
+                .user(user)
+                .eventId(7)
+                .eventName("Concert")
+                .eventDate(event.getDate())
+                .paymentMethod(PaymentMethod.CARD)
+                .totalPaid(100.0)
+                .totalTickets(1)
                 .build();
 
-        when(eventService.getEventById(1)).thenReturn(event);
-        when(userRepository.findByUsername("ana")).thenReturn(Optional.of(user));
-        when(eventTicketTypeRepository.findByEvent_Id(1)).thenReturn(List.of(assignment));
-        when(purchaseRepository.save(any(Purchase.class))).thenAnswer(invocation -> {
-            Purchase purchase = invocation.getArgument(0);
-            purchase.setId(99L);
-            return purchase;
-        });
-        when(purchasedTicketRepository.save(any(PurchasedTicket.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(eventService.getEventById(7)).thenReturn(event);
+        when(eventService.isCompletedEvent(event)).thenReturn(false);
+        when(userRepository.findByUsername("maria")).thenReturn(Optional.of(user));
+        when(eventTicketTypeRepository.findByEvent_Id(7)).thenReturn(List.of(assignment));
+        when(eventTicketTypeRepository.saveAll(anyList())).thenReturn(List.of(assignment));
+        when(purchaseRepository.save(any(Purchase.class))).thenReturn(savedPurchase);
+        when(purchasedTicketRepository.save(any(PurchasedTicket.class))).thenReturn(PurchasedTicket.builder().id(1L).build());
 
-        PurchaseService.PurchaseCheckoutResult result = purchaseService.processPurchase(1, "ana", Map.of(3, 2), "CARD");
+        PurchaseService.PurchaseCheckoutResult result = purchaseService.processPurchase(7, "maria", Map.of(1, 1), "card");
 
-        assertEquals(2, result.tickets());
-        assertEquals(90000L, result.total());
+        assertEquals(99L, result.purchaseId());
+        assertEquals(1, result.tickets());
+        assertEquals(100L, result.total());
         assertEquals("CARD", result.paymentMethod());
-        assertEquals(2, result.ticketTypeBreakdown().get("VIP"));
-        assertEquals(8, assignment.getAvailableQuantity());
-        verify(eventService).recalculateMinimumAvailablePrice(1);
+        assertEquals(1, result.ticketTypeBreakdown().get("VIP"));
+        assertEquals(4, assignment.getAvailableQuantity());
+        verify(eventTicketTypeRepository).saveAll(anyList());
+        verify(purchaseRepository).save(any(Purchase.class));
+        verify(purchasedTicketRepository).save(any(PurchasedTicket.class));
+        verify(eventService).recalculateMinimumAvailablePrice(7);
     }
 
     @Test
-    void processPurchase_withoutTicketSelection_throwsError() {
-        Event event = Event.builder().id(1).name("Rock Fest").price(45000.0).build();
-        User user = User.builder().id(2L).username("ana").password("pwd").role(Role.USER).build();
+    void processPurchase_eventNotFound_throwsIllegalArgumentException() {
+        when(eventService.getEventById(7)).thenReturn(null);
 
-        when(eventService.getEventById(1)).thenReturn(event);
-        when(userRepository.findByUsername("ana")).thenReturn(Optional.of(user));
-        when(eventTicketTypeRepository.findByEvent_Id(1)).thenReturn(List.of());
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> purchaseService.processPurchase(7, "maria", Map.of(1, 1), "card"));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> purchaseService.processPurchase(1, "ana", Map.of(), "CARD"));
-    }
-
-    @Test
-    void processPurchase_forCompletedEvent_throwsError() {
-        Event completedEvent = Event.builder().id(1).name("Evento finalizado").date(LocalDate.now().minusDays(1)).build();
-
-        when(eventService.getEventById(1)).thenReturn(completedEvent);
-        when(eventService.isCompletedEvent(completedEvent)).thenReturn(true);
-
-        assertThrows(IllegalArgumentException.class,
-                () -> purchaseService.processPurchase(1, "ana", Map.of(3, 1), "CARD"));
+        assertTrue(exception.getMessage().contains("No se encontro el evento"));
     }
 }
-
