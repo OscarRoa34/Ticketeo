@@ -27,8 +27,9 @@
         <url/>
     </scm>
     <properties>
-        <java.version>21</java.version>
-    </properties>
+    <java.version>21</java.version>
+    <sonar.sources>src/main/java,src/main/resources</sonar.sources>
+</properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
