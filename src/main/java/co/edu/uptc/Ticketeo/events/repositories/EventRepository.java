@@ -24,6 +24,14 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     Page<Event> findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(String name, Integer categoryId, Pageable pageable);
 
+    Page<Event> findByIsActiveTrueAndDateGreaterThanEqual(LocalDate date, Pageable pageable);
+
+    Page<Event> findByNameContainingIgnoreCaseAndIsActiveTrueAndDateGreaterThanEqual(String name, LocalDate date, Pageable pageable);
+
+    Page<Event> findByCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(Integer categoryId, LocalDate date, Pageable pageable);
+
+    Page<Event> findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(String name, Integer categoryId, LocalDate date, Pageable pageable);
+
     List<Event> findByIsActiveTrue();
 
     Page<Event> findByIsActiveFalse(Pageable pageable);

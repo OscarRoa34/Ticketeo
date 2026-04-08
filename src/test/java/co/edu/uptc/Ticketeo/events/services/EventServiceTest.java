@@ -1,23 +1,29 @@
 package co.edu.uptc.Ticketeo.events.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.models.EventTicketType;
@@ -144,5 +150,155 @@ class EventServiceTest {
 
         assertTrue(result.stream().anyMatch(event -> event.getId().equals(2)));
         assertFalse(result.stream().anyMatch(event -> event.getId().equals(1)));
+    }
+
+    @Test
+    void getEventsFiltered_recentlyAdded_sortsByRealCreationDateDescending() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        when(eventRepository.findByIsActiveTrue(any(Pageable.class))).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered(null, null, 0, 6, "date_desc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByIsActiveTrue(argThat(pageable ->
+                hasOrder(pageable, "createdAt", Sort.Direction.DESC)
+                        && hasOrder(pageable, "id", Sort.Direction.DESC)
+        ));
+    }
+
+    @Test
+    void getEventsFiltered_upcomingWithoutFilters_usesOnlyFutureEventsAndNearestDateSort() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        LocalDate today = LocalDate.now();
+        when(eventRepository.findByIsActiveTrueAndDateGreaterThanEqual(eq(today), any(Pageable.class))).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered(null, null, 0, 6, "date_asc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByIsActiveTrueAndDateGreaterThanEqual(eq(today), argThat(pageable ->
+                hasOrder(pageable, "date", Sort.Direction.ASC)
+                        && hasOrder(pageable, "id", Sort.Direction.ASC)
+        ));
+        verify(eventRepository, never()).findByIsActiveTrue(any(Pageable.class));
+    }
+
+    @Test
+    void getEventsFiltered_upcomingWithSearchAndCategory_usesFutureFilteredRepository() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        LocalDate today = LocalDate.now();
+        when(eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(
+                eq("rock"), eq(2), eq(today), any(Pageable.class)
+        )).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered("rock", 2, 0, 6, "date_asc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(
+                eq("rock"), eq(2), eq(today), any(Pageable.class)
+        );
+    }
+
+    @Test
+    void getEventsFiltered_upcomingWithCategoryOnly_usesFutureFilteredCategoryRepository() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        LocalDate today = LocalDate.now();
+        when(eventRepository.findByCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(eq(3), eq(today), any(Pageable.class)))
+                .thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered(null, 3, 0, 6, "date_asc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(eq(3), eq(today), any(Pageable.class));
+    }
+
+    @Test
+    void getEventsFiltered_upcomingWithSearchOnly_usesFutureFilteredSearchRepository() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        LocalDate today = LocalDate.now();
+        when(eventRepository.findByNameContainingIgnoreCaseAndIsActiveTrueAndDateGreaterThanEqual(eq("jazz"), eq(today), any(Pageable.class)))
+                .thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered("jazz", null, 0, 6, "date_asc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByNameContainingIgnoreCaseAndIsActiveTrueAndDateGreaterThanEqual(eq("jazz"), eq(today), any(Pageable.class));
+    }
+
+    @Test
+    void getEventsFiltered_upcomingWithBlankSearch_treatsSearchAsMissing() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        LocalDate today = LocalDate.now();
+        when(eventRepository.findByIsActiveTrueAndDateGreaterThanEqual(eq(today), any(Pageable.class))).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered("   ", null, 0, 6, "date_asc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByIsActiveTrueAndDateGreaterThanEqual(eq(today), any(Pageable.class));
+        verify(eventRepository, never()).findByNameContainingIgnoreCaseAndIsActiveTrueAndDateGreaterThanEqual(any(), any(), any(Pageable.class));
+    }
+
+    @Test
+    void getEventsFiltered_nonUpcomingWithSearchAndCategory_usesStandardRepository() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        when(eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(eq("rock"), eq(1), any(Pageable.class)))
+                .thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered("rock", 1, 0, 6, "price_desc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(eq("rock"), eq(1), any(Pageable.class));
+    }
+
+    @Test
+    void getEventsFiltered_nonUpcomingWithCategoryOnly_usesStandardCategoryRepository() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        when(eventRepository.findByCategory_IdAndIsActiveTrue(eq(1), any(Pageable.class))).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered(null, 1, 0, 6, "price_desc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByCategory_IdAndIsActiveTrue(eq(1), any(Pageable.class));
+    }
+
+    @Test
+    void getEventsFiltered_nonUpcomingWithSearchOnly_usesStandardSearchRepository() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        when(eventRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(eq("pop"), any(Pageable.class))).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered("pop", null, 0, 6, "price_desc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByNameContainingIgnoreCaseAndIsActiveTrue(eq("pop"), any(Pageable.class));
+    }
+
+    @Test
+    void getEventsFiltered_priceAsc_appliesPriceOrder() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        when(eventRepository.findByIsActiveTrue(any(Pageable.class))).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered(null, null, 0, 6, "price_asc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByIsActiveTrue(argThat(pageable ->
+                hasOrder(pageable, "price", Sort.Direction.ASC)
+        ));
+    }
+
+    @Test
+    void getEventsFiltered_priceDesc_appliesPriceOrder() {
+        Page<Event> expected = new PageImpl<>(List.of());
+        when(eventRepository.findByIsActiveTrue(any(Pageable.class))).thenReturn(expected);
+
+        Page<Event> result = eventService.getEventsFiltered(null, null, 0, 6, "price_desc");
+
+        assertEquals(expected, result);
+        verify(eventRepository).findByIsActiveTrue(argThat(pageable ->
+                hasOrder(pageable, "price", Sort.Direction.DESC)
+        ));
+    }
+
+    private boolean hasOrder(Pageable pageable, String property, Sort.Direction direction) {
+        Sort.Order order = pageable.getSort().getOrderFor(property);
+        return order != null && order.getDirection() == direction;
     }
 }

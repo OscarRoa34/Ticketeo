@@ -1,6 +1,7 @@
 package co.edu.uptc.Ticketeo.events.models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -49,6 +51,9 @@ public class Event {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
 
+    @Column(name = "fecha_creacion_evento", updatable = false)
+    private LocalDateTime createdAt;
+
     @Column(name = "valor_minimo_evento")
     private Double price;
 
@@ -65,4 +70,12 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<EventTicketType> ticketTypes = new ArrayList<>();
+
+    @PrePersist
+    @SuppressWarnings("unused")
+    void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }
