@@ -1,7 +1,9 @@
 package co.edu.uptc.Ticketeo.events.controllers.admin;
 
-import org.springframework.data.domain.Page;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -10,9 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import co.edu.uptc.Ticketeo.events.models.TicketType;
@@ -51,6 +53,7 @@ public class AdminTicketTypeController {
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("ticketType", new TicketTypeForm());
+        addExistingTicketTypeNames(model, null);
         return ticketTypeFormView;
     }
 
@@ -63,12 +66,14 @@ public class AdminTicketTypeController {
             form.setName(ticketType.getName());
         }
         model.addAttribute("ticketType", form);
+        addExistingTicketTypeNames(model, form.getId());
         return ticketTypeFormView;
     }
 
     @PostMapping("/save")
     public String saveTicketType(@ModelAttribute("ticketType") TicketTypeForm ticketTypeForm,
-                                 RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes,
+                                 Model model) {
         boolean isNew = ticketTypeForm.getId() == null;
         TicketType ticketType = new TicketType();
         ticketType.setId(ticketTypeForm.getId());
@@ -78,10 +83,15 @@ public class AdminTicketTypeController {
             redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, isNew
                     ? "Tipo de ticket creado correctamente."
                     : "Tipo de ticket actualizado correctamente.");
+            return buildRedirectPath();
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            model.addAttribute(FLASH_ERROR_MESSAGE, ex.getMessage());
         } catch (RuntimeException ex) {
-            redirectAttributes.addFlashAttribute(FLASH_ERROR_MESSAGE, "No fue posible guardar el tipo de ticket.");
+            model.addAttribute(FLASH_ERROR_MESSAGE, "No fue posible guardar el tipo de ticket.");
         }
-        return buildRedirectPath();
+        model.addAttribute("ticketType", ticketTypeForm);
+        addExistingTicketTypeNames(model, ticketTypeForm.getId());
+        return ticketTypeFormView;
     }
 
     @GetMapping("/delete/{id}")
@@ -107,6 +117,11 @@ public class AdminTicketTypeController {
 
     private String buildRedirectPath() {
         return "redirect:" + ticketTypeRoute;
+    }
+
+    private void addExistingTicketTypeNames(Model model, Integer excludedId) {
+        List<String> existingNames = ticketTypeService.getTicketTypeNamesExcludingId(excludedId);
+        model.addAttribute("existingTicketTypeNames", existingNames == null ? List.of() : existingNames);
     }
 
     public static class TicketTypeForm {

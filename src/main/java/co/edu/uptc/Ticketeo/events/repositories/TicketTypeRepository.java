@@ -7,4 +7,8 @@ import co.edu.uptc.Ticketeo.events.models.TicketType;
 
 @Repository
 public interface TicketTypeRepository extends JpaRepository<TicketType, Integer> {
+
+	boolean existsByNameIgnoreCase(String name);
+
+	boolean existsByNameIgnoreCaseAndIdNot(String name, Integer id);
 }

@@ -27,7 +27,7 @@
 
         <div class="event-form-divider"></div>
 
-        <form th:action="@{/admin/ticket-type/save}" th:object="${ticketType}" method="POST">
+        <form id="ticketTypeForm" th:action="@{/admin/ticket-type/save}" th:object="${ticketType}" method="POST">
             <input type="hidden" th:field="*{id}" />
 
             <div class="event-form-body" style="grid-template-columns: 1fr;">
@@ -51,6 +51,35 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:inline="javascript">
+    const ticketTypeForm = document.getElementById('ticketTypeForm');
+    const ticketTypeNameInput = document.getElementById('name');
+    const existingTicketTypeNames = /*[[${existingTicketTypeNames}]]*/ [];
+    const normalizedExistingNames = new Set(
+        (existingTicketTypeNames || [])
+            .filter(name => typeof name === 'string')
+            .map(name => name.trim().toLowerCase())
+            .filter(name => name.length > 0)
+    );
+
+    ticketTypeForm.addEventListener('submit', function (event) {
+        const normalizedInputName = (ticketTypeNameInput.value || '').trim().toLowerCase();
+
+        if (!normalizedInputName) {
+            event.preventDefault();
+            showAppToast('El nombre del tipo de ticket es obligatorio.', 'error', 'error');
+            ticketTypeNameInput.focus();
+            return;
+        }
+
+        if (normalizedExistingNames.has(normalizedInputName)) {
+            event.preventDefault();
+            showAppToast('Ya existe un tipo de ticket con ese nombre.', 'error', 'error');
+            ticketTypeNameInput.focus();
+        }
+    });
+</script>
 
 </body>
 </html>
