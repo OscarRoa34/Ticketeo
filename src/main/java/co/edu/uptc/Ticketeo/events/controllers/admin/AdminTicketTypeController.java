@@ -1,8 +1,6 @@
 package co.edu.uptc.Ticketeo.events.controllers.admin;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -31,9 +29,7 @@ public class AdminTicketTypeController {
     private static final int PAGE_SIZE = 6;
     private static final String FLASH_SUCCESS_MESSAGE = "successMessage";
     private static final String FLASH_ERROR_MESSAGE = "errorMessage";
-    private static final String EVENT_NEW_RETURN_PATH = "/admin/event/new";
-    private static final String EVENT_NEW_DRAFT_RETURN_PATH = "/admin/event/new?draft=true";
-    private static final Pattern EVENT_EDIT_RETURN_PATTERN = Pattern.compile("^/admin/event/edit/(\\d+)$");
+    private static final String SELECTED_TICKET_TYPE_PARAM = "selectedTicketTypeId";
 
     private final TicketTypeService ticketTypeService;
 
@@ -56,18 +52,21 @@ public class AdminTicketTypeController {
     }
 
     @GetMapping("/new")
-    public String showCreateForm(@RequestParam(value = "returnTo", required = false) String returnTo,
+    public String showCreateForm(@RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                                 @RequestParam(value = "eventId", required = false) Integer eventId,
+                                 @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                  Model model) {
         model.addAttribute("ticketType", new TicketTypeForm());
-        EventFormReturnTarget returnTarget = parseEventFormReturnTarget(returnTo);
-        model.addAttribute("returnTo", toCanonicalEventFormPath(returnTarget));
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/ticket-type");
         addExistingTicketTypeNames(model, null);
         return ticketTypeFormView;
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id,
-                               @RequestParam(value = "returnTo", required = false) String returnTo,
+                               @RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                               @RequestParam(value = "eventId", required = false) Integer eventId,
+                               @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                Model model) {
         TicketType ticketType = ticketTypeService.getTicketTypeById(id);
         TicketTypeForm form = new TicketTypeForm();
@@ -76,19 +75,19 @@ public class AdminTicketTypeController {
             form.setName(ticketType.getName());
         }
         model.addAttribute("ticketType", form);
-        EventFormReturnTarget returnTarget = parseEventFormReturnTarget(returnTo);
-        model.addAttribute("returnTo", toCanonicalEventFormPath(returnTarget));
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/ticket-type");
         addExistingTicketTypeNames(model, form.getId());
         return ticketTypeFormView;
     }
 
     @PostMapping("/save")
     public String saveTicketType(@ModelAttribute("ticketType") TicketTypeForm ticketTypeForm,
-                                 @RequestParam(value = "returnTo", required = false) String returnTo,
+                                 @RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                                 @RequestParam(value = "eventId", required = false) Integer eventId,
+                                 @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
         boolean isNew = ticketTypeForm.getId() == null;
-        EventFormReturnTarget returnTarget = parseEventFormReturnTarget(returnTo);
         TicketType ticketType = new TicketType();
         ticketType.setId(ticketTypeForm.getId());
         ticketType.setName(ticketTypeForm.getName());
@@ -97,14 +96,15 @@ public class AdminTicketTypeController {
             redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, isNew
                     ? "Tipo de ticket creado correctamente."
                     : "Tipo de ticket actualizado correctamente.");
-            return buildPostSaveRedirectPath(returnTarget, savedTicketType != null ? savedTicketType.getId() : null);
+            return EventFormNavigation.resolvePostSaveRedirect(fromEventForm, eventId, draft, SELECTED_TICKET_TYPE_PARAM,
+                    savedTicketType != null ? savedTicketType.getId() : null, buildRedirectPath());
         } catch (IllegalArgumentException | IllegalStateException ex) {
             model.addAttribute(FLASH_ERROR_MESSAGE, ex.getMessage());
         } catch (RuntimeException ex) {
             model.addAttribute(FLASH_ERROR_MESSAGE, "No fue posible guardar el tipo de ticket.");
         }
         model.addAttribute("ticketType", ticketTypeForm);
-        model.addAttribute("returnTo", toCanonicalEventFormPath(returnTarget));
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/ticket-type");
         addExistingTicketTypeNames(model, ticketTypeForm.getId());
         return ticketTypeFormView;
     }
@@ -134,74 +134,6 @@ public class AdminTicketTypeController {
         return "redirect:" + ticketTypeRoute;
     }
 
-    private String buildPostSaveRedirectPath(EventFormReturnTarget returnTarget, Integer ticketTypeId) {
-        if (returnTarget == null) {
-            return buildRedirectPath();
-        }
-
-        String canonicalPath = toCanonicalEventFormPath(returnTarget);
-        if (canonicalPath == null) {
-            return buildRedirectPath();
-        }
-
-        if (ticketTypeId == null) {
-            return "redirect:" + canonicalPath;
-        }
-
-        String separator = canonicalPath.contains("?") ? "&" : "?";
-        return "redirect:" + canonicalPath + separator + "selectedTicketTypeId=" + ticketTypeId;
-    }
-
-    private EventFormReturnTarget parseEventFormReturnTarget(String returnTo) {
-        if (returnTo == null || returnTo.isBlank()) {
-            return null;
-        }
-
-        String trimmedPath = returnTo.trim();
-        if (EVENT_NEW_RETURN_PATH.equals(trimmedPath)) {
-            return new EventFormReturnTarget(null, false);
-        }
-        if (EVENT_NEW_DRAFT_RETURN_PATH.equals(trimmedPath)) {
-            return new EventFormReturnTarget(null, true);
-        }
-
-        Matcher matcher = EVENT_EDIT_RETURN_PATTERN.matcher(trimmedPath);
-        if (!matcher.matches()) {
-            return null;
-        }
-
-        try {
-            int eventId = Integer.parseInt(matcher.group(1));
-            if (eventId <= 0) {
-                return null;
-            }
-            return new EventFormReturnTarget(eventId, false);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
-    private String toCanonicalEventFormPath(EventFormReturnTarget returnTarget) {
-        if (returnTarget == null) {
-            return null;
-        }
-
-        if (returnTarget.eventId != null) {
-            return "/admin/event/edit/" + returnTarget.eventId;
-        }
-
-        return returnTarget.draft ? EVENT_NEW_DRAFT_RETURN_PATH : EVENT_NEW_RETURN_PATH;
-    }
-
-    private static final class EventFormReturnTarget {
-        private final Integer eventId;
-        private final boolean draft;
-
-        private EventFormReturnTarget(Integer eventId, boolean draft) {
-            this.eventId = eventId;
-            this.draft = draft;
-        }
-    }
 
     private void addExistingTicketTypeNames(Model model, Integer excludedId) {
         List<String> existingNames = ticketTypeService.getTicketTypeNamesExcludingId(excludedId);

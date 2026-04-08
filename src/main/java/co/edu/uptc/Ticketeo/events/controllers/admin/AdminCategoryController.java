@@ -1,8 +1,5 @@
 package co.edu.uptc.Ticketeo.events.controllers.admin;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +25,7 @@ public class AdminCategoryController {
 
     private static final int PAGE_SIZE = 6;
     private static final String REDIRECT_CATEGORY_PATH = "redirect:/admin/category";
-    private static final String EVENT_NEW_RETURN_PATH = "/admin/event/new";
-    private static final String EVENT_NEW_DRAFT_RETURN_PATH = "/admin/event/new?draft=true";
-    private static final Pattern EVENT_EDIT_RETURN_PATTERN = Pattern.compile("^/admin/event/edit/(\\d+)$");
+    private static final String SELECTED_CATEGORY_PARAM = "selectedCategoryId";
 
     private final EventCategoryService eventCategoryService;
 
@@ -44,35 +39,39 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/new")
-    public String showCreateForm(@RequestParam(value = "returnTo", required = false) String returnTo,
+    public String showCreateForm(@RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                                 @RequestParam(value = "eventId", required = false) Integer eventId,
+                                 @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                  Model model) {
         model.addAttribute("category", new EventCategory());
-        EventFormReturnTarget returnTarget = parseEventFormReturnTarget(returnTo);
-        model.addAttribute("returnTo", toCanonicalEventFormPath(returnTarget));
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/category");
         return "events/adminCategoryForm";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id,
-                               @RequestParam(value = "returnTo", required = false) String returnTo,
+                               @RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                               @RequestParam(value = "eventId", required = false) Integer eventId,
+                               @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                Model model) {
         model.addAttribute("category", eventCategoryService.getEventCategoryById(id));
-        EventFormReturnTarget returnTarget = parseEventFormReturnTarget(returnTo);
-        model.addAttribute("returnTo", toCanonicalEventFormPath(returnTarget));
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/category");
         return "events/adminCategoryForm";
     }
 
     @PostMapping("/save")
     public String saveCategory(@ModelAttribute EventCategory category,
-                               @RequestParam(value = "returnTo", required = false) String returnTo,
+                               @RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                               @RequestParam(value = "eventId", required = false) Integer eventId,
+                               @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                RedirectAttributes redirectAttributes) {
         boolean isNew = category.getId() == null;
-        EventFormReturnTarget returnTarget = parseEventFormReturnTarget(returnTo);
         EventCategory savedCategory = eventCategoryService.saveCategory(category);
         redirectAttributes.addFlashAttribute("successMessage", isNew
                 ? "Categoria creada correctamente."
                 : "Categoria actualizada correctamente.");
-        return buildPostSaveRedirectPath(returnTarget, savedCategory != null ? savedCategory.getId() : null);
+        return EventFormNavigation.resolvePostSaveRedirect(fromEventForm, eventId, draft, SELECTED_CATEGORY_PARAM,
+            savedCategory != null ? savedCategory.getId() : null, REDIRECT_CATEGORY_PATH);
     }
 
     @GetMapping("/delete/{id}")
@@ -95,72 +94,4 @@ public class AdminCategoryController {
         }
     }
 
-    private String buildPostSaveRedirectPath(EventFormReturnTarget returnTarget, Integer categoryId) {
-        if (returnTarget == null) {
-            return REDIRECT_CATEGORY_PATH;
-        }
-
-        String canonicalPath = toCanonicalEventFormPath(returnTarget);
-        if (canonicalPath == null) {
-            return REDIRECT_CATEGORY_PATH;
-        }
-
-        if (categoryId == null) {
-            return "redirect:" + canonicalPath;
-        }
-
-        String separator = canonicalPath.contains("?") ? "&" : "?";
-        return "redirect:" + canonicalPath + separator + "selectedCategoryId=" + categoryId;
-    }
-
-    private EventFormReturnTarget parseEventFormReturnTarget(String returnTo) {
-        if (returnTo == null || returnTo.isBlank()) {
-            return null;
-        }
-
-        String trimmedPath = returnTo.trim();
-        if (EVENT_NEW_RETURN_PATH.equals(trimmedPath)) {
-            return new EventFormReturnTarget(null, false);
-        }
-        if (EVENT_NEW_DRAFT_RETURN_PATH.equals(trimmedPath)) {
-            return new EventFormReturnTarget(null, true);
-        }
-
-        Matcher matcher = EVENT_EDIT_RETURN_PATTERN.matcher(trimmedPath);
-        if (!matcher.matches()) {
-            return null;
-        }
-
-        try {
-            int eventId = Integer.parseInt(matcher.group(1));
-            if (eventId <= 0) {
-                return null;
-            }
-            return new EventFormReturnTarget(eventId, false);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
-    private String toCanonicalEventFormPath(EventFormReturnTarget returnTarget) {
-        if (returnTarget == null) {
-            return null;
-        }
-
-        if (returnTarget.eventId != null) {
-            return "/admin/event/edit/" + returnTarget.eventId;
-        }
-
-        return returnTarget.draft ? EVENT_NEW_DRAFT_RETURN_PATH : EVENT_NEW_RETURN_PATH;
-    }
-
-    private static final class EventFormReturnTarget {
-        private final Integer eventId;
-        private final boolean draft;
-
-        private EventFormReturnTarget(Integer eventId, boolean draft) {
-            this.eventId = eventId;
-            this.draft = draft;
-        }
-    }
 }

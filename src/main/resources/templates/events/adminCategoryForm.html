@@ -29,7 +29,9 @@
 
         <form th:action="@{/admin/category/save}" th:object="${category}" method="POST">
             <input type="hidden" th:field="*{id}" />
-            <input type="hidden" name="returnTo" th:if="${returnTo != null}" th:value="${returnTo}">
+            <input type="hidden" name="fromEventForm" th:value="${fromEventForm}">
+            <input type="hidden" name="eventId" th:if="${eventId != null}" th:value="${eventId}">
+            <input type="hidden" name="draft" th:value="${draft}">
 
             <div class="event-form-body">
 
@@ -53,7 +55,7 @@
                 </div>
 
                 <div class="ef-form-actions">
-                    <a th:href="${returnTo != null ? returnTo : '/admin/category'}" class="ef-btn-cancel">Cancelar</a>
+                    <a th:href="${cancelPath}" class="ef-btn-cancel">Cancelar</a>
                     <button type="submit" class="ef-btn-submit">
                         <span th:text="${category.id == null ? '✦ Crear Categoría' : '✦ Guardar Cambios'}">Guardar</span>
                     </button>

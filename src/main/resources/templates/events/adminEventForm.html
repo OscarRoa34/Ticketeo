@@ -49,7 +49,7 @@
                         <div class="ef-group">
                             <label for="category" class="ef-label">Categoría</label>
                             <select id="category" name="category" class="ef-select"
-                                    th:attr="data-return-to=${returnToEventForm},data-created-category=${newlyCreatedCategoryId != null}">
+                                    th:attr="data-event-id=${event.id},data-draft=${draft},data-created-category=${newlyCreatedCategoryId != null}">
                                 <option value="">Sin categoría</option>
                                 <option th:each="cat : ${categories}"
                                         th:value="${cat.id}"
@@ -129,7 +129,8 @@
                                     <span class="ef-ticket-type-action-title">¿No encuentras el tipo?</span>
                                     <span class="ef-ticket-type-action-subtitle">Crea uno nuevo y vuelve aquí automáticamente.</span>
                                 </div>
-                                <a class="ef-btn-new-ticket-type" th:href="@{/admin/ticket-type/new(returnTo=${returnToEventForm})}">
+                                <a class="ef-btn-new-ticket-type"
+                                   th:href="${event.id != null} ? @{/admin/ticket-type/new(fromEventForm=true,eventId=${event.id},draft=${draft})} : @{/admin/ticket-type/new(fromEventForm=true,draft=${draft})}">
                                     + Nuevo tipo de boleta
                                 </a>
                             </div>
@@ -217,14 +218,21 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         if (categorySelect) {
-            const returnToPath = categorySelect.dataset.returnTo || '/admin/event/new';
+            const eventId = categorySelect.dataset.eventId;
+            const isDraft = categorySelect.dataset.draft === 'true';
             if (categorySelect.dataset.createdCategory === 'true') {
                 categorySelect.classList.add('ef-select-created');
             }
 
             categorySelect.addEventListener('change', function () {
                 if (this.value === '-1') {
-                    window.location.href = '/admin/category/new?returnTo=' + encodeURIComponent(returnToPath);
+                    const query = new URLSearchParams();
+                    query.set('fromEventForm', 'true');
+                    query.set('draft', String(isDraft));
+                    if (eventId) {
+                        query.set('eventId', eventId);
+                    }
+                    window.location.href = '/admin/category/new?' + query.toString();
                 }
             });
         }

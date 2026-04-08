@@ -122,7 +122,6 @@ public class AdminEventController {
         model.addAttribute("soldTicketTypes", Map.<Integer, Boolean>of());
         model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
         model.addAttribute("newlyCreatedCategoryId", selectedCategoryId);
-        model.addAttribute("returnToEventForm", buildEventFormReturnPath(draft, null));
         model.addAttribute("draft", draft);
         return "events/adminEventForm";
     }
@@ -168,7 +167,6 @@ public class AdminEventController {
         model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(id));
         model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
         model.addAttribute("newlyCreatedCategoryId", selectedCategoryId);
-        model.addAttribute("returnToEventForm", buildEventFormReturnPath(false, id));
         model.addAttribute("draft", !Boolean.TRUE.equals(event.getIsActive()));
         return "events/adminEventForm";
     }
@@ -207,17 +205,9 @@ public class AdminEventController {
             model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(event.getId()));
             model.addAttribute("newlyCreatedTicketTypeId", null);
             model.addAttribute("newlyCreatedCategoryId", null);
-            model.addAttribute("returnToEventForm", buildEventFormReturnPath(draft, event.getId()));
             model.addAttribute("draft", draft);
             return "events/adminEventForm";
         }
-    }
-
-    private String buildEventFormReturnPath(boolean draft, Integer eventId) {
-        if (eventId != null) {
-            return "/admin/event/edit/" + eventId;
-        }
-        return draft ? "/admin/event/new?draft=true" : "/admin/event/new";
     }
 
     private EventCategory resolveCategoryForSave(Integer categoryId) {

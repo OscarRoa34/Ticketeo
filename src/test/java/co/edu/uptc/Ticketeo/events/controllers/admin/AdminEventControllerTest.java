@@ -304,7 +304,6 @@ class AdminEventControllerTest {
         String view = adminEventController.showCreateForm(false, null, null, localModel);
 
         assertEquals("events/adminEventForm", view);
-        assertEquals("/admin/event/new", localModel.get("returnToEventForm"));
         @SuppressWarnings("unchecked")
         Map<Integer, Integer> ticketQuantities = (Map<Integer, Integer>) localModel.get("ticketQuantities");
         assertNotNull(ticketQuantities);
@@ -389,7 +388,6 @@ class AdminEventControllerTest {
 
         assertEquals("events/adminEventForm", view);
         verify(model).addAttribute("event", active);
-        verify(model).addAttribute("returnToEventForm", "/admin/event/edit/2");
         verify(model).addAttribute("draft", false);
     }
 
@@ -403,7 +401,6 @@ class AdminEventControllerTest {
 
         assertEquals("events/adminEventForm", view);
         assertEquals(7, localModel.get("newlyCreatedTicketTypeId"));
-        assertEquals("/admin/event/new?draft=true", localModel.get("returnToEventForm"));
         @SuppressWarnings("unchecked")
         Map<Integer, Integer> ticketQuantities = (Map<Integer, Integer>) localModel.get("ticketQuantities");
         assertNotNull(ticketQuantities);
@@ -429,7 +426,6 @@ class AdminEventControllerTest {
 
         assertEquals("events/adminEventForm", view);
         assertEquals(12, localModel.get("newlyCreatedTicketTypeId"));
-        assertEquals("/admin/event/edit/3", localModel.get("returnToEventForm"));
         @SuppressWarnings("unchecked")
         Map<Integer, Integer> ticketQuantities = (Map<Integer, Integer>) localModel.get("ticketQuantities");
         assertNotNull(ticketQuantities);
