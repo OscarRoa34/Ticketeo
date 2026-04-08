@@ -18,11 +18,28 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TicketTypeService {
 
+    private static final String REQUIRED_NAME_MESSAGE = "El nombre del tipo de ticket es obligatorio.";
+    private static final String DUPLICATE_NAME_MESSAGE = "Ya existe un tipo de ticket con ese nombre.";
+
     private final TicketTypeRepository ticketTypeRepository;
     private final EventTicketTypeRepository eventTicketTypeRepository;
     private final EventService eventService;
 
     public TicketType saveTicketType(TicketType ticketType) {
+        String normalizedName = ticketType.getName() == null ? "" : ticketType.getName().trim();
+        if (normalizedName.isEmpty()) {
+            throw new IllegalArgumentException(REQUIRED_NAME_MESSAGE);
+        }
+
+        boolean duplicateExists = ticketType.getId() == null
+                ? ticketTypeRepository.existsByNameIgnoreCase(normalizedName)
+                : ticketTypeRepository.existsByNameIgnoreCaseAndIdNot(normalizedName, ticketType.getId());
+
+        if (duplicateExists) {
+            throw new IllegalStateException(DUPLICATE_NAME_MESSAGE);
+        }
+
+        ticketType.setName(normalizedName);
         return ticketTypeRepository.save(ticketType);
     }
 
@@ -37,6 +54,15 @@ public class TicketTypeService {
 
     public TicketType getTicketTypeById(Integer id) {
         return ticketTypeRepository.findById(id).orElse(null);
+    }
+
+    public List<String> getTicketTypeNamesExcludingId(Integer excludedId) {
+        return ticketTypeRepository.findAll(Sort.by("name").ascending())
+                .stream()
+                .filter(ticketType -> excludedId == null || !excludedId.equals(ticketType.getId()))
+                .map(TicketType::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .toList();
     }
 
     @Transactional
