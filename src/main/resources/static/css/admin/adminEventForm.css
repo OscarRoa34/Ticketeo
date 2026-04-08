@@ -145,6 +145,22 @@
             color: #1D1D1D;
         }
 
+        .ef-select-created {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.08), #ffffff 40%);
+            animation: ef-field-highlight 1.4s ease;
+        }
+
+        @keyframes ef-field-highlight {
+            0% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45);
+            }
+            100% {
+                box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+            }
+        }
+
         .ef-textarea {
             resize: vertical;
             min-height: 110px;

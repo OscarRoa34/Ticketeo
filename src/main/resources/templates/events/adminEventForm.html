@@ -48,12 +48,14 @@
                     <div class="ef-row">
                         <div class="ef-group">
                             <label for="category" class="ef-label">Categoría</label>
-                            <select id="category" name="category" class="ef-select">
+                            <select id="category" name="category" class="ef-select"
+                                    th:attr="data-event-id=${event.id},data-draft=${draft},data-created-category=${newlyCreatedCategoryId != null}">
                                 <option value="">Sin categoría</option>
                                 <option th:each="cat : ${categories}"
                                         th:value="${cat.id}"
                                         th:text="${cat.name}"
                                         th:selected="${event.category != null && event.category.id == cat.id}"></option>
+                                <option value="-1">+ Nueva categoría</option>
                             </select>
                         </div>
                         <div class="ef-group">
@@ -127,7 +129,8 @@
                                     <span class="ef-ticket-type-action-title">¿No encuentras el tipo?</span>
                                     <span class="ef-ticket-type-action-subtitle">Crea uno nuevo y vuelve aquí automáticamente.</span>
                                 </div>
-                                <a class="ef-btn-new-ticket-type" th:href="@{/admin/ticket-type/new(returnTo=${returnToEventForm})}">
+                                <a class="ef-btn-new-ticket-type"
+                                   th:href="${event.id != null} ? @{/admin/ticket-type/new(fromEventForm=true,eventId=${event.id},draft=${draft})} : @{/admin/ticket-type/new(fromEventForm=true,draft=${draft})}">
                                     + Nuevo tipo de boleta
                                 </a>
                             </div>
@@ -174,6 +177,7 @@
     const imgPreview = document.getElementById('imagePreview');
     const placeholder = document.getElementById('imagePlaceholder');
     const ticketTypeSearch = document.getElementById('ticketTypeSearch');
+    const categorySelect = document.getElementById('category');
     const ticketTypeRows = document.querySelectorAll('.ef-ticket-type-row:not(.ef-ticket-type-row-action)');
     const ticketTypeActionRow = document.querySelector('.ef-ticket-type-row-action');
     const ticketTypeChecks = document.querySelectorAll('.ef-ticket-type-check');
@@ -213,6 +217,26 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        if (categorySelect) {
+            const eventId = categorySelect.dataset.eventId;
+            const isDraft = categorySelect.dataset.draft === 'true';
+            if (categorySelect.dataset.createdCategory === 'true') {
+                categorySelect.classList.add('ef-select-created');
+            }
+
+            categorySelect.addEventListener('change', function () {
+                if (this.value === '-1') {
+                    const query = new URLSearchParams();
+                    query.set('fromEventForm', 'true');
+                    query.set('draft', String(isDraft));
+                    if (eventId) {
+                        query.set('eventId', eventId);
+                    }
+                    window.location.href = '/admin/category/new?' + query.toString();
+                }
+            });
+        }
+
         ticketTypeChecks.forEach(function (check) {
             const row = check.closest('.ef-ticket-type-row');
             const qtyInput = row.querySelector('.ef-ticket-qty');

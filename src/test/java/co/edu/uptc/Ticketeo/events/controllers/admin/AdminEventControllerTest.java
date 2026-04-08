@@ -301,10 +301,9 @@ class AdminEventControllerTest {
         when(eventCategoryService.getAllCategories()).thenReturn(List.of());
         when(ticketTypeService.getAllTicketTypes()).thenReturn(List.of());
 
-        String view = adminEventController.showCreateForm(false, null, localModel);
+        String view = adminEventController.showCreateForm(false, null, null, localModel);
 
         assertEquals("events/adminEventForm", view);
-        assertEquals("/admin/event/new", localModel.get("returnToEventForm"));
         @SuppressWarnings("unchecked")
         Map<Integer, Integer> ticketQuantities = (Map<Integer, Integer>) localModel.get("ticketQuantities");
         assertNotNull(ticketQuantities);
@@ -353,7 +352,7 @@ class AdminEventControllerTest {
     void showEditForm_eventNotFound_redirectsToAdmin() {
         when(eventService.getEventById(99)).thenReturn(null);
 
-        String view = adminEventController.showEditForm(99, null, model);
+        String view = adminEventController.showEditForm(99, null, null, model);
 
         assertEquals("redirect:/admin", view);
     }
@@ -366,7 +365,7 @@ class AdminEventControllerTest {
         completed.setDate(LocalDate.now().minusDays(1));
         when(eventService.getEventById(1)).thenReturn(completed);
 
-        String view = adminEventController.showEditForm(1, null, model);
+        String view = adminEventController.showEditForm(1, null, null, model);
 
         assertEquals("redirect:/admin/completed", view);
     }
@@ -385,11 +384,10 @@ class AdminEventControllerTest {
         when(eventService.getTicketTypePricesForEvent(2)).thenReturn(Map.of());
         when(eventService.getSoldTicketTypesForEvent(2)).thenReturn(Map.of());
 
-        String view = adminEventController.showEditForm(2, null, model);
+        String view = adminEventController.showEditForm(2, null, null, model);
 
         assertEquals("events/adminEventForm", view);
         verify(model).addAttribute("event", active);
-        verify(model).addAttribute("returnToEventForm", "/admin/event/edit/2");
         verify(model).addAttribute("draft", false);
     }
 
@@ -399,11 +397,10 @@ class AdminEventControllerTest {
         when(eventCategoryService.getAllCategories()).thenReturn(List.of());
         when(ticketTypeService.getAllTicketTypes()).thenReturn(List.of());
 
-        String view = adminEventController.showCreateForm(true, 7, localModel);
+        String view = adminEventController.showCreateForm(true, 7, null, localModel);
 
         assertEquals("events/adminEventForm", view);
         assertEquals(7, localModel.get("newlyCreatedTicketTypeId"));
-        assertEquals("/admin/event/new?draft=true", localModel.get("returnToEventForm"));
         @SuppressWarnings("unchecked")
         Map<Integer, Integer> ticketQuantities = (Map<Integer, Integer>) localModel.get("ticketQuantities");
         assertNotNull(ticketQuantities);
@@ -425,15 +422,67 @@ class AdminEventControllerTest {
         when(eventService.getTicketTypePricesForEvent(3)).thenReturn(Map.of());
         when(eventService.getSoldTicketTypesForEvent(3)).thenReturn(Map.of());
 
-        String view = adminEventController.showEditForm(3, 12, localModel);
+        String view = adminEventController.showEditForm(3, 12, null, localModel);
 
         assertEquals("events/adminEventForm", view);
         assertEquals(12, localModel.get("newlyCreatedTicketTypeId"));
-        assertEquals("/admin/event/edit/3", localModel.get("returnToEventForm"));
         @SuppressWarnings("unchecked")
         Map<Integer, Integer> ticketQuantities = (Map<Integer, Integer>) localModel.get("ticketQuantities");
         assertNotNull(ticketQuantities);
         assertEquals(1, ticketQuantities.get(12));
+    }
+
+    @Test
+    void showCreateForm_withSelectedCategory_preselectsItInEvent() {
+        ExtendedModelMap localModel = new ExtendedModelMap();
+        EventCategory category = new EventCategory();
+        category.setId(6);
+        category.setName("Música");
+
+        when(eventCategoryService.getEventCategoryById(6)).thenReturn(category);
+        when(eventCategoryService.getAllCategories()).thenReturn(List.of(category));
+        when(ticketTypeService.getAllTicketTypes()).thenReturn(List.of());
+
+        String view = adminEventController.showCreateForm(false, null, 6, localModel);
+
+        assertEquals("events/adminEventForm", view);
+        Event modelEvent = (Event) localModel.get("event");
+        assertNotNull(modelEvent);
+        assertNotNull(modelEvent.getCategory());
+        assertEquals(6, modelEvent.getCategory().getId());
+        assertEquals(6, localModel.get("newlyCreatedCategoryId"));
+    }
+
+    @Test
+    void showEditForm_withSelectedCategory_overridesCurrentCategory() {
+        ExtendedModelMap localModel = new ExtendedModelMap();
+        Event active = new Event();
+        active.setId(4);
+        active.setIsActive(true);
+        active.setDate(LocalDate.now().plusDays(4));
+        EventCategory existingCategory = new EventCategory();
+        existingCategory.setId(1);
+        active.setCategory(existingCategory);
+
+        EventCategory newCategory = new EventCategory();
+        newCategory.setId(9);
+
+        when(eventService.getEventById(4)).thenReturn(active);
+        when(eventCategoryService.getEventCategoryById(9)).thenReturn(newCategory);
+        when(eventCategoryService.getAllCategories()).thenReturn(List.of(existingCategory, newCategory));
+        when(ticketTypeService.getAllTicketTypes()).thenReturn(List.of());
+        when(eventService.getTicketTypeQuantitiesForEvent(4)).thenReturn(Map.of());
+        when(eventService.getTicketTypePricesForEvent(4)).thenReturn(Map.of());
+        when(eventService.getSoldTicketTypesForEvent(4)).thenReturn(Map.of());
+
+        String view = adminEventController.showEditForm(4, null, 9, localModel);
+
+        assertEquals("events/adminEventForm", view);
+        Event modelEvent = (Event) localModel.get("event");
+        assertNotNull(modelEvent);
+        assertNotNull(modelEvent.getCategory());
+        assertEquals(9, modelEvent.getCategory().getId());
+        assertEquals(9, localModel.get("newlyCreatedCategoryId"));
     }
 }
 

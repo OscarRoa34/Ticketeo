@@ -29,7 +29,7 @@ public class AdminTicketTypeController {
     private static final int PAGE_SIZE = 6;
     private static final String FLASH_SUCCESS_MESSAGE = "successMessage";
     private static final String FLASH_ERROR_MESSAGE = "errorMessage";
-    private static final String EVENT_FORM_RETURN_PREFIX = "/admin/event/";
+    private static final String SELECTED_TICKET_TYPE_PARAM = "selectedTicketTypeId";
 
     private final TicketTypeService ticketTypeService;
 
@@ -52,17 +52,21 @@ public class AdminTicketTypeController {
     }
 
     @GetMapping("/new")
-    public String showCreateForm(@RequestParam(value = "returnTo", required = false) String returnTo,
+    public String showCreateForm(@RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                                 @RequestParam(value = "eventId", required = false) Integer eventId,
+                                 @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                  Model model) {
         model.addAttribute("ticketType", new TicketTypeForm());
-        model.addAttribute("returnTo", sanitizeReturnTo(returnTo));
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/ticket-type");
         addExistingTicketTypeNames(model, null);
         return ticketTypeFormView;
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id,
-                               @RequestParam(value = "returnTo", required = false) String returnTo,
+                               @RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                               @RequestParam(value = "eventId", required = false) Integer eventId,
+                               @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                Model model) {
         TicketType ticketType = ticketTypeService.getTicketTypeById(id);
         TicketTypeForm form = new TicketTypeForm();
@@ -71,18 +75,19 @@ public class AdminTicketTypeController {
             form.setName(ticketType.getName());
         }
         model.addAttribute("ticketType", form);
-        model.addAttribute("returnTo", sanitizeReturnTo(returnTo));
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/ticket-type");
         addExistingTicketTypeNames(model, form.getId());
         return ticketTypeFormView;
     }
 
     @PostMapping("/save")
     public String saveTicketType(@ModelAttribute("ticketType") TicketTypeForm ticketTypeForm,
-                                 @RequestParam(value = "returnTo", required = false) String returnTo,
+                                 @RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
+                                 @RequestParam(value = "eventId", required = false) Integer eventId,
+                                 @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
         boolean isNew = ticketTypeForm.getId() == null;
-        String sanitizedReturnTo = sanitizeReturnTo(returnTo);
         TicketType ticketType = new TicketType();
         ticketType.setId(ticketTypeForm.getId());
         ticketType.setName(ticketTypeForm.getName());
@@ -91,14 +96,15 @@ public class AdminTicketTypeController {
             redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, isNew
                     ? "Tipo de ticket creado correctamente."
                     : "Tipo de ticket actualizado correctamente.");
-            return buildPostSaveRedirectPath(sanitizedReturnTo, savedTicketType != null ? savedTicketType.getId() : null);
+            return EventFormNavigation.resolvePostSaveRedirect(fromEventForm, eventId, draft, SELECTED_TICKET_TYPE_PARAM,
+                    savedTicketType != null ? savedTicketType.getId() : null, buildRedirectPath());
         } catch (IllegalArgumentException | IllegalStateException ex) {
             model.addAttribute(FLASH_ERROR_MESSAGE, ex.getMessage());
         } catch (RuntimeException ex) {
             model.addAttribute(FLASH_ERROR_MESSAGE, "No fue posible guardar el tipo de ticket.");
         }
         model.addAttribute("ticketType", ticketTypeForm);
-        model.addAttribute("returnTo", sanitizedReturnTo);
+        EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/ticket-type");
         addExistingTicketTypeNames(model, ticketTypeForm.getId());
         return ticketTypeFormView;
     }
@@ -128,35 +134,6 @@ public class AdminTicketTypeController {
         return "redirect:" + ticketTypeRoute;
     }
 
-    private String buildPostSaveRedirectPath(String returnTo, Integer ticketTypeId) {
-        if (returnTo == null || returnTo.isBlank()) {
-            return buildRedirectPath();
-        }
-
-        if (ticketTypeId == null) {
-            return "redirect:" + returnTo;
-        }
-
-        String separator = returnTo.contains("?") ? "&" : "?";
-        return "redirect:" + returnTo + separator + "selectedTicketTypeId=" + ticketTypeId;
-    }
-
-    private String sanitizeReturnTo(String returnTo) {
-        if (returnTo == null || returnTo.isBlank()) {
-            return null;
-        }
-
-        String trimmedPath = returnTo.trim();
-        if (!trimmedPath.startsWith(EVENT_FORM_RETURN_PREFIX)
-                || trimmedPath.startsWith("//")
-                || trimmedPath.contains("://")
-                || trimmedPath.contains("\n")
-                || trimmedPath.contains("\r")) {
-            return null;
-        }
-
-        return trimmedPath;
-    }
 
     private void addExistingTicketTypeNames(Model model, Integer excludedId) {
         List<String> existingNames = ticketTypeService.getTicketTypeNamesExcludingId(excludedId);

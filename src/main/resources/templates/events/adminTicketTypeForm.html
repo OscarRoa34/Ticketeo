@@ -29,7 +29,9 @@
 
         <form id="ticketTypeForm" th:action="@{/admin/ticket-type/save}" th:object="${ticketType}" method="POST">
             <input type="hidden" th:field="*{id}" />
-            <input type="hidden" name="returnTo" th:if="${returnTo != null}" th:value="${returnTo}">
+            <input type="hidden" name="fromEventForm" th:value="${fromEventForm}">
+            <input type="hidden" name="eventId" th:if="${eventId != null}" th:value="${eventId}">
+            <input type="hidden" name="draft" th:value="${draft}">
 
             <div class="event-form-body" style="grid-template-columns: 1fr;">
                 <div class="event-form-fields">
@@ -40,7 +42,7 @@
                     </div>
 
                     <div class="ef-form-actions">
-                        <a th:href="${returnTo != null ? returnTo : '/admin/ticket-type'}" class="ef-btn-cancel">Cancelar</a>
+                        <a th:href="${cancelPath}" class="ef-btn-cancel">Cancelar</a>
                         <button type="submit" class="ef-btn-submit">
                             <span th:text="${ticketType.id == null ? '✦ Crear Tipo' : '✦ Guardar Cambios'}">Guardar</span>
                         </button>
