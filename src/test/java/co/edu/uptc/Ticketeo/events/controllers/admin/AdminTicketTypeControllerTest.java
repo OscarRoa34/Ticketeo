@@ -5,6 +5,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -44,8 +46,11 @@ class AdminTicketTypeControllerTest {
     void saveTicketType_success_redirectsAndAddsSuccessFlash() {
         TicketTypeForm form = new TicketTypeForm();
         form.setName("VIP");
+        TicketType saved = new TicketType();
+        saved.setId(4);
+        when(ticketTypeService.saveTicketType(any(TicketType.class))).thenReturn(saved);
 
-        String view = adminTicketTypeController.saveTicketType(form, redirectAttributes, model);
+        String view = adminTicketTypeController.saveTicketType(form, null, redirectAttributes, model);
 
         assertEquals("redirect:/admin/ticket-type", view);
         verify(ticketTypeService).saveTicketType(any(TicketType.class));
@@ -57,8 +62,11 @@ class AdminTicketTypeControllerTest {
         TicketTypeForm form = new TicketTypeForm();
         form.setId(9);
         form.setName("Platea");
+        TicketType saved = new TicketType();
+        saved.setId(9);
+        when(ticketTypeService.saveTicketType(any(TicketType.class))).thenReturn(saved);
 
-        String view = adminTicketTypeController.saveTicketType(form, redirectAttributes, model);
+        String view = adminTicketTypeController.saveTicketType(form, null, redirectAttributes, model);
 
         assertEquals("redirect:/admin/ticket-type", view);
         verify(redirectAttributes).addFlashAttribute("successMessage", "Tipo de ticket actualizado correctamente.");
@@ -70,7 +78,7 @@ class AdminTicketTypeControllerTest {
         form.setName("General");
         doThrow(new RuntimeException("boom")).when(ticketTypeService).saveTicketType(any(TicketType.class));
 
-        String view = adminTicketTypeController.saveTicketType(form, redirectAttributes, model);
+        String view = adminTicketTypeController.saveTicketType(form, null, redirectAttributes, model);
 
         assertEquals("events/adminTicketTypeForm", view);
         verify(model).addAttribute("errorMessage", "No fue posible guardar el tipo de ticket.");
@@ -83,10 +91,49 @@ class AdminTicketTypeControllerTest {
         doThrow(new IllegalStateException("Ya existe un tipo de ticket con ese nombre."))
                 .when(ticketTypeService).saveTicketType(any(TicketType.class));
 
-        String view = adminTicketTypeController.saveTicketType(form, redirectAttributes, model);
+        String view = adminTicketTypeController.saveTicketType(form, null, redirectAttributes, model);
 
         assertEquals("events/adminTicketTypeForm", view);
         verify(model).addAttribute("errorMessage", "Ya existe un tipo de ticket con ese nombre.");
+    }
+
+    @Test
+    void saveTicketType_withReturnTo_redirectsBackToEventFormIncludingSelectedId() {
+        TicketTypeForm form = new TicketTypeForm();
+        form.setName("General");
+        TicketType saved = new TicketType();
+        saved.setId(15);
+        when(ticketTypeService.saveTicketType(any(TicketType.class))).thenReturn(saved);
+
+        String view = adminTicketTypeController.saveTicketType(form, "/admin/event/new", redirectAttributes, model);
+
+        assertEquals("redirect:/admin/event/new?selectedTicketTypeId=15", view);
+    }
+
+    @Test
+    void saveTicketType_withReturnToAndExistingQuery_usesAmpersand() {
+        TicketTypeForm form = new TicketTypeForm();
+        form.setName("General");
+        TicketType saved = new TicketType();
+        saved.setId(18);
+        when(ticketTypeService.saveTicketType(any(TicketType.class))).thenReturn(saved);
+
+        String view = adminTicketTypeController.saveTicketType(form, "/admin/event/new?draft=true", redirectAttributes, model);
+
+        assertEquals("redirect:/admin/event/new?draft=true&selectedTicketTypeId=18", view);
+    }
+
+    @Test
+    void saveTicketType_withUnsafeReturnTo_fallsBackToListRedirect() {
+        TicketTypeForm form = new TicketTypeForm();
+        form.setName("General");
+        TicketType saved = new TicketType();
+        saved.setId(21);
+        when(ticketTypeService.saveTicketType(any(TicketType.class))).thenReturn(saved);
+
+        String view = adminTicketTypeController.saveTicketType(form, "https://example.com", redirectAttributes, model);
+
+        assertEquals("redirect:/admin/ticket-type", view);
     }
 
     @Test
@@ -141,7 +188,7 @@ class AdminTicketTypeControllerTest {
 
     @Test
     void showCreateForm_returnsFormViewWithEmptyForm() {
-        String view = adminTicketTypeController.showCreateForm(model);
+        String view = adminTicketTypeController.showCreateForm(null, model);
 
         assertEquals("events/adminTicketTypeForm", view);
         verify(model).addAttribute(any(String.class), any(TicketTypeForm.class));
@@ -154,10 +201,32 @@ class AdminTicketTypeControllerTest {
         entity.setName("General");
         when(ticketTypeService.getTicketTypeById(5)).thenReturn(entity);
 
-        String view = adminTicketTypeController.showEditForm(5, model);
+        String view = adminTicketTypeController.showEditForm(5, null, model);
 
         assertEquals("events/adminTicketTypeForm", view);
         verify(model).addAttribute(any(String.class), any(TicketTypeForm.class));
+    }
+
+    @Test
+    void showCreateForm_withUnsafeReturnTo_clearsUnsafeValue() {
+        ExtendedModelMap localModel = new ExtendedModelMap();
+
+        String view = adminTicketTypeController.showCreateForm("//malicious", localModel);
+
+        assertEquals("events/adminTicketTypeForm", view);
+        assertNull(localModel.get("returnTo"));
+    }
+
+    @Test
+    void saveTicketType_errorPreservesSafeReturnToInModel() {
+        TicketTypeForm form = new TicketTypeForm();
+        form.setName("General");
+        doThrow(new IllegalStateException("Duplicado")).when(ticketTypeService).saveTicketType(any(TicketType.class));
+
+        String view = adminTicketTypeController.saveTicketType(form, "/admin/event/new", redirectAttributes, model);
+
+        assertEquals("events/adminTicketTypeForm", view);
+        verify(model).addAttribute("returnTo", "/admin/event/new");
     }
 
     @Test
