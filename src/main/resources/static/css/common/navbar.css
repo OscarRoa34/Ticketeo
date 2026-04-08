@@ -86,6 +86,9 @@
     padding: 8px 12px;
     font-size: 14px;
     outline: none;
+}  .search-input-fino::placeholder {
+    color: #ffffff;
+    opacity: 1;
 }
 
 .search-select-fino {
