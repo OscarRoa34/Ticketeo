@@ -172,6 +172,66 @@
             background: #fafafa;
         }
 
+        .ef-ticket-type-row-created {
+            border: 1px solid rgba(74, 222, 128, 0.7);
+            background: linear-gradient(90deg, rgba(74, 222, 128, 0.14), rgba(139, 92, 246, 0.08));
+            box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.2);
+            animation: ef-ticket-highlight 1.6s ease;
+        }
+
+        @keyframes ef-ticket-highlight {
+            0% {
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55);
+            }
+            100% {
+                box-shadow: 0 0 0 8px rgba(74, 222, 128, 0);
+            }
+        }
+
+        .ef-ticket-type-row-action {
+            grid-template-columns: 1fr auto;
+            background: linear-gradient(135deg, #f6f4ff, #f7fff9);
+            border: 1px dashed rgba(139, 92, 246, 0.45);
+            margin-top: 4px;
+        }
+
+        .ef-ticket-type-action-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .ef-ticket-type-action-title {
+            color: #2f1b66;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .ef-ticket-type-action-subtitle {
+            color: #6d6d6d;
+            font-size: 0.8rem;
+        }
+
+        .ef-btn-new-ticket-type {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #8B5CF6;
+            background: #ffffff;
+            color: #6d28d9;
+            text-decoration: none;
+            font-size: 0.86rem;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .ef-btn-new-ticket-type:hover {
+            background: #8B5CF6;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+        }
+
         .ef-ticket-type-label {
             display: flex;
             align-items: center;
@@ -398,6 +458,15 @@
 
             .ef-ticket-type-row {
                 grid-template-columns: 1fr;
+            }
+
+            .ef-ticket-type-row-action {
+                grid-template-columns: 1fr;
+            }
+
+            .ef-btn-new-ticket-type {
+                width: 100%;
+                text-align: center;
             }
 
             .ef-group.full {

@@ -74,7 +74,8 @@
 
                         <div class="ef-ticket-types" id="ticketTypeList">
                             <div class="ef-ticket-type-row" th:each="ticketType : ${ticketTypes}"
-                                 th:attr="data-name=${#strings.toLowerCase(ticketType.name)}">
+                                 th:classappend="${newlyCreatedTicketTypeId != null and newlyCreatedTicketTypeId == ticketType.id ? ' ef-ticket-type-row-created' : ''}"
+                                 th:attr="data-name=${#strings.toLowerCase(ticketType.name)},data-ticket-id=${ticketType.id}">
                                 <label class="ef-ticket-type-label"
                                        th:classappend="${soldTicketTypes != null and soldTicketTypes[ticketType.id] == true ? ' ef-ticket-type-label-locked' : ''}">
                                     <input type="checkbox"
@@ -120,6 +121,16 @@
                             <p th:if="${#lists.isEmpty(ticketTypes)}" class="ef-ticket-empty">
                                 No hay tipos de ticket creados. Primero crea uno en el módulo Tipos de Ticket.
                             </p>
+
+                            <div class="ef-ticket-type-row ef-ticket-type-row-action">
+                                <div class="ef-ticket-type-action-copy">
+                                    <span class="ef-ticket-type-action-title">¿No encuentras el tipo?</span>
+                                    <span class="ef-ticket-type-action-subtitle">Crea uno nuevo y vuelve aquí automáticamente.</span>
+                                </div>
+                                <a class="ef-btn-new-ticket-type" th:href="@{/admin/ticket-type/new(returnTo=${returnToEventForm})}">
+                                    + Nuevo tipo de boleta
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -163,7 +174,8 @@
     const imgPreview = document.getElementById('imagePreview');
     const placeholder = document.getElementById('imagePlaceholder');
     const ticketTypeSearch = document.getElementById('ticketTypeSearch');
-    const ticketTypeRows = document.querySelectorAll('.ef-ticket-type-row');
+    const ticketTypeRows = document.querySelectorAll('.ef-ticket-type-row:not(.ef-ticket-type-row-action)');
+    const ticketTypeActionRow = document.querySelector('.ef-ticket-type-row-action');
     const ticketTypeChecks = document.querySelectorAll('.ef-ticket-type-check');
     const MAX_IMAGE_SIZE_BYTES = 50 * 1024 * 1024;
 
@@ -276,7 +288,16 @@
                     const name = row.dataset.name || '';
                     row.style.display = name.includes(searchValue) ? 'grid' : 'none';
                 });
+
+                if (ticketTypeActionRow) {
+                    ticketTypeActionRow.style.display = 'grid';
+                }
             });
+        }
+
+        const createdRow = document.querySelector('.ef-ticket-type-row-created');
+        if (createdRow) {
+            createdRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     });
 </script>

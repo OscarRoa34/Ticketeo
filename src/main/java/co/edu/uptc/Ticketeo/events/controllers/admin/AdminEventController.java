@@ -1,11 +1,11 @@
 package co.edu.uptc.Ticketeo.events.controllers.admin;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +26,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.services.TicketTypeService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -101,19 +100,29 @@ public class AdminEventController {
 
     @GetMapping("/event/new")
     public String showCreateForm(@RequestParam(value = "draft", defaultValue = "false") boolean draft,
+                                 @RequestParam(value = "selectedTicketTypeId", required = false) Integer selectedTicketTypeId,
                                  Model model) {
+        Map<Integer, Integer> ticketQuantities = new HashMap<>();
+        if (selectedTicketTypeId != null) {
+            ticketQuantities.put(selectedTicketTypeId, 1);
+        }
+
         model.addAttribute("event", new Event());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
-        model.addAttribute("ticketQuantities", Map.<Integer, Integer>of());
+        model.addAttribute("ticketQuantities", ticketQuantities);
         model.addAttribute("ticketPrices", Map.<Integer, Double>of());
         model.addAttribute("soldTicketTypes", Map.<Integer, Boolean>of());
+        model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
+        model.addAttribute("returnToEventForm", buildEventFormReturnPath(draft, null));
         model.addAttribute("draft", draft);
         return "events/adminEventForm";
     }
 
     @GetMapping("/event/edit/{id}")
-    public String showEditForm(@PathVariable Integer id, Model model) {
+    public String showEditForm(@PathVariable Integer id,
+                               @RequestParam(value = "selectedTicketTypeId", required = false) Integer selectedTicketTypeId,
+                               Model model) {
         Event event = eventService.getEventById(id);
         if (event == null) {
             return "redirect:/admin";
@@ -121,12 +130,30 @@ public class AdminEventController {
         if (Boolean.TRUE.equals(event.getIsActive()) && event.getDate() != null && event.getDate().isBefore(LocalDate.now())) {
             return "redirect:/admin/completed";
         }
+
+        Map<Integer, Integer> ticketQuantities = new HashMap<>();
+        Map<Integer, Integer> existingQuantities = eventService.getTicketTypeQuantitiesForEvent(id);
+        if (existingQuantities != null) {
+            ticketQuantities.putAll(existingQuantities);
+        }
+        if (selectedTicketTypeId != null) {
+            ticketQuantities.putIfAbsent(selectedTicketTypeId, 1);
+        }
+
+        Map<Integer, Double> ticketPrices = new HashMap<>();
+        Map<Integer, Double> existingPrices = eventService.getTicketTypePricesForEvent(id);
+        if (existingPrices != null) {
+            ticketPrices.putAll(existingPrices);
+        }
+
         model.addAttribute("event", event);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
-        model.addAttribute("ticketQuantities", eventService.getTicketTypeQuantitiesForEvent(id));
-        model.addAttribute("ticketPrices", eventService.getTicketTypePricesForEvent(id));
+        model.addAttribute("ticketQuantities", ticketQuantities);
+        model.addAttribute("ticketPrices", ticketPrices);
         model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(id));
+        model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
+        model.addAttribute("returnToEventForm", buildEventFormReturnPath(false, id));
         model.addAttribute("draft", !Boolean.TRUE.equals(event.getIsActive()));
         return "events/adminEventForm";
     }
@@ -163,9 +190,18 @@ public class AdminEventController {
             model.addAttribute("ticketQuantities", ticketQuantities);
             model.addAttribute("ticketPrices", ticketPrices);
             model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(event.getId()));
+            model.addAttribute("newlyCreatedTicketTypeId", null);
+            model.addAttribute("returnToEventForm", buildEventFormReturnPath(draft, event.getId()));
             model.addAttribute("draft", draft);
             return "events/adminEventForm";
         }
+    }
+
+    private String buildEventFormReturnPath(boolean draft, Integer eventId) {
+        if (eventId != null) {
+            return "/admin/event/edit/" + eventId;
+        }
+        return draft ? "/admin/event/new?draft=true" : "/admin/event/new";
     }
 
     private EventCategory resolveCategoryForSave(Integer categoryId) {
