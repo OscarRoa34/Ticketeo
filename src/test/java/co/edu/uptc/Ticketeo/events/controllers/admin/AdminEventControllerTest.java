@@ -1,12 +1,19 @@
 package co.edu.uptc.Ticketeo.events.controllers.admin;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
@@ -483,6 +491,120 @@ class AdminEventControllerTest {
         assertNotNull(modelEvent.getCategory());
         assertEquals(9, modelEvent.getCategory().getId());
         assertEquals(9, localModel.get("newlyCreatedCategoryId"));
+    }
+
+    @Test
+    void saveEvent_withRestoredPngDataUrl_savesImageAndRedirects() {
+        Event event = new Event();
+        when(image.isEmpty()).thenReturn(true);
+        when(eventService.saveEventWithTicketTypes(any(Event.class), anyMap(), anyMap())).thenReturn(event);
+
+        Map<String, String> params = new HashMap<>();
+        params.put("restoredImageData", buildImageDataUrl("image/png", new byte[] { 1, 2, 3, 4 }));
+
+        String view = adminEventController.saveEvent(event, image, null, null, params, false, model, redirectAttributes);
+
+        assertEquals("redirect:/admin", view);
+
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventService).saveEventWithTicketTypes(eventCaptor.capture(), anyMap(), anyMap());
+        Event captured = eventCaptor.getValue();
+        assertNotNull(captured.getImageUrl());
+        assertTrue(captured.getImageUrl().startsWith("/uploads/"));
+        assertTrue(captured.getImageUrl().endsWith(".png"));
+        deleteUploadedImageIfPresent(captured.getImageUrl());
+    }
+
+    @Test
+    void saveEvent_withRestoredWebpDataUrl_usesWebpExtension() {
+        Event event = new Event();
+        when(image.isEmpty()).thenReturn(true);
+        when(eventService.saveEventWithTicketTypes(any(Event.class), anyMap(), anyMap())).thenReturn(event);
+
+        Map<String, String> params = new HashMap<>();
+        params.put("restoredImageData", buildImageDataUrl("image/webp", new byte[] { 5, 6, 7, 8 }));
+
+        String view = adminEventController.saveEvent(event, image, null, null, params, false, model, redirectAttributes);
+
+        assertEquals("redirect:/admin", view);
+
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventService).saveEventWithTicketTypes(eventCaptor.capture(), anyMap(), anyMap());
+        Event captured = eventCaptor.getValue();
+        assertNotNull(captured.getImageUrl());
+        assertTrue(captured.getImageUrl().endsWith(".webp"));
+        deleteUploadedImageIfPresent(captured.getImageUrl());
+    }
+
+    @Test
+    void saveEvent_withInvalidRestoredDataAndExistingEvent_keepsExistingImage() {
+        Event event = new Event();
+        event.setId(55);
+        Event existing = Event.builder()
+                .id(55)
+                .imageUrl("/uploads/existing-image.png")
+                .isActive(true)
+                .build();
+
+        when(image.isEmpty()).thenReturn(true);
+        when(eventService.getEventById(55)).thenReturn(existing);
+        when(eventService.saveEventWithTicketTypes(any(Event.class), anyMap(), anyMap())).thenReturn(event);
+
+        String view = adminEventController.saveEvent(
+                event,
+                image,
+                null,
+                null,
+                Map.of("restoredImageData", "data:text/plain;base64,QQ=="),
+                false,
+                model,
+                redirectAttributes);
+
+        assertEquals("redirect:/admin", view);
+
+        ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventService).saveEventWithTicketTypes(eventCaptor.capture(), anyMap(), anyMap());
+        Event captured = eventCaptor.getValue();
+        assertEquals("/uploads/existing-image.png", captured.getImageUrl());
+    }
+
+    @Test
+    void tryRestoreImageFromDataUrl_rejectsMalformedInputs() {
+        Event event = new Event();
+
+        boolean nullResult = ReflectionTestUtils.invokeMethod(adminEventController,
+                "tryRestoreImageFromDataUrl", event, (String) null);
+        boolean noCommaResult = ReflectionTestUtils.invokeMethod(adminEventController,
+                "tryRestoreImageFromDataUrl", event, "data:image/png;base64AAAA");
+        boolean noBase64FlagResult = ReflectionTestUtils.invokeMethod(adminEventController,
+                "tryRestoreImageFromDataUrl", event, "data:image/png,AAAA");
+        boolean blankEncodedResult = ReflectionTestUtils.invokeMethod(adminEventController,
+                "tryRestoreImageFromDataUrl", event, "data:image/png;base64,");
+        boolean invalidBase64Result = ReflectionTestUtils.invokeMethod(adminEventController,
+                "tryRestoreImageFromDataUrl", event, "data:image/png;base64,###");
+
+        assertFalse(nullResult);
+        assertFalse(noCommaResult);
+        assertFalse(noBase64FlagResult);
+        assertFalse(blankEncodedResult);
+        assertFalse(invalidBase64Result);
+    }
+
+    private String buildImageDataUrl(String mimeType, byte[] content) {
+        return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(content);
+    }
+
+    private void deleteUploadedImageIfPresent(String imageUrl) {
+        if (imageUrl == null || !imageUrl.startsWith("/uploads/")) {
+            return;
+        }
+
+        String filename = imageUrl.substring("/uploads/".length());
+        Path targetPath = Path.of("uploads", filename);
+        try {
+            Files.deleteIfExists(targetPath);
+        } catch (IOException ignored) {
+        }
     }
 }
 
