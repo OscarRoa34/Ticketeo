@@ -123,6 +123,7 @@ public class TicketPdfService {
                 detailsCell.setBackgroundColor(SOFT_BG);
                 detailsCell.addElement(new Paragraph("Evento: " + safe(purchase.getEventName()), titleFont));
                 detailsCell.addElement(new Paragraph("Fecha del evento: " + safeEventDate(purchase), normalFont));
+                detailsCell.addElement(new Paragraph("Comprador: " + safeBuyerFullName(purchase), normalFont));
                 detailsCell.addElement(new Paragraph("Tipo de boleto: " + safe(ticket.getTicketTypeName()), normalFont));
                 detailsCell.addElement(new Paragraph("Metodo: " + purchase.getPaymentMethod().getLabel(), normalFont));
                 detailsCell.addElement(new Paragraph("Emitido: " + safePurchaseDate(purchase), normalFont));
@@ -195,6 +196,20 @@ public class TicketPdfService {
 
     private String safeNumber(Long value) {
         return value == null ? "N/A" : String.valueOf(value);
+    }
+
+    private String safeBuyerFullName(Purchase purchase) {
+        if (purchase.getUser() == null) {
+            return "N/A";
+        }
+
+        String firstName = safe(purchase.getUser().getFirstName());
+        String lastName = safe(purchase.getUser().getLastName());
+        String fullName = (firstName + " " + lastName).trim();
+        if ("N/A N/A".equals(fullName)) {
+            return safe(purchase.getUser().getUsername());
+        }
+        return fullName;
     }
 
     private String slugify(String raw) {

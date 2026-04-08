@@ -1,0 +1,123 @@
+.profile-main {
+    padding-top: 40px;
+    padding-bottom: 36px;
+}
+
+.profile-shell {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 92, 246, 0.18);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.15);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-shell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8b5cf6, #4ade80, #8b5cf6);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.profile-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(34, 197, 94, 0.18));
+}
+
+.profile-header-icon img {
+    width: 32px;
+    height: 32px;
+}
+
+.profile-header-text h1 {
+    margin: 0;
+    color: #1f2240;
+    font-size: 1.85rem;
+    font-weight: 600;
+}
+
+.profile-header-text p {
+    margin: 6px 0 0;
+    color: #6a7090;
+    font-size: 0.92rem;
+}
+
+.profile-divider {
+    margin: 18px 0 20px;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(139, 92, 246, 0.45), rgba(74, 222, 128, 0.35), rgba(139, 92, 246, 0.08));
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.profile-field span {
+    font-size: 0.88rem;
+    color: #4c5374;
+    font-weight: 600;
+}
+
+.profile-field input,
+.profile-field select {
+    width: 100%;
+    border: 1px solid rgba(138, 146, 189, 0.4);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.94rem;
+    color: #1f2240;
+    background: #fff;
+}
+
+.profile-field input:focus,
+.profile-field select:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.75);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.14);
+}
+
+.profile-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+@media (max-width: 760px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+    }
+
+    .profile-actions .btn-primary,
+    .profile-actions .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+}
+

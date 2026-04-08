@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -131,5 +132,17 @@ class EventServiceTest {
 
         assertEquals("La fecha del evento no puede ser anterior a hoy.", exception.getMessage());
         verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void getRandomEvents_excludesCompletedEventsFromCarousel() {
+        Event completed = Event.builder().id(1).name("Pasado").date(LocalDate.now().minusDays(1)).isActive(true).build();
+        Event active = Event.builder().id(2).name("Futuro").date(LocalDate.now().plusDays(2)).isActive(true).build();
+        when(eventRepository.findByIsActiveTrue()).thenReturn(List.of(completed, active));
+
+        List<Event> result = eventService.getRandomEvents(5);
+
+        assertTrue(result.stream().anyMatch(event -> event.getId().equals(2)));
+        assertFalse(result.stream().anyMatch(event -> event.getId().equals(1)));
     }
 }

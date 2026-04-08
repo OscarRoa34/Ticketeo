@@ -22,7 +22,7 @@ import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.purchase.models.PaymentMethod;
 import co.edu.uptc.Ticketeo.purchase.services.PurchaseService;
 import co.edu.uptc.Ticketeo.user.models.User;
-import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
+import co.edu.uptc.Ticketeo.user.services.UserService;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -39,10 +39,13 @@ public class EventPurchaseController {
     private final EventService eventService;
     private final EventTicketTypeRepository eventTicketTypeRepository;
     private final PurchaseService purchaseService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping("/{id}/purchase")
-    public String showPurchasePage(@PathVariable Integer id, Model model, Authentication authentication) {
+    public String showPurchasePage(@PathVariable Integer id,
+                                   Model model,
+                                   Authentication authentication,
+                                   RedirectAttributes redirectAttributes) {
         if (!isAuthenticated(authentication)) {
             return "redirect:/login";
         }
@@ -53,6 +56,15 @@ public class EventPurchaseController {
         }
         if (eventService.isCompletedEvent(event)) {
             return "redirect:/event/" + id;
+        }
+
+        User user = userService.getByUsername(authentication.getName());
+        if (user == null) {
+            return "redirect:/login";
+        }
+        if (!userService.isProfileComplete(user)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Completa tu perfil antes de comprar boletas.");
+            return "redirect:/user/profile?returnUrl=/event/" + id + "/purchase";
         }
 
         List<TicketOptionView> ticketOptions = loadTicketOptions(id, event);
@@ -83,9 +95,13 @@ public class EventPurchaseController {
             return "redirect:/event/" + id;
         }
 
-        User user = userRepository.findByUsername(authentication.getName()).orElse(null);
+        User user = userService.getByUsername(authentication.getName());
         if (user == null) {
             return "redirect:/login";
+        }
+        if (!userService.isProfileComplete(user)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Completa tu perfil antes de comprar boletas.");
+            return "redirect:/user/profile?returnUrl=/event/" + id + "/purchase";
         }
 
         Map<Integer, Integer> requestedQuantities = extractRequestedQuantities(formValues);

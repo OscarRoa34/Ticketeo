@@ -233,6 +233,9 @@ public class EventService {
 
     public List<Event> getRandomEvents(int count) {
         List<Event> activeEvents = eventRepository.findByIsActiveTrue();
+        activeEvents = new java.util.ArrayList<>(activeEvents.stream()
+                .filter(event -> !isCompletedEvent(event))
+                .toList());
         Collections.shuffle(activeEvents);
         return activeEvents.stream().limit(count).toList();
     }
