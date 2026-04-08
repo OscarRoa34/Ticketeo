@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -184,7 +185,7 @@ public class AdminEventController {
         boolean isNewEvent = event.getId() == null;
 
         event.setCategory(resolveCategoryForSave(categoryId));
-        handleImageUpload(event, image);
+        handleImageUpload(event, image, allParams.get("restoredImageData"));
         preserveActiveStatus(event);
         event.setIsActive(!draft);
 
@@ -291,7 +292,7 @@ public class AdminEventController {
         return "Evento actualizado correctamente.";
     }
 
-    private void handleImageUpload(Event event, MultipartFile image) {
+    private void handleImageUpload(Event event, MultipartFile image, String restoredImageData) {
         if (!image.isEmpty()) {
             Path uploadDir = Paths.get("uploads");
             try {
@@ -304,11 +305,65 @@ public class AdminEventController {
             } catch (IOException e) {
                 log.error("Error al guardar imagen del evento", e);
             }
-        } else if (event.getId() != null) {
+        } else if (!tryRestoreImageFromDataUrl(event, restoredImageData) && event.getId() != null) {
             Event existing = eventService.getEventById(event.getId());
             if (existing != null) {
                 event.setImageUrl(existing.getImageUrl());
             }
+        }
+    }
+
+    private boolean tryRestoreImageFromDataUrl(Event event, String restoredImageData) {
+        if (restoredImageData == null || restoredImageData.isBlank()) {
+            return false;
+        }
+
+        int commaIndex = restoredImageData.indexOf(',');
+        if (commaIndex <= 0) {
+            return false;
+        }
+
+        String metadata = restoredImageData.substring(0, commaIndex);
+        if (!metadata.startsWith("data:image/") || !metadata.contains(";base64")) {
+            return false;
+        }
+
+        String encodedData = restoredImageData.substring(commaIndex + 1);
+        if (encodedData.isBlank()) {
+            return false;
+        }
+
+        byte[] imageBytes;
+        try {
+            imageBytes = Base64.getDecoder().decode(encodedData);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+
+        if (imageBytes.length == 0 || imageBytes.length > 50 * 1024 * 1024) {
+            return false;
+        }
+
+        String extension = "jpg";
+        if (metadata.startsWith("data:image/png")) {
+            extension = "png";
+        } else if (metadata.startsWith("data:image/webp")) {
+            extension = "webp";
+        }
+
+        Path uploadDir = Paths.get("uploads");
+        try {
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            String filename = UUID.randomUUID() + "_restored." + extension;
+            Files.write(uploadDir.resolve(filename), imageBytes);
+            event.setImageUrl("/uploads/" + filename);
+            return true;
+        } catch (IOException e) {
+            log.error("Error al restaurar imagen temporal del evento", e);
+            return false;
         }
     }
 

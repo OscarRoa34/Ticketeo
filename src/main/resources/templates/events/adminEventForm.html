@@ -31,9 +31,10 @@
         <div class="event-form-divider"></div>
 
 
-        <form th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
+        <form id="adminEventForm" th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" />
             <input type="hidden" name="draft" th:value="${draft}">
+            <input type="hidden" id="restoredImageData" name="restoredImageData" value="">
 
             <div class="event-form-body">
 
@@ -173,7 +174,9 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
+    const eventForm = document.getElementById('adminEventForm');
     const fileInput = document.getElementById('imageFile');
+    const restoredImageDataInput = document.getElementById('restoredImageData');
     const imgPreview = document.getElementById('imagePreview');
     const placeholder = document.getElementById('imagePlaceholder');
     const ticketTypeSearch = document.getElementById('ticketTypeSearch');
@@ -181,25 +184,15 @@
     const ticketTypeRows = document.querySelectorAll('.ef-ticket-type-row:not(.ef-ticket-type-row-action)');
     const ticketTypeActionRow = document.querySelector('.ef-ticket-type-row-action');
     const ticketTypeChecks = document.querySelectorAll('.ef-ticket-type-check');
+    const ticketTypeShortcut = document.querySelector('.ef-btn-new-ticket-type');
     const MAX_IMAGE_SIZE_BYTES = 50 * 1024 * 1024;
+    const EVENT_FORM_STATE_KEY = 'ticketeo.admin.eventFormState';
+    const EVENT_FORM_IMAGE_DB_NAME = 'ticketeo.admin.eventForm';
+    const EVENT_FORM_IMAGE_STORE_NAME = 'images';
+    const EVENT_FORM_IMAGE_KEY_PREFIX = 'event:';
+    const MAX_STATE_AGE_MS = 30 * 60 * 1000;
 
-    fileInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            if (file.size > MAX_IMAGE_SIZE_BYTES) {
-                alert('La imagen supera el límite permitido de 50MB.');
-                this.value = '';
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = e => {
-                imgPreview.src = e.target.result;
-                imgPreview.style.display = 'block';
-                placeholder.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+    let previewObjectUrl = null;
 
     function rawNumber(str) {
         return str.replace(/[^\d]/g, '');
@@ -216,24 +209,425 @@
         }
     }
 
+    function buildStateContextKey() {
+        const eventId = categorySelect ? (categorySelect.dataset.eventId || 'new') : 'new';
+        const draftFlag = categorySelect && categorySelect.dataset.draft === 'true' ? 'draft' : 'active';
+        return eventId + ':' + draftFlag;
+    }
+
+    function buildImageStorageKey(contextKey) {
+        return EVENT_FORM_IMAGE_KEY_PREFIX + contextKey;
+    }
+
+    function revokePreviewObjectUrl() {
+        if (previewObjectUrl) {
+            URL.revokeObjectURL(previewObjectUrl);
+            previewObjectUrl = null;
+        }
+    }
+
+    function setImagePreviewFromFile(file) {
+        if (!file) {
+            return;
+        }
+        revokePreviewObjectUrl();
+        previewObjectUrl = URL.createObjectURL(file);
+        imgPreview.src = previewObjectUrl;
+        imgPreview.style.display = 'block';
+        placeholder.style.display = 'none';
+    }
+
+    function openImageDb() {
+        return new Promise(function (resolve, reject) {
+            if (!window.indexedDB) {
+                resolve(null);
+                return;
+            }
+
+            const request = indexedDB.open(EVENT_FORM_IMAGE_DB_NAME, 1);
+            request.onupgradeneeded = function () {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(EVENT_FORM_IMAGE_STORE_NAME)) {
+                    db.createObjectStore(EVENT_FORM_IMAGE_STORE_NAME);
+                }
+            };
+            request.onsuccess = function () {
+                resolve(request.result);
+            };
+            request.onerror = function () {
+                reject(request.error);
+            };
+        });
+    }
+
+    async function saveImageToDb(contextKey, file) {
+        const db = await openImageDb();
+        if (!db) {
+            return;
+        }
+
+        await new Promise(function (resolve, reject) {
+            const tx = db.transaction(EVENT_FORM_IMAGE_STORE_NAME, 'readwrite');
+            tx.oncomplete = function () {
+                resolve();
+            };
+            tx.onerror = function () {
+                reject(tx.error);
+            };
+            tx.objectStore(EVENT_FORM_IMAGE_STORE_NAME).put(file, buildImageStorageKey(contextKey));
+        });
+
+        db.close();
+    }
+
+    async function getImageFromDb(contextKey) {
+        const db = await openImageDb();
+        if (!db) {
+            return null;
+        }
+
+        const image = await new Promise(function (resolve, reject) {
+            const tx = db.transaction(EVENT_FORM_IMAGE_STORE_NAME, 'readonly');
+            tx.onerror = function () {
+                reject(tx.error);
+            };
+            const request = tx.objectStore(EVENT_FORM_IMAGE_STORE_NAME).get(buildImageStorageKey(contextKey));
+            request.onsuccess = function () {
+                resolve(request.result || null);
+            };
+            request.onerror = function () {
+                reject(request.error);
+            };
+        });
+
+        db.close();
+        return image;
+    }
+
+    async function removeImageFromDb(contextKey) {
+        const db = await openImageDb();
+        if (!db) {
+            return;
+        }
+
+        await new Promise(function (resolve, reject) {
+            const tx = db.transaction(EVENT_FORM_IMAGE_STORE_NAME, 'readwrite');
+            tx.oncomplete = function () {
+                resolve();
+            };
+            tx.onerror = function () {
+                reject(tx.error);
+            };
+            tx.objectStore(EVENT_FORM_IMAGE_STORE_NAME).delete(buildImageStorageKey(contextKey));
+        });
+
+        db.close();
+    }
+
+    function assignFileToInput(file) {
+        if (!fileInput || typeof DataTransfer === 'undefined') {
+            return false;
+        }
+
+        try {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function fileToDataUrl(file) {
+        return new Promise(function (resolve, reject) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                resolve(typeof event.target.result === 'string' ? event.target.result : '');
+            };
+            reader.onerror = function () {
+                reject(reader.error);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function saveEventFormState() {
+        if (!eventForm) {
+            return;
+        }
+
+        const state = {
+            context: buildStateContextKey(),
+            savedAt: Date.now(),
+            fields: {},
+            ticketSelections: [],
+            imageStored: false
+        };
+
+        const fields = eventForm.querySelectorAll('input[name], textarea[name], select[name]');
+        fields.forEach(function (field) {
+            const name = field.name;
+            if (!name
+                || name === 'imageFile'
+                || name === 'ticketTypeIds'
+                || name === 'restoredImageData'
+                || name.startsWith('ticketQuantity_')
+                || name.startsWith('ticketPrice_')) {
+                return;
+            }
+            if (field.type === 'checkbox' || field.type === 'radio') {
+                if (field.checked) {
+                    state.fields[name] = field.value;
+                }
+                return;
+            }
+            state.fields[name] = field.value;
+        });
+
+        ticketTypeChecks.forEach(function (check) {
+            const row = check.closest('.ef-ticket-type-row');
+            const qtyInput = row ? row.querySelector('.ef-ticket-qty') : null;
+            const priceHiddenInput = row ? row.querySelector('.ef-ticket-price-hidden') : null;
+            state.ticketSelections.push({
+                ticketId: check.value,
+                checked: check.checked,
+                quantity: qtyInput ? qtyInput.value : '',
+                price: priceHiddenInput ? priceHiddenInput.value : ''
+            });
+        });
+
+        const selectedImage = fileInput && fileInput.files ? fileInput.files[0] : null;
+        if (selectedImage) {
+            await saveImageToDb(state.context, selectedImage);
+            state.imageStored = true;
+        } else {
+            await removeImageFromDb(state.context);
+        }
+
+        sessionStorage.setItem(EVENT_FORM_STATE_KEY, JSON.stringify(state));
+    }
+
+    function ensureCreatedTicketTypeSelected(selectedTicketTypeId) {
+        if (!selectedTicketTypeId) {
+            return;
+        }
+
+        const targetCheck = Array.from(ticketTypeChecks).find(function (check) {
+            return check.value === selectedTicketTypeId;
+        });
+
+        if (!targetCheck) {
+            return;
+        }
+
+        if (!targetCheck.checked && targetCheck.dataset.locked !== 'true') {
+            targetCheck.checked = true;
+            targetCheck.dispatchEvent(new Event('change'));
+        }
+
+        const targetRow = targetCheck.closest('.ef-ticket-type-row');
+        if (!targetRow) {
+            return;
+        }
+
+        const qtyInput = targetRow.querySelector('.ef-ticket-qty');
+        if (qtyInput && (!qtyInput.value || qtyInput.value === '0')) {
+            qtyInput.value = '1';
+        }
+
+        targetRow.classList.add('ef-ticket-type-row-created');
+    }
+
+    async function restoreEventFormState() {
+        if (!eventForm) {
+            return;
+        }
+
+        const rawState = sessionStorage.getItem(EVENT_FORM_STATE_KEY);
+        if (!rawState) {
+            return;
+        }
+
+        let state;
+        try {
+            state = JSON.parse(rawState);
+        } catch (error) {
+            sessionStorage.removeItem(EVENT_FORM_STATE_KEY);
+            return;
+        }
+
+        if (!state || state.context !== buildStateContextKey()) {
+            return;
+        }
+
+        if (!state.savedAt || (Date.now() - state.savedAt) > MAX_STATE_AGE_MS) {
+            sessionStorage.removeItem(EVENT_FORM_STATE_KEY);
+            await removeImageFromDb(state.context);
+            return;
+        }
+
+        const searchParams = new URLSearchParams(window.location.search);
+        const selectedCategoryId = searchParams.get('selectedCategoryId');
+        const selectedTicketTypeId = searchParams.get('selectedTicketTypeId');
+
+        const fields = state.fields || {};
+        Object.keys(fields).forEach(function (name) {
+            if (name === 'category' && selectedCategoryId) {
+                return;
+            }
+            const field = eventForm.querySelector('[name="' + name + '"]');
+            if (!field) {
+                return;
+            }
+            if (field.type === 'checkbox' || field.type === 'radio') {
+                field.checked = field.value === fields[name];
+                return;
+            }
+            field.value = fields[name];
+        });
+
+        if (Array.isArray(state.ticketSelections)) {
+            state.ticketSelections.forEach(function (selection) {
+                const check = eventForm.querySelector('.ef-ticket-type-check[value="' + selection.ticketId + '"]');
+                if (!check) {
+                    return;
+                }
+
+                const row = check.closest('.ef-ticket-type-row');
+                const qtyInput = row ? row.querySelector('.ef-ticket-qty') : null;
+                const priceDisplayInput = row ? row.querySelector('.ef-ticket-price-display') : null;
+                const priceHiddenInput = row ? row.querySelector('.ef-ticket-price-hidden') : null;
+                const isLocked = check.dataset.locked === 'true';
+
+                if (!isLocked) {
+                    check.checked = Boolean(selection.checked);
+                    check.dispatchEvent(new Event('change'));
+                }
+
+                if (qtyInput && selection.quantity !== undefined && selection.quantity !== null) {
+                    qtyInput.value = selection.quantity;
+                }
+
+                if (priceHiddenInput) {
+                    priceHiddenInput.value = selection.price || '';
+                }
+
+                if (priceDisplayInput) {
+                    const raw = selection.price || '';
+                    if (raw) {
+                        const parsed = parseInt(raw, 10);
+                        priceDisplayInput.value = Number.isNaN(parsed) ? '' : parsed.toLocaleString('es-CO');
+                    } else {
+                        priceDisplayInput.value = '';
+                    }
+                }
+            });
+        }
+
+        if (selectedCategoryId && categorySelect) {
+            categorySelect.value = selectedCategoryId;
+            categorySelect.dataset.lastSelectedValue = selectedCategoryId;
+            categorySelect.classList.add('ef-select-created');
+        }
+
+        if (state.imageStored) {
+            const storedImage = await getImageFromDb(state.context);
+            if (storedImage) {
+                setImagePreviewFromFile(storedImage);
+                if (restoredImageDataInput) {
+                    restoredImageDataInput.value = '';
+                }
+                const wasAssigned = assignFileToInput(storedImage);
+                if (!wasAssigned && restoredImageDataInput) {
+                    try {
+                        restoredImageDataInput.value = await fileToDataUrl(storedImage);
+                    } catch (error) {
+                        restoredImageDataInput.value = '';
+                    }
+                }
+            }
+        }
+
+        ensureCreatedTicketTypeSelected(selectedTicketTypeId);
+        sessionStorage.removeItem(EVENT_FORM_STATE_KEY);
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) {
+                return;
+            }
+
+            if (file.size > MAX_IMAGE_SIZE_BYTES) {
+                alert('La imagen supera el límite permitido de 50MB.');
+                this.value = '';
+                return;
+            }
+
+            if (restoredImageDataInput) {
+                restoredImageDataInput.value = '';
+            }
+
+            setImagePreviewFromFile(file);
+            saveImageToDb(buildStateContextKey(), file).catch(function () {
+            });
+        });
+    }
+
+    window.addEventListener('beforeunload', revokePreviewObjectUrl);
+
     document.addEventListener('DOMContentLoaded', function () {
+        if (eventForm) {
+            eventForm.addEventListener('submit', function () {
+                const contextKey = buildStateContextKey();
+                sessionStorage.removeItem(EVENT_FORM_STATE_KEY);
+                removeImageFromDb(contextKey).catch(function () {
+                });
+            });
+        }
+
+        if (ticketTypeShortcut) {
+            ticketTypeShortcut.addEventListener('click', async function (event) {
+                event.preventDefault();
+                const targetUrl = this.href;
+                try {
+                    await saveEventFormState();
+                } finally {
+                    window.location.href = targetUrl;
+                }
+            });
+        }
+
         if (categorySelect) {
             const eventId = categorySelect.dataset.eventId;
             const isDraft = categorySelect.dataset.draft === 'true';
+            categorySelect.dataset.lastSelectedValue = categorySelect.value;
             if (categorySelect.dataset.createdCategory === 'true') {
                 categorySelect.classList.add('ef-select-created');
             }
 
-            categorySelect.addEventListener('change', function () {
+            categorySelect.addEventListener('change', async function () {
                 if (this.value === '-1') {
+                    const lastSelectedValue = this.dataset.lastSelectedValue || '';
+                    this.value = lastSelectedValue;
+
                     const query = new URLSearchParams();
                     query.set('fromEventForm', 'true');
                     query.set('draft', String(isDraft));
                     if (eventId) {
                         query.set('eventId', eventId);
                     }
-                    window.location.href = '/admin/category/new?' + query.toString();
+
+                    try {
+                        await saveEventFormState();
+                    } finally {
+                        window.location.href = '/admin/category/new?' + query.toString();
+                    }
+                    return;
                 }
+                this.dataset.lastSelectedValue = this.value;
             });
         }
 
@@ -319,10 +713,13 @@
             });
         }
 
-        const createdRow = document.querySelector('.ef-ticket-type-row-created');
-        if (createdRow) {
-            createdRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        (async function () {
+            await restoreEventFormState();
+            const createdRow = document.querySelector('.ef-ticket-type-row-created');
+            if (createdRow) {
+                createdRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        })();
     });
 </script>
 
