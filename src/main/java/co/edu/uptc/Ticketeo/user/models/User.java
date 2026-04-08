@@ -43,6 +43,19 @@ public class User implements UserDetails {
     @Column(name = "contrasena", nullable = false)
     private String password;
 
+    @Column(length = 100)
+    private String firstName;
+
+    @Column(length = 100)
+    private String lastName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private DocumentType documentType;
+
+    @Column(length = 50)
+    private String documentNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false, length = 50)
     private Role role;

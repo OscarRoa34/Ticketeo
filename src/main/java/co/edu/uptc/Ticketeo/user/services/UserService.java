@@ -35,4 +35,32 @@ public class UserService {
 
         return userRepository.save(newUser);
     }
+
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public boolean isProfileComplete(User user) {
+        if (user == null) {
+            return false;
+        }
+        return isNotBlank(user.getFirstName())
+                && isNotBlank(user.getLastName())
+                && user.getDocumentType() != null
+                && isNotBlank(user.getDocumentNumber());
+    }
+
+    public User updateProfile(User user, String firstName, String lastName,
+                              co.edu.uptc.Ticketeo.user.models.DocumentType documentType,
+                              String documentNumber) {
+        user.setFirstName(firstName == null ? null : firstName.trim());
+        user.setLastName(lastName == null ? null : lastName.trim());
+        user.setDocumentType(documentType);
+        user.setDocumentNumber(documentNumber == null ? null : documentNumber.trim());
+        return userRepository.save(user);
+    }
+
+    private boolean isNotBlank(String value) {
+        return value != null && !value.isBlank();
+    }
 }

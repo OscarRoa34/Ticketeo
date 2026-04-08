@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticketeo | Mi Perfil</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/user/profile.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar-user}"></div>
+
+<main class="container profile-main">
+    <section class="profile-shell">
+        <header class="profile-header">
+            <div class="profile-header-icon">
+                <img th:src="@{/images/logo.svg}" alt="Ticketeo Logo">
+            </div>
+            <div class="profile-header-text">
+                <h1>Mi Perfil</h1>
+                <p>Completa esta informacion para poder comprar boletas.</p>
+            </div>
+        </header>
+
+        <div class="profile-divider"></div>
+
+        <form th:action="@{/user/profile}" method="post" class="profile-form">
+            <input type="hidden" name="returnUrl" th:value="${returnUrl}">
+
+            <div class="profile-grid">
+                <label class="profile-field">
+                    <span>Nombre</span>
+                    <input type="text" name="firstName" required th:value="${profile.firstName}">
+                </label>
+
+                <label class="profile-field">
+                    <span>Apellido</span>
+                    <input type="text" name="lastName" required th:value="${profile.lastName}">
+                </label>
+
+                <label class="profile-field">
+                    <span>Tipo de documento</span>
+                    <select name="documentType" required>
+                        <option value="">Selecciona una opcion</option>
+                        <option th:each="docType : ${documentTypes}"
+                                th:value="${docType.name()}"
+                                th:text="${docType.label}"
+                                th:selected="${profile.documentType == docType.name()}"></option>
+                    </select>
+                </label>
+
+                <label class="profile-field">
+                    <span>Numero de documento</span>
+                    <input type="text" name="documentNumber" required th:value="${profile.documentNumber}">
+                </label>
+            </div>
+
+            <div class="profile-actions">
+                <a th:href="${returnUrl != null ? returnUrl : '/user'}" class="btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-primary">Guardar perfil</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
+

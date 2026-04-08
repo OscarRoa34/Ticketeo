@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import co.edu.uptc.Ticketeo.user.models.Role;
+import co.edu.uptc.Ticketeo.user.models.DocumentType;
 import co.edu.uptc.Ticketeo.user.models.User;
 import co.edu.uptc.Ticketeo.user.repositories.UserRepository;
 
@@ -62,5 +63,38 @@ class UserServiceTest {
                 () -> userService.registerNewUser("juan", "1234"));
 
         assertTrue(exception.getMessage().contains("en uso"));
+    }
+
+    @Test
+    void isProfileComplete_withAllFields_returnsTrue() {
+        User user = User.builder()
+                .firstName("Juan")
+                .lastName("Perez")
+                .documentType(DocumentType.CC)
+                .documentNumber("123456")
+                .build();
+
+        assertTrue(userService.isProfileComplete(user));
+    }
+
+    @Test
+    void isProfileComplete_missingFields_returnsFalse() {
+        User user = User.builder().firstName("Juan").build();
+
+        assertEquals(false, userService.isProfileComplete(user));
+    }
+
+    @Test
+    void updateProfile_updatesAndSavesUser() {
+        User user = User.builder().id(3L).username("ana").build();
+        when(userRepository.save(user)).thenReturn(user);
+
+        userService.updateProfile(user, "Ana", "Roa", DocumentType.PASSPORT, "AA1001");
+
+        assertEquals("Ana", user.getFirstName());
+        assertEquals("Roa", user.getLastName());
+        assertEquals(DocumentType.PASSPORT, user.getDocumentType());
+        assertEquals("AA1001", user.getDocumentNumber());
+        verify(userRepository).save(user);
     }
 }
