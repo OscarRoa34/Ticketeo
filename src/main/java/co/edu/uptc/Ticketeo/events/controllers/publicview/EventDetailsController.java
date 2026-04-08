@@ -43,9 +43,9 @@ public class EventDetailsController {
 
         boolean isInterested = false;
         if (authentication != null && authentication.isAuthenticated()) {
-            User user = userRepository.findByUsername(authentication.getName()).orElse(null);
-            if (user != null) {
-                isInterested = interestReportService.isUserInterested(id, user.getId());
+            Long userId = userRepository.findUserIdByUsername(authentication.getName()).orElse(null);
+            if (userId != null) {
+                isInterested = interestReportService.isUserInterested(id, userId);
             }
         }
 
@@ -65,6 +65,13 @@ public class EventDetailsController {
             return ResponseEntity.status(401).body(Map.of(
                     "success", false,
                     "message", "Debes iniciar sesión para gestionar tu interés"
+            ));
+        }
+
+        if (eventService.isCompletedEvent(event)) {
+            return ResponseEntity.status(409).body(Map.of(
+                    "success", false,
+                    "message", "No puedes mostrar interés en un evento completado."
             ));
         }
 
@@ -91,6 +98,11 @@ public class EventDetailsController {
     @PostMapping("/{id}/interest")
     public String registerInterest(@PathVariable Integer id, RedirectAttributes redirectAttributes, Authentication authentication) {
         Event event = eventService.getEventById(id);
+
+        if (event != null && eventService.isCompletedEvent(event)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "No puedes mostrar interés en un evento completado.");
+            return "redirect:/event/" + id;
+        }
 
         if (event != null && authentication != null && authentication.isAuthenticated()) {
             User user = userRepository.findByUsername(authentication.getName()).orElse(null);

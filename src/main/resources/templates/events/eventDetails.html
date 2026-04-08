@@ -72,7 +72,7 @@
                             Agotado
                         </button>
 
-                        <form th:action="@{/event/{id}/interest(id=${event.id})}" method="post" id="interestForm">
+                        <form th:if="${!isCompleted}" th:action="@{/event/{id}/interest(id=${event.id})}" method="post" id="interestForm">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                             <button type="submit"
                                 id="interestButton"
@@ -81,6 +81,9 @@
                                 th:attr="aria-pressed=${isInterested}">
                             </button>
                         </form>
+                        <button th:if="${isCompleted}" type="button" class="btn-action-full event-buy-btn event-buy-btn-soldout" disabled>
+                            Interes no disponible
+                        </button>
                         <p id="interestFeedback" role="status" aria-live="polite" style="margin-top: 10px;"></p>
                     </th:block>
 
@@ -97,11 +100,14 @@
                             Agotado
                         </button>
 
-                        <a th:href="@{/login}" class="btn-primary btn-action-full"
+                        <a th:if="${!isCompleted}" th:href="@{/login}" class="btn-primary btn-action-full"
                             title="Inicia sesión para mostrar interés"
                             style="text-align: center; display: block; text-decoration: none;">
                             Inicia sesión para interesarte
                         </a>
+                        <button th:if="${isCompleted}" type="button" class="btn-action-full event-buy-btn event-buy-btn-soldout" disabled>
+                            Interes no disponible
+                        </button>
                     </th:block>
 
                     <a th:href="@{/user}" class="btn-secondary btn-action-full"
