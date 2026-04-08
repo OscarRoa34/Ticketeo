@@ -161,6 +161,12 @@
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
 
+            if (response.status === 409) {
+                const message = await response.text();
+                showAppToast(message || 'No fue posible eliminar el tipo de ticket.', 'error', 'error');
+                return;
+            }
+
             if (!response.ok) {
                 throw new Error('Delete failed');
             }
@@ -169,6 +175,8 @@
                 pendingDeleteRow.remove();
                 ensureEmptyState(3, 'No hay tipos de ticket registrados. Crea uno para asignarlo en tus eventos.');
             }
+            const successMessage = await response.text();
+            showAppToast(successMessage || 'Tipo de ticket eliminado correctamente.', 'success', 'delete');
         } catch (error) {
             window.location.href = pendingDeleteUrl;
         }

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -43,6 +44,9 @@ public class AdminEventController {
 
     private static final int PAGE_SIZE = 6;
     private static final Pattern NON_DIGIT_PATTERN = Pattern.compile("[^\\d]");
+    private static final String REDIRECT_ADMIN_EVENTS = "redirect:/admin";
+    private static final String REDIRECT_ADMIN_INACTIVE = "redirect:/admin/inactive";
+    private static final String DEFAULT_OPERATION_ERROR = "No fue posible completar la operacion.";
 
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
@@ -132,7 +136,10 @@ public class AdminEventController {
                             @RequestParam(value = "ticketTypeIds", required = false) List<Integer> ticketTypeIds,
                             @RequestParam Map<String, String> allParams,
                             @RequestParam(value = "draft", defaultValue = "false") boolean draft,
-                            Model model) {
+                            Model model,
+                            RedirectAttributes redirectAttributes) {
+
+        boolean isNewEvent = event.getId() == null;
 
         event.setCategory(resolveCategoryForSave(categoryId));
         handleImageUpload(event, image);
@@ -144,7 +151,8 @@ public class AdminEventController {
 
         try {
             eventService.saveEventWithTicketTypes(event, ticketQuantities, ticketPrices);
-            return draft ? "redirect:/admin/inactive" : "redirect:/admin";
+            redirectAttributes.addFlashAttribute("successMessage", buildSaveSuccessMessage(isNewEvent, draft));
+            return draft ? REDIRECT_ADMIN_INACTIVE : REDIRECT_ADMIN_EVENTS;
         } catch (IllegalArgumentException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
             model.addAttribute("event", event);
@@ -169,18 +177,22 @@ public class AdminEventController {
     }
 
     @GetMapping("/event/deactivate/{id}")
-    public Object deactivateEvent(@PathVariable Integer id, HttpServletRequest request) {
+    public Object deactivateEvent(@PathVariable Integer id,
+                                  HttpServletRequest request,
+                                  RedirectAttributes redirectAttributes) {
         try {
             eventService.deactivateEvent(id);
             if (isAjaxRequest(request)) {
-                return ResponseEntity.ok().build();
+                return ResponseEntity.ok("Evento desactivado correctamente.");
             }
-            return "redirect:/admin";
+            redirectAttributes.addFlashAttribute("successMessage", "Evento desactivado correctamente.");
+            return REDIRECT_ADMIN_EVENTS;
         } catch (IllegalArgumentException ex) {
             if (isAjaxRequest(request)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
             }
-            return "redirect:/admin?deactivateError=true";
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return REDIRECT_ADMIN_EVENTS;
         }
     }
 
@@ -189,15 +201,50 @@ public class AdminEventController {
     }
 
     @GetMapping("/event/activate/{id}")
-    public String activateEvent(@PathVariable Integer id) {
-        eventService.reactivateEvent(id);
-        return "redirect:/admin/inactive";
+    public Object activateEvent(@PathVariable Integer id,
+                                HttpServletRequest request,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            eventService.reactivateEvent(id);
+            if (isAjaxRequest(request)) {
+                return ResponseEntity.ok("Evento activado correctamente.");
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Evento activado correctamente.");
+            return REDIRECT_ADMIN_INACTIVE;
+        } catch (RuntimeException ex) {
+            if (isAjaxRequest(request)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(DEFAULT_OPERATION_ERROR);
+            }
+            redirectAttributes.addFlashAttribute("errorMessage", DEFAULT_OPERATION_ERROR);
+            return REDIRECT_ADMIN_INACTIVE;
+        }
     }
 
     @GetMapping("/event/delete/{id}")
-    public String deleteEvent(@PathVariable Integer id) {
-        eventService.deleteEvent(id);
-        return "redirect:/admin/inactive";
+    public Object deleteEvent(@PathVariable Integer id,
+                              HttpServletRequest request,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            eventService.deleteEvent(id);
+            if (isAjaxRequest(request)) {
+                return ResponseEntity.ok("Evento eliminado correctamente.");
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Evento eliminado correctamente.");
+            return REDIRECT_ADMIN_INACTIVE;
+        } catch (RuntimeException ex) {
+            if (isAjaxRequest(request)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(DEFAULT_OPERATION_ERROR);
+            }
+            redirectAttributes.addFlashAttribute("errorMessage", DEFAULT_OPERATION_ERROR);
+            return REDIRECT_ADMIN_INACTIVE;
+        }
+    }
+
+    private String buildSaveSuccessMessage(boolean isNewEvent, boolean draft) {
+        if (isNewEvent) {
+            return draft ? "Evento creado como inactivo correctamente." : "Evento creado correctamente.";
+        }
+        return "Evento actualizado correctamente.";
     }
 
     private void handleImageUpload(Event event, MultipartFile image) {

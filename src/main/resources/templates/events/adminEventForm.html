@@ -30,12 +30,6 @@
 
         <div class="event-form-divider"></div>
 
-        <div th:if="${param.uploadError}" class="admin-alert admin-alert-error" style="margin: 0 40px 20px;">
-            El archivo es demasiado grande. Tamaño máximo permitido: 50MB.
-        </div>
-
-        <div th:if="${errorMessage != null}" class="admin-alert admin-alert-error" style="margin: 0 40px 20px;"
-             th:text="${errorMessage}"></div>
 
         <form th:action="@{/admin/event/save}" th:object="${event}" method="POST" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}" />

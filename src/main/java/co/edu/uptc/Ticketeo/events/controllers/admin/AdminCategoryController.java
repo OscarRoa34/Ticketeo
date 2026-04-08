@@ -43,8 +43,12 @@ public class AdminCategoryController {
     }
 
     @PostMapping("/save")
-    public String saveCategory(@ModelAttribute EventCategory category) {
+    public String saveCategory(@ModelAttribute EventCategory category, RedirectAttributes redirectAttributes) {
+        boolean isNew = category.getId() == null;
         eventCategoryService.saveCategory(category);
+        redirectAttributes.addFlashAttribute("successMessage", isNew
+                ? "Categoria creada correctamente."
+                : "Categoria actualizada correctamente.");
         return REDIRECT_CATEGORY_PATH;
     }
 
@@ -55,8 +59,9 @@ public class AdminCategoryController {
         try {
             eventCategoryService.deleteCategory(id);
             if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {
-                return ResponseEntity.ok().build();
+                return ResponseEntity.ok("Categoria eliminada correctamente.");
             }
+            redirectAttributes.addFlashAttribute("successMessage", "Categoria eliminada correctamente.");
             return REDIRECT_CATEGORY_PATH;
         } catch (IllegalStateException ex) {
             if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {

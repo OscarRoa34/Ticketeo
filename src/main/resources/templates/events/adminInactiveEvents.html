@@ -283,6 +283,12 @@
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
 
+            if (response.status === 409) {
+                const message = await response.text();
+                showAppToast(message || 'No fue posible completar la operacion.', 'error', 'error');
+                return false;
+            }
+
             if (!response.ok) {
                 throw new Error('Request failed');
             }
@@ -291,9 +297,11 @@
                 row.remove();
                 ensureEmptyState(7, emptyMessage);
             }
+            const successMessage = await response.text();
+            showAppToast(successMessage || 'Operacion completada correctamente.', 'success', url.includes('/activate/') ? 'create' : 'delete');
             return true;
         } catch (error) {
-            window.location.href = url;
+            showAppToast('No fue posible completar la operacion.', 'error', 'error');
             return false;
         }
     }
