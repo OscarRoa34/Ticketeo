@@ -3,6 +3,7 @@ package co.edu.uptc.Ticketeo.events.services;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -115,5 +117,19 @@ class EventServiceTest {
                 () -> eventService.deactivateEvent(8));
 
         assertTrue(exception.getMessage().contains("No se puede desactivar"));
+    }
+
+    @Test
+    void saveEventWithTicketTypes_pastDate_throwsIllegalArgumentException() {
+        Event eventWithPastDate = Event.builder()
+                .name("Evento pasado")
+                .date(LocalDate.now().minusDays(1))
+                .build();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> eventService.saveEventWithTicketTypes(eventWithPastDate, Map.of(), Map.of()));
+
+        assertEquals("La fecha del evento no puede ser anterior a hoy.", exception.getMessage());
+        verify(eventRepository, never()).save(any(Event.class));
     }
 }

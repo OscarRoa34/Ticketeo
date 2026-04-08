@@ -41,6 +41,10 @@ public class EventService {
 
     @Transactional
     public Event saveEventWithTicketTypes(Event event, Map<Integer, Integer> ticketTypeQuantities, Map<Integer, Double> ticketTypePrices) {
+        if (event.getDate() != null && event.getDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("La fecha del evento no puede ser anterior a hoy.");
+        }
+
         Event savedEvent = eventRepository.save(event);
 
         Map<Integer, Integer> safeQuantities = ticketTypeQuantities != null ? new HashMap<>(ticketTypeQuantities) : new HashMap<>();
