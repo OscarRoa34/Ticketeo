@@ -33,7 +33,7 @@ class AdminCategoryControllerTest {
     void saveCategory_returnsRedirectAndDelegatesToService() {
         EventCategory category = new EventCategory();
 
-        String view = adminCategoryController.saveCategory(category);
+        String view = adminCategoryController.saveCategory(category, redirectAttributes);
 
         assertEquals("redirect:/admin/category", view);
         verify(eventCategoryService).saveCategory(category);

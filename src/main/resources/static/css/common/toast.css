@@ -1,0 +1,165 @@
+.app-toast {
+    --toast-duration: 10s;
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 1600;
+    min-width: 320px;
+    max-width: 440px;
+    opacity: 0;
+    transform: translateY(-12px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.app-toast-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.app-toast-restarting {
+    opacity: 0;
+    transform: translateY(-14px);
+}
+
+.app-toast-body {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    column-gap: 10px;
+    background: rgba(15, 23, 42, 0.97);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 12px 14px 10px;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(6px);
+    position: relative;
+    overflow: hidden;
+}
+
+.app-toast-body::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    transform-origin: left;
+}
+
+.app-toast-visible .app-toast-body::after {
+    animation: appToastCountdown var(--toast-duration, 10s) linear forwards;
+}
+
+.app-toast-success .app-toast-body {
+    border-color: rgba(125, 211, 252, 0.5);
+}
+
+.app-toast-error .app-toast-body {
+    border-color: rgba(248, 113, 113, 0.4);
+}
+
+.app-toast-op-create .app-toast-body::after {
+    background: linear-gradient(90deg, #34d399, #10b981);
+}
+
+.app-toast-op-edit .app-toast-body::after {
+    background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+}
+
+.app-toast-op-delete .app-toast-body::after,
+.app-toast-op-deactivate .app-toast-body::after {
+    background: linear-gradient(90deg, #f59e0b, #f97316);
+}
+
+.app-toast-op-error .app-toast-body::after,
+.app-toast-error .app-toast-body::after {
+    background: linear-gradient(90deg, #f87171, #ef4444);
+}
+
+.app-toast-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.app-toast-op-create .app-toast-icon {
+    color: #052e16;
+    background: #6ee7b7;
+}
+
+.app-toast-op-edit .app-toast-icon {
+    color: #082f49;
+    background: #7dd3fc;
+}
+
+.app-toast-op-delete .app-toast-icon,
+.app-toast-op-deactivate .app-toast-icon {
+    color: #431407;
+    background: #fdba74;
+}
+
+.app-toast-error .app-toast-icon {
+    color: #450a0a;
+    background: #fca5a5;
+}
+
+.app-toast-content {
+    min-width: 0;
+    display: block;
+}
+
+.app-toast-title {
+    display: block;
+    margin: 0 0 2px;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.app-toast-message {
+    display: block;
+    margin: 0;
+    color: #f8fafc;
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.app-toast-close {
+    border: 0;
+    background: transparent;
+    color: #e2e8f0;
+    font-size: 1.15rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+@keyframes appToastCountdown {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .app-toast {
+        left: 12px;
+        right: 12px;
+        min-width: 0;
+        max-width: none;
+        top: 12px;
+    }
+}
+
