@@ -32,6 +32,9 @@
             <div class="purchase-card-header">
                 <div>
                     <h2 class="purchase-title" th:text="${purchase.eventName}">Nombre del evento</h2>
+                    <span class="purchase-event-status"
+                          th:classappend="${purchaseEventStatus[purchase.id] == 'Completado'} ? ' is-completed' : ' is-active'"
+                          th:text="${purchaseEventStatus[purchase.id]}">Activo</span>
                     <p class="purchase-meta" th:text="'Compra #' + ${purchase.id} + ' - ' + ${#temporals.format(purchase.purchaseDate, 'dd/MM/yyyy HH:mm')}">Compra</p>
                 </div>
                 <a class="btn-primary purchase-print-all-btn" th:href="@{/user/purchases/{id}/print(id=${purchase.id})}">Imprimir todos</a>

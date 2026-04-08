@@ -111,6 +111,30 @@
     font-weight: 600;
 }
 
+.purchase-event-status {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+.purchase-event-status.is-active {
+    color: #155e75;
+    background: #ecfeff;
+    border-color: #67e8f9;
+}
+
+.purchase-event-status.is-completed {
+    color: #1e3a8a;
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
 .purchase-meta {
     margin: 4px 0 0;
     color: #66708f;
