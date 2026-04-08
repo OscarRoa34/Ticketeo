@@ -2,16 +2,18 @@ package co.edu.uptc.Ticketeo.events.controllers.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.ExtendedModelMap;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
@@ -32,11 +34,47 @@ class AdminCategoryControllerTest {
     @Test
     void saveCategory_returnsRedirectAndDelegatesToService() {
         EventCategory category = new EventCategory();
+        when(eventCategoryService.saveCategory(category)).thenReturn(category);
 
-        String view = adminCategoryController.saveCategory(category, redirectAttributes);
+        String view = adminCategoryController.saveCategory(category, null, redirectAttributes);
 
         assertEquals("redirect:/admin/category", view);
         verify(eventCategoryService).saveCategory(category);
+    }
+
+    @Test
+    void saveCategory_withReturnTo_redirectsBackToEventFormWithSelectedCategoryId() {
+        EventCategory category = new EventCategory();
+        category.setName("Música");
+        EventCategory saved = new EventCategory();
+        saved.setId(14);
+        when(eventCategoryService.saveCategory(category)).thenReturn(saved);
+
+        String view = adminCategoryController.saveCategory(category, "/admin/event/new", redirectAttributes);
+
+        assertEquals("redirect:/admin/event/new?selectedCategoryId=14", view);
+    }
+
+    @Test
+    void saveCategory_withUnsafeReturnTo_fallsBackToCategoryList() {
+        EventCategory category = new EventCategory();
+        EventCategory saved = new EventCategory();
+        saved.setId(3);
+        when(eventCategoryService.saveCategory(category)).thenReturn(saved);
+
+        String view = adminCategoryController.saveCategory(category, "https://malicious.example", redirectAttributes);
+
+        assertEquals("redirect:/admin/category", view);
+    }
+
+    @Test
+    void showCreateForm_withUnsafeReturnTo_clearsItFromModel() {
+        ExtendedModelMap model = new ExtendedModelMap();
+
+        String view = adminCategoryController.showCreateForm("//malicious", model);
+
+        assertEquals("events/adminCategoryForm", view);
+        assertNull(model.get("returnTo"));
     }
 
     @Test

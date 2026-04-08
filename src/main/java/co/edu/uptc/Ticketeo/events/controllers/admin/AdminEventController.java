@@ -101,19 +101,27 @@ public class AdminEventController {
     @GetMapping("/event/new")
     public String showCreateForm(@RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                  @RequestParam(value = "selectedTicketTypeId", required = false) Integer selectedTicketTypeId,
+                                 @RequestParam(value = "selectedCategoryId", required = false) Integer selectedCategoryId,
                                  Model model) {
         Map<Integer, Integer> ticketQuantities = new HashMap<>();
         if (selectedTicketTypeId != null) {
             ticketQuantities.put(selectedTicketTypeId, 1);
         }
 
-        model.addAttribute("event", new Event());
+        Event event = new Event();
+        EventCategory selectedCategory = resolveCategoryForSave(selectedCategoryId);
+        if (selectedCategory != null) {
+            event.setCategory(selectedCategory);
+        }
+
+        model.addAttribute("event", event);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
         model.addAttribute("ticketQuantities", ticketQuantities);
         model.addAttribute("ticketPrices", Map.<Integer, Double>of());
         model.addAttribute("soldTicketTypes", Map.<Integer, Boolean>of());
         model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
+        model.addAttribute("newlyCreatedCategoryId", selectedCategoryId);
         model.addAttribute("returnToEventForm", buildEventFormReturnPath(draft, null));
         model.addAttribute("draft", draft);
         return "events/adminEventForm";
@@ -122,6 +130,7 @@ public class AdminEventController {
     @GetMapping("/event/edit/{id}")
     public String showEditForm(@PathVariable Integer id,
                                @RequestParam(value = "selectedTicketTypeId", required = false) Integer selectedTicketTypeId,
+                               @RequestParam(value = "selectedCategoryId", required = false) Integer selectedCategoryId,
                                Model model) {
         Event event = eventService.getEventById(id);
         if (event == null) {
@@ -129,6 +138,11 @@ public class AdminEventController {
         }
         if (Boolean.TRUE.equals(event.getIsActive()) && event.getDate() != null && event.getDate().isBefore(LocalDate.now())) {
             return "redirect:/admin/completed";
+        }
+
+        EventCategory selectedCategory = resolveCategoryForSave(selectedCategoryId);
+        if (selectedCategory != null) {
+            event.setCategory(selectedCategory);
         }
 
         Map<Integer, Integer> ticketQuantities = new HashMap<>();
@@ -153,6 +167,7 @@ public class AdminEventController {
         model.addAttribute("ticketPrices", ticketPrices);
         model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(id));
         model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
+        model.addAttribute("newlyCreatedCategoryId", selectedCategoryId);
         model.addAttribute("returnToEventForm", buildEventFormReturnPath(false, id));
         model.addAttribute("draft", !Boolean.TRUE.equals(event.getIsActive()));
         return "events/adminEventForm";
@@ -191,6 +206,7 @@ public class AdminEventController {
             model.addAttribute("ticketPrices", ticketPrices);
             model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(event.getId()));
             model.addAttribute("newlyCreatedTicketTypeId", null);
+            model.addAttribute("newlyCreatedCategoryId", null);
             model.addAttribute("returnToEventForm", buildEventFormReturnPath(draft, event.getId()));
             model.addAttribute("draft", draft);
             return "events/adminEventForm";
