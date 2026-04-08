@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminCategoryController {
 
     private static final int PAGE_SIZE = 6;
+    private static final String REDIRECT_CATEGORY_PATH = "redirect:/admin/category";
 
     private final EventCategoryService eventCategoryService;
 
@@ -44,7 +45,7 @@ public class AdminCategoryController {
     @PostMapping("/save")
     public String saveCategory(@ModelAttribute EventCategory category) {
         eventCategoryService.saveCategory(category);
-        return "redirect:/admin/category";
+        return REDIRECT_CATEGORY_PATH;
     }
 
     @GetMapping("/delete/{id}")
@@ -56,13 +57,13 @@ public class AdminCategoryController {
             if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {
                 return ResponseEntity.ok().build();
             }
-            return "redirect:/admin/category";
+            return REDIRECT_CATEGORY_PATH;
         } catch (IllegalStateException ex) {
             if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
             }
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            return "redirect:/admin/category";
+            return REDIRECT_CATEGORY_PATH;
         }
     }
 }
