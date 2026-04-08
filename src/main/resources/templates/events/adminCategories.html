@@ -144,11 +144,12 @@
 <script>
     const deleteCategoryButtons = document.querySelectorAll('.js-delete-category-btn');
 
-    // Custom confirm modal
+
     const confirmModal = document.getElementById('confirmModal');
     const confirmOkBtn = document.getElementById('confirmOkBtn');
     const confirmCancelBtn = document.getElementById('confirmCancelBtn');
     const categoriesTableBody = document.querySelector('.admin-table tbody');
+    const adminContainer = document.querySelector('.admin-container');
     let pendingDeleteUrl = null;
     let pendingDeleteRow = null;
 
@@ -168,6 +169,22 @@
         }
     }
 
+    function showAdminError(message) {
+        if (!adminContainer || !message) {
+            return;
+        }
+
+        const previous = adminContainer.querySelector('.admin-alert-error.dynamic-error');
+        if (previous) {
+            previous.remove();
+        }
+
+        const alert = document.createElement('div');
+        alert.className = 'admin-alert admin-alert-error dynamic-error';
+        alert.textContent = message;
+        adminContainer.insertBefore(alert, adminContainer.querySelector('.table-responsive'));
+    }
+
     async function performDeleteWithoutReload() {
         if (!pendingDeleteUrl) {
             return;
@@ -178,6 +195,12 @@
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
+
+            if (response.status === 409) {
+                const message = await response.text();
+                showAdminError(message);
+                return;
+            }
 
             if (!response.ok) {
                 throw new Error('Delete failed');

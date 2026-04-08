@@ -3,9 +3,12 @@ package co.edu.uptc.Ticketeo.events.controllers.admin;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -45,8 +48,21 @@ public class AdminCategoryController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteCategory(@PathVariable Integer id) {
-        eventCategoryService.deleteCategory(id);
-        return "redirect:/admin/category";
+    public Object deleteCategory(@PathVariable Integer id,
+                                 @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            eventCategoryService.deleteCategory(id);
+            if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {
+                return ResponseEntity.ok().build();
+            }
+            return "redirect:/admin/category";
+        } catch (IllegalStateException ex) {
+            if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+            }
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/admin/category";
+        }
     }
 }

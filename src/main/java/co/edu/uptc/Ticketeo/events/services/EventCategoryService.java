@@ -61,7 +61,9 @@ public class EventCategoryService {
 
     @Transactional
     public void deleteCategory(Integer id) {
-        eventRepository.detachCategory(id);
+        if (eventRepository.existsByCategory_Id(id)) {
+            throw new IllegalStateException("No puedes eliminar una categoria que tiene eventos asociados.");
+        }
         interestReportRepository.deleteByEventCategoryId(id);
         eventCategoryRepository.deleteById(id);
     }
