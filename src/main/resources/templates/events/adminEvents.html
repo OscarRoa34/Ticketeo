@@ -266,8 +266,8 @@
 
             if (response.status === 409) {
                 const message = await response.text();
-                if (typeof window.showAppToast === 'function') {
-                    window.showAppToast(message || 'No se pudo desactivar el evento.', 'error', 'error');
+                if (typeof globalThis.showAppToast === 'function') {
+                    globalThis.showAppToast(message || 'No se pudo desactivar el evento.', 'error', 'error');
                 }
                 return;
             }
@@ -281,12 +281,12 @@
                 ensureEmptyState(7, 'No hay eventos registrados en el sistema. ¡Empieza creando uno!');
             }
             const successMessage = await response.text();
-            if (typeof window.showAppToast === 'function') {
-                window.showAppToast(successMessage || 'Evento desactivado correctamente.', 'success', 'deactivate');
+            if (typeof globalThis.showAppToast === 'function') {
+                globalThis.showAppToast(successMessage || 'Evento desactivado correctamente.', 'success', 'deactivate');
             }
         } catch (error) {
-            if (typeof window.showAppToast === 'function') {
-                window.showAppToast('No fue posible completar la operacion.', 'error', 'error');
+            if (typeof globalThis.showAppToast === 'function') {
+                globalThis.showAppToast('No fue posible completar la operacion.', 'error', 'error');
             }
         }
     }

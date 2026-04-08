@@ -113,9 +113,11 @@
 
 .app-toast-content {
     min-width: 0;
+    display: block;
 }
 
 .app-toast-title {
+    display: block;
     margin: 0 0 2px;
     color: #e2e8f0;
     font-size: 0.78rem;
@@ -125,6 +127,7 @@
 }
 
 .app-toast-message {
+    display: block;
     margin: 0;
     color: #f8fafc;
     font-size: 0.92rem;

@@ -145,12 +145,12 @@
 
         clearDismissTimer();
         toast.classList.remove('app-toast-visible');
-        void toast.offsetWidth;
+        toast.getBoundingClientRect();
         toast.classList.add('app-toast-visible');
         dismissTimer = setTimeout(hideToast, AUTO_CLOSE_MS);
     }
 
-    window.showAppToast = function (message, type, variant) {
+    globalThis.showAppToast = function (message, type, variant) {
         if (!message) {
             return;
         }
@@ -168,9 +168,9 @@
             closeButton.addEventListener('click', hideToast);
         }
 
-        const initialMessage = toast.getAttribute('data-toast-message');
-        const initialType = toast.getAttribute('data-toast-type');
-        const initialVariant = toast.getAttribute('data-toast-variant');
+        const initialMessage = toast.dataset.toastMessage;
+        const initialType = toast.dataset.toastType;
+        const initialVariant = toast.dataset.toastVariant;
         if (initialMessage) {
             renderToast(initialMessage, initialType, initialVariant);
         }

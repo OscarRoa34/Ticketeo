@@ -44,23 +44,22 @@
         <div class="footer-bottom">
             <p>&copy; 2026 Ticketeo.</p>
         </div>
-        <div id="appToast"
-             th:if="${successMessage != null or errorMessage != null or toastErrorMessage != null}"
-             class="app-toast"
-             th:classappend="${successMessage != null} ? ' app-toast-success' : ' app-toast-error'"
-             th:attr="data-toast-message=${successMessage != null ? successMessage : (errorMessage != null ? errorMessage : toastErrorMessage)}, data-toast-type=${successMessage != null ? 'success' : 'error'}, data-toast-variant=${toastVariant}"
-             role="status"
-             aria-live="polite"
-             aria-atomic="true">
-            <div class="app-toast-body">
+        <output id="appToast"
+                th:if="${successMessage != null or errorMessage != null or toastErrorMessage != null}"
+                class="app-toast"
+                th:classappend="${successMessage != null} ? ' app-toast-success' : ' app-toast-error'"
+                th:attr="data-toast-message=${successMessage != null ? successMessage : (errorMessage != null ? errorMessage : toastErrorMessage)}, data-toast-type=${successMessage != null ? 'success' : 'error'}, data-toast-variant=${toastVariant}"
+                aria-live="polite"
+                aria-atomic="true">
+            <span class="app-toast-body">
                 <span class="app-toast-icon" th:text="${successMessage != null ? '✓' : '!'}">!</span>
-                <div class="app-toast-content">
-                    <p class="app-toast-title" th:text="${successMessage != null ? 'Operacion exitosa' : 'Error en la operacion'}">Operacion</p>
-                    <p class="app-toast-message" th:text="${successMessage != null ? successMessage : (errorMessage != null ? errorMessage : toastErrorMessage)}">Mensaje</p>
-                </div>
+                <span class="app-toast-content">
+                    <span class="app-toast-title" th:text="${successMessage != null ? 'Operacion exitosa' : 'Error en la operacion'}">Operacion</span>
+                    <span class="app-toast-message" th:text="${successMessage != null ? successMessage : (errorMessage != null ? errorMessage : toastErrorMessage)}">Mensaje</span>
+                </span>
                 <button type="button" class="app-toast-close" aria-label="Cerrar">&times;</button>
-            </div>
-        </div>
+            </span>
+        </output>
 
         <script th:src="@{/js/common/toast.js}"></script>
     </footer>
