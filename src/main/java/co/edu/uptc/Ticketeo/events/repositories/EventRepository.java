@@ -30,6 +30,8 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     List<Event> findByCategory_Id(Integer categoryId);
 
+    boolean existsByCategory_Id(Integer categoryId);
+
     Page<Event> findByNameContainingIgnoreCaseAndIsActiveFalse(String name, Pageable pageable);
 
     Page<Event> findByCategory_IdAndIsActiveFalse(Integer categoryId, Pageable pageable);
