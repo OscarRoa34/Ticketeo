@@ -8,6 +8,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
+import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
 import co.edu.uptc.Ticketeo.events.services.TicketTypeService;
@@ -67,6 +70,32 @@ class AdminEventControllerTest {
     }
 
     @Test
+    void saveEvent_draftSuccess_redirectsToInactiveAndAddsDraftFlash() {
+        Event event = new Event();
+        when(image.isEmpty()).thenReturn(true);
+        when(eventService.saveEventWithTicketTypes(any(Event.class), anyMap(), anyMap())).thenReturn(event);
+
+        String view = adminEventController.saveEvent(event, image, null, null, Map.of(), true, model, redirectAttributes);
+
+        assertEquals("redirect:/admin/inactive", view);
+        verify(redirectAttributes).addFlashAttribute("successMessage", "Evento creado como inactivo correctamente.");
+    }
+
+    @Test
+    void saveEvent_editSuccess_redirectsAndAddsUpdateFlash() {
+        Event event = new Event();
+        event.setId(88);
+        when(image.isEmpty()).thenReturn(true);
+        when(eventService.getEventById(88)).thenReturn(Event.builder().id(88).isActive(true).build());
+        when(eventService.saveEventWithTicketTypes(any(Event.class), anyMap(), anyMap())).thenReturn(event);
+
+        String view = adminEventController.saveEvent(event, image, null, null, Map.of(), false, model, redirectAttributes);
+
+        assertEquals("redirect:/admin", view);
+        verify(redirectAttributes).addFlashAttribute("successMessage", "Evento actualizado correctamente.");
+    }
+
+    @Test
     void saveEvent_validationError_returnsFormWithErrorMessage() {
         Event event = new Event();
         when(image.isEmpty()).thenReturn(true);
@@ -95,6 +124,27 @@ class AdminEventControllerTest {
     }
 
     @Test
+    void deactivateEvent_nonAjaxSuccess_redirectsAndAddsSuccessFlash() {
+        when(request.getHeader("X-Requested-With")).thenReturn(null);
+
+        Object result = adminEventController.deactivateEvent(4, request, redirectAttributes);
+
+        assertEquals("redirect:/admin", result);
+        verify(redirectAttributes).addFlashAttribute("successMessage", "Evento desactivado correctamente.");
+    }
+
+    @Test
+    void activateEvent_ajaxSuccess_returnsOk() {
+        when(request.getHeader("X-Requested-With")).thenReturn("XMLHttpRequest");
+
+        Object result = adminEventController.activateEvent(2, request, redirectAttributes);
+
+        ResponseEntity<?> response = assertInstanceOf(ResponseEntity.class, result);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Evento activado correctamente.", response.getBody());
+    }
+
+    @Test
     void activateEvent_nonAjaxSuccess_redirectsAndAddsSuccessFlash() {
         when(request.getHeader("X-Requested-With")).thenReturn(null);
 
@@ -114,6 +164,59 @@ class AdminEventControllerTest {
         ResponseEntity<?> response = assertInstanceOf(ResponseEntity.class, result);
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("No fue posible completar la operacion.", response.getBody());
+    }
+
+    @Test
+    void deleteEvent_nonAjaxSuccess_redirectsAndAddsSuccessFlash() {
+        when(request.getHeader("X-Requested-With")).thenReturn(null);
+
+        Object result = adminEventController.deleteEvent(9, request, redirectAttributes);
+
+        assertEquals("redirect:/admin/inactive", result);
+        verify(redirectAttributes).addFlashAttribute("successMessage", "Evento eliminado correctamente.");
+    }
+
+    @Test
+    void showEditForm_eventNotFound_redirectsToAdmin() {
+        when(eventService.getEventById(99)).thenReturn(null);
+
+        String view = adminEventController.showEditForm(99, model);
+
+        assertEquals("redirect:/admin", view);
+    }
+
+    @Test
+    void showEditForm_completedEvent_redirectsToCompleted() {
+        Event completed = new Event();
+        completed.setId(1);
+        completed.setIsActive(true);
+        completed.setDate(LocalDate.now().minusDays(1));
+        when(eventService.getEventById(1)).thenReturn(completed);
+
+        String view = adminEventController.showEditForm(1, model);
+
+        assertEquals("redirect:/admin/completed", view);
+    }
+
+    @Test
+    void showEditForm_activeEvent_loadsFormModel() {
+        Event active = new Event();
+        active.setId(2);
+        active.setIsActive(true);
+        active.setDate(LocalDate.now().plusDays(5));
+        active.setCategory(new EventCategory());
+        when(eventService.getEventById(2)).thenReturn(active);
+        when(eventCategoryService.getAllCategories()).thenReturn(List.of());
+        when(ticketTypeService.getAllTicketTypes()).thenReturn(List.of());
+        when(eventService.getTicketTypeQuantitiesForEvent(2)).thenReturn(Map.of());
+        when(eventService.getTicketTypePricesForEvent(2)).thenReturn(Map.of());
+        when(eventService.getSoldTicketTypesForEvent(2)).thenReturn(Map.of());
+
+        String view = adminEventController.showEditForm(2, model);
+
+        assertEquals("events/adminEventForm", view);
+        verify(model).addAttribute("event", active);
+        verify(model).addAttribute("draft", false);
     }
 }
 
