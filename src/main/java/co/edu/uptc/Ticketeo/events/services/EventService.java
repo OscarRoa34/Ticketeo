@@ -21,8 +21,8 @@ import co.edu.uptc.Ticketeo.events.models.TicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventRepository;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.repositories.TicketTypeRepository;
-import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 import co.edu.uptc.Ticketeo.purchase.repositories.PurchasedTicketRepository;
+import co.edu.uptc.Ticketeo.reports.repositories.InterestReportRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -219,12 +219,26 @@ public class EventService {
     public Page<Event> getEventsFiltered(String searchQuery, Integer categoryId, int page, int size, String sortType) {
         Sort sort = resolveSort(sortType);
         Pageable pageable = PageRequest.of(page, size, sort);
+        boolean hasSearch = searchQuery != null && !searchQuery.isBlank();
+        boolean hasCategory = categoryId != null;
 
-        if (categoryId != null && searchQuery != null && !searchQuery.isEmpty()) {
+        if ("date_asc".equals(sortType)) {
+            LocalDate today = LocalDate.now();
+            if (hasCategory && hasSearch) {
+                return eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(searchQuery, categoryId, today, pageable);
+            } else if (hasCategory) {
+                return eventRepository.findByCategory_IdAndIsActiveTrueAndDateGreaterThanEqual(categoryId, today, pageable);
+            } else if (hasSearch) {
+                return eventRepository.findByNameContainingIgnoreCaseAndIsActiveTrueAndDateGreaterThanEqual(searchQuery, today, pageable);
+            }
+            return eventRepository.findByIsActiveTrueAndDateGreaterThanEqual(today, pageable);
+        }
+
+        if (hasCategory && hasSearch) {
             return eventRepository.findByNameContainingIgnoreCaseAndCategory_IdAndIsActiveTrue(searchQuery, categoryId, pageable);
-        } else if (categoryId != null) {
+        } else if (hasCategory) {
             return eventRepository.findByCategory_IdAndIsActiveTrue(categoryId, pageable);
-        } else if (searchQuery != null && !searchQuery.isEmpty()) {
+        } else if (hasSearch) {
             return eventRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(searchQuery, pageable);
         } else {
             return eventRepository.findByIsActiveTrue(pageable);
@@ -290,8 +304,8 @@ public class EventService {
         return switch (sortType) {
             case "price_asc" -> Sort.by(Sort.Order.asc("price").nullsLast(), Sort.Order.desc("date"), Sort.Order.desc("id"));
             case "price_desc" -> Sort.by(Sort.Order.desc("price").nullsLast(), Sort.Order.desc("date"), Sort.Order.desc("id"));
-            case "date_asc" -> Sort.by(Sort.Order.asc("date"), Sort.Order.desc("id"));
-            case "date_desc" -> Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id"));
+            case "date_asc" -> Sort.by(Sort.Order.asc("date"), Sort.Order.asc("id"));
+            case "date_desc" -> Sort.by(Sort.Order.desc("createdAt").nullsLast(), Sort.Order.desc("id"));
             default -> Sort.by(Sort.Order.desc("id"));
         };
     }
