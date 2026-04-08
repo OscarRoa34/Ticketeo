@@ -43,7 +43,7 @@ public class AdminCategoryController {
                                  @RequestParam(value = "eventId", required = false) Integer eventId,
                                  @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                  Model model) {
-        model.addAttribute("category", new EventCategory());
+        model.addAttribute("category", new CategoryForm());
         EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/category");
         return "events/adminCategoryForm";
     }
@@ -54,18 +54,29 @@ public class AdminCategoryController {
                                @RequestParam(value = "eventId", required = false) Integer eventId,
                                @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                Model model) {
-        model.addAttribute("category", eventCategoryService.getEventCategoryById(id));
+        EventCategory category = eventCategoryService.getEventCategoryById(id);
+        CategoryForm form = new CategoryForm();
+        if (category != null) {
+            form.setId(category.getId());
+            form.setName(category.getName());
+            form.setColor(category.getColor());
+        }
+        model.addAttribute("category", form);
         EventFormNavigation.populateFormContext(model, fromEventForm, eventId, draft, "/admin/category");
         return "events/adminCategoryForm";
     }
 
     @PostMapping("/save")
-    public String saveCategory(@ModelAttribute EventCategory category,
+    public String saveCategory(@ModelAttribute("category") CategoryForm categoryForm,
                                @RequestParam(value = "fromEventForm", defaultValue = "false") boolean fromEventForm,
                                @RequestParam(value = "eventId", required = false) Integer eventId,
                                @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                                RedirectAttributes redirectAttributes) {
-        boolean isNew = category.getId() == null;
+        boolean isNew = categoryForm.getId() == null;
+        EventCategory category = new EventCategory();
+        category.setId(categoryForm.getId());
+        category.setName(categoryForm.getName());
+        category.setColor(categoryForm.getColor());
         EventCategory savedCategory = eventCategoryService.saveCategory(category);
         redirectAttributes.addFlashAttribute("successMessage", isNew
                 ? "Categoria creada correctamente."
@@ -91,6 +102,36 @@ public class AdminCategoryController {
             }
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
             return REDIRECT_CATEGORY_PATH;
+        }
+    }
+
+    public static class CategoryForm {
+        private Integer id;
+        private String name;
+        private String color;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getColor() {
+            return color;
+        }
+
+        public void setColor(String color) {
+            this.color = color;
         }
     }
 

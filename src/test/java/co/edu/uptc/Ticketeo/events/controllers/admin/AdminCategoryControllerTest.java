@@ -2,8 +2,10 @@ package co.edu.uptc.Ticketeo.events.controllers.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doThrow;
@@ -17,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import co.edu.uptc.Ticketeo.events.controllers.admin.AdminCategoryController.CategoryForm;
 import co.edu.uptc.Ticketeo.events.models.EventCategory;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 
@@ -34,20 +37,23 @@ class AdminCategoryControllerTest {
 
     @Test
     void saveCategory_returnsRedirectAndDelegatesToService() {
-        EventCategory category = new EventCategory();
-        when(eventCategoryService.saveCategory(category)).thenReturn(category);
+        CategoryForm category = new CategoryForm();
+        EventCategory saved = new EventCategory();
+        when(eventCategoryService.saveCategory(any(EventCategory.class))).thenReturn(saved);
 
         String view = adminCategoryController.saveCategory(category, false, null, false, redirectAttributes);
 
         assertEquals("redirect:/admin/category", view);
-        verify(eventCategoryService).saveCategory(category);
+        verify(eventCategoryService).saveCategory(any(EventCategory.class));
     }
 
     @Test
     void saveCategory_update_addsUpdatedFlashMessage() {
-        EventCategory category = new EventCategory();
+        CategoryForm category = new CategoryForm();
         category.setId(4);
-        when(eventCategoryService.saveCategory(category)).thenReturn(category);
+        EventCategory saved = new EventCategory();
+        saved.setId(4);
+        when(eventCategoryService.saveCategory(any(EventCategory.class))).thenReturn(saved);
 
         String view = adminCategoryController.saveCategory(category, false, null, false, redirectAttributes);
 
@@ -57,11 +63,11 @@ class AdminCategoryControllerTest {
 
     @Test
     void saveCategory_withEventFormContext_redirectsBackWithSelectedCategoryId() {
-        EventCategory category = new EventCategory();
+        CategoryForm category = new CategoryForm();
         category.setName("Música");
         EventCategory saved = new EventCategory();
         saved.setId(14);
-        when(eventCategoryService.saveCategory(category)).thenReturn(saved);
+        when(eventCategoryService.saveCategory(any(EventCategory.class))).thenReturn(saved);
 
         String view = adminCategoryController.saveCategory(category, true, null, false, redirectAttributes);
 
@@ -70,10 +76,10 @@ class AdminCategoryControllerTest {
 
     @Test
     void saveCategory_withEventFormDraftContext_redirectsToDraftEventForm() {
-        EventCategory category = new EventCategory();
+        CategoryForm category = new CategoryForm();
         EventCategory saved = new EventCategory();
         saved.setId(9);
-        when(eventCategoryService.saveCategory(category)).thenReturn(saved);
+        when(eventCategoryService.saveCategory(any(EventCategory.class))).thenReturn(saved);
 
         String view = adminCategoryController.saveCategory(category, true, null, true, redirectAttributes);
 
@@ -82,8 +88,8 @@ class AdminCategoryControllerTest {
 
     @Test
     void saveCategory_withEventContextAndNullSavedEntity_redirectsWithoutSelectedId() {
-        EventCategory category = new EventCategory();
-        when(eventCategoryService.saveCategory(category)).thenReturn(null);
+        CategoryForm category = new CategoryForm();
+        when(eventCategoryService.saveCategory(any(EventCategory.class))).thenReturn(null);
 
         String view = adminCategoryController.saveCategory(category, true, 10, false, redirectAttributes);
 
@@ -128,12 +134,19 @@ class AdminCategoryControllerTest {
         ExtendedModelMap model = new ExtendedModelMap();
         EventCategory category = new EventCategory();
         category.setId(5);
+        category.setName("Conciertos");
+        category.setColor("#112233");
         when(eventCategoryService.getEventCategoryById(5)).thenReturn(category);
 
         String view = adminCategoryController.showEditForm(5, true, 12, true, model);
 
         assertEquals("events/adminCategoryForm", view);
-        assertEquals(category, model.get("category"));
+        Object formObject = model.get("category");
+        assertNotNull(formObject);
+        CategoryForm form = (CategoryForm) formObject;
+        assertEquals(5, form.getId());
+        assertEquals("Conciertos", form.getName());
+        assertEquals("#112233", form.getColor());
         assertEquals("/admin/event/edit/12", model.get("cancelPath"));
     }
 
