@@ -82,7 +82,7 @@ public class AdminCategoryController {
                 ? "Categoria creada correctamente."
                 : "Categoria actualizada correctamente.");
         return EventFormNavigation.resolvePostSaveRedirect(fromEventForm, eventId, draft, SELECTED_CATEGORY_PARAM,
-            savedCategory != null ? savedCategory.getId() : null, REDIRECT_CATEGORY_PATH);
+                savedCategory != null ? savedCategory.getId() : null, REDIRECT_CATEGORY_PATH);
     }
 
     @GetMapping("/delete/{id}")
@@ -134,5 +134,5 @@ public class AdminCategoryController {
             this.color = color;
         }
     }
-
+}
 }
