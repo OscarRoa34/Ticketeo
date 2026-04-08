@@ -128,6 +128,11 @@
     animation: fadeIn 0.2s ease-out;
 }
 
+#logoutConfirmModal {
+    align-items: flex-start;
+    padding-top: 88px;
+}
+
 .dropdown-item {
     color: rgba(255, 255, 255, 0.8);
     padding: 10px 16px;

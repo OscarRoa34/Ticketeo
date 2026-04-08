@@ -49,6 +49,8 @@ body::before {
         );
     z-index: -2;
     pointer-events: none;
+    filter: blur(2px);
+    transform: scale(1.01);
 }
 
 /* Capa de estrellas: densa, con detalles morados y verdes */
@@ -178,6 +180,7 @@ body::after {
         radial-gradient(3px 3px at 55% 88%,  rgba(139,92,246,0.95)  0%, transparent 100%);
     z-index: -1;
     pointer-events: none;
+    filter: blur(0.6px);
 }
 
 main, .container {
