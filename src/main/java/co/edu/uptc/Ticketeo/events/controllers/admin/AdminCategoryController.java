@@ -133,5 +133,5 @@ public class AdminCategoryController {
         public void setColor(String color) {
             this.color = color;
         }
-    }}
+    }
 }
