@@ -34,94 +34,29 @@ public class PurchaseService {
 
     @Transactional
     public PurchaseCheckoutResult processPurchase(Integer eventId, String username, Map<Integer, Integer> requestedQuantities, String paymentMethodValue) {
-        if (eventId == null) {
-            throw new IllegalArgumentException("Evento invalido.");
-        }
+        Event event = validateAndGetEvent(eventId);
+        User user = validateAndGetUser(username);
+        List<EventTicketType> assignments = findAssignments(eventId);
+        Map<Integer, EventTicketType> assignmentByType = mapAssignmentsByTicketType(assignments);
 
-        Event event = eventService.getEventById(eventId);
-        if (event == null) {
-            throw new IllegalArgumentException("No se encontro el evento.");
-        }
-        if (eventService.isCompletedEvent(event)) {
-            throw new IllegalArgumentException("No se pueden comprar boletas de eventos completados.");
-        }
+        PurchaseCalculation calculation = calculateAndReserveTickets(requestedQuantities, assignmentByType, event);
+        validateAtLeastOneTicket(calculation.totalTickets());
 
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("No se encontro el usuario."));
-
-        List<EventTicketType> assignments = eventTicketTypeRepository.findByEvent_Id(eventId);
-        Map<Integer, EventTicketType> assignmentByType = new LinkedHashMap<>();
-        for (EventTicketType assignment : assignments) {
-            if (assignment.getTicketType() != null && assignment.getTicketType().getId() != null) {
-                assignmentByType.put(assignment.getTicketType().getId(), assignment);
-            }
-        }
-
-        int totalTickets = 0;
-        double totalToPay = 0;
-        Map<String, Integer> ticketTypeBreakdown = new LinkedHashMap<>();
-        for (Map.Entry<Integer, Integer> request : requestedQuantities.entrySet()) {
-            Integer ticketTypeId = request.getKey();
-            Integer quantity = request.getValue();
-            if (quantity == null || quantity <= 0) {
-                continue;
-            }
-
-            EventTicketType assignment = assignmentByType.get(ticketTypeId);
-            if (assignment == null || assignment.getAvailableQuantity() == null || quantity > assignment.getAvailableQuantity()) {
-                throw new IllegalArgumentException("Una de las cantidades seleccionadas supera los boletos disponibles.");
-            }
-
-            double ticketPrice = resolveTicketPrice(assignment, event);
-            totalTickets += quantity;
-            totalToPay += quantity * ticketPrice;
-            assignment.setAvailableQuantity(assignment.getAvailableQuantity() - quantity);
-
-            String ticketTypeName = assignment.getTicketType() != null ? assignment.getTicketType().getName() : "Boleto";
-            ticketTypeBreakdown.merge(ticketTypeName, quantity, Integer::sum);
-        }
-
-        if (totalTickets <= 0) {
-            throw new IllegalArgumentException("Selecciona al menos un boleto para continuar.");
-        }
-
-        eventTicketTypeRepository.saveAll(assignments);
+        saveAssignments(assignments);
 
         PaymentMethod paymentMethod = PaymentMethod.fromValue(paymentMethodValue);
-        Purchase purchase = Purchase.builder()
-                .user(user)
-                .eventId(event.getId())
-                .eventName(event.getName())
-                .eventDate(event.getDate())
-                .paymentMethod(paymentMethod)
-                .purchaseDate(LocalDateTime.now())
-                .totalPaid(totalToPay)
-                .totalTickets(totalTickets)
-                .build();
-        Purchase savedPurchase = purchaseRepository.save(purchase);
+        Purchase savedPurchase = savePurchase(user, event, paymentMethod, calculation.totalToPay(), calculation.totalTickets());
 
-        for (Map.Entry<Integer, Integer> request : requestedQuantities.entrySet()) {
-            EventTicketType assignment = assignmentByType.get(request.getKey());
-            Integer quantity = request.getValue();
-            if (assignment == null || quantity == null || quantity <= 0) {
-                continue;
-            }
-
-            double ticketPrice = resolveTicketPrice(assignment, event);
-            String ticketTypeName = assignment.getTicketType() != null ? assignment.getTicketType().getName() : "Boleto";
-            for (int i = 0; i < quantity; i++) {
-                PurchasedTicket ticket = PurchasedTicket.builder()
-                        .purchase(savedPurchase)
-                        .ticketTypeName(ticketTypeName)
-                        .unitPrice(ticketPrice)
-                        .qrCode(generateTicketCode(savedPurchase.getId(), event.getId()))
-                        .build();
-                purchasedTicketRepository.save(ticket);
-            }
-        }
-
+        savePurchasedTickets(savedPurchase, event, requestedQuantities, assignmentByType);
         eventService.recalculateMinimumAvailablePrice(eventId);
 
-        return new PurchaseCheckoutResult(savedPurchase.getId(), totalTickets, Math.round(totalToPay), paymentMethod.name(), ticketTypeBreakdown);
+        return new PurchaseCheckoutResult(
+                savedPurchase.getId(),
+                calculation.totalTickets(),
+                Math.round(calculation.totalToPay()),
+                paymentMethod.name(),
+                calculation.ticketTypeBreakdown()
+        );
     }
 
     public List<Purchase> getUserPurchases(String username) {
@@ -134,6 +69,130 @@ public class PurchaseService {
 
     public PurchasedTicket getUserTicket(Long ticketId, String username) {
         return purchasedTicketRepository.findByIdAndUsername(ticketId, username).orElse(null);
+    }
+
+    private Event validateAndGetEvent(Integer eventId) {
+        if (eventId == null) {
+            throw new IllegalArgumentException("Evento invalido.");
+        }
+
+        Event event = eventService.getEventById(eventId);
+        if (event == null) {
+            throw new IllegalArgumentException("No se encontro el evento.");
+        }
+        if (eventService.isCompletedEvent(event)) {
+            throw new IllegalArgumentException("No se pueden comprar boletas de eventos completados.");
+        }
+        return event;
+    }
+
+    private User validateAndGetUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontro el usuario."));
+    }
+
+    private List<EventTicketType> findAssignments(Integer eventId) {
+        return eventTicketTypeRepository.findByEvent_Id(eventId);
+    }
+
+    private Map<Integer, EventTicketType> mapAssignmentsByTicketType(List<EventTicketType> assignments) {
+        Map<Integer, EventTicketType> assignmentByType = new LinkedHashMap<>();
+        for (EventTicketType assignment : assignments) {
+            if (assignment.getTicketType() != null && assignment.getTicketType().getId() != null) {
+                assignmentByType.put(assignment.getTicketType().getId(), assignment);
+            }
+        }
+        return assignmentByType;
+    }
+
+    private PurchaseCalculation calculateAndReserveTickets(
+            Map<Integer, Integer> requestedQuantities,
+            Map<Integer, EventTicketType> assignmentByType,
+            Event event
+    ) {
+        int totalTickets = 0;
+        double totalToPay = 0;
+        Map<String, Integer> ticketTypeBreakdown = new LinkedHashMap<>();
+
+        for (Map.Entry<Integer, Integer> request : requestedQuantities.entrySet()) {
+            Integer ticketTypeId = request.getKey();
+            Integer quantity = request.getValue();
+            if (quantity == null || quantity <= 0) {
+                continue;
+            }
+
+            EventTicketType assignment = assignmentByType.get(ticketTypeId);
+            validateAvailability(assignment, quantity);
+
+            double ticketPrice = resolveTicketPrice(assignment, event);
+            totalTickets += quantity;
+            totalToPay += quantity * ticketPrice;
+            assignment.setAvailableQuantity(assignment.getAvailableQuantity() - quantity);
+            ticketTypeBreakdown.merge(resolveTicketTypeName(assignment), quantity, Integer::sum);
+        }
+
+        return new PurchaseCalculation(totalTickets, totalToPay, ticketTypeBreakdown);
+    }
+
+    private void validateAvailability(EventTicketType assignment, Integer quantity) {
+        if (assignment == null || assignment.getAvailableQuantity() == null || quantity > assignment.getAvailableQuantity()) {
+            throw new IllegalArgumentException("Una de las cantidades seleccionadas supera los boletos disponibles.");
+        }
+    }
+
+    private void validateAtLeastOneTicket(int totalTickets) {
+        if (totalTickets <= 0) {
+            throw new IllegalArgumentException("Selecciona al menos un boleto para continuar.");
+        }
+    }
+
+    private void saveAssignments(List<EventTicketType> assignments) {
+        eventTicketTypeRepository.saveAll(assignments);
+    }
+
+    private Purchase savePurchase(User user, Event event, PaymentMethod paymentMethod, double totalToPay, int totalTickets) {
+        Purchase purchase = Purchase.builder()
+                .user(user)
+                .eventId(event.getId())
+                .eventName(event.getName())
+                .eventDate(event.getDate())
+                .paymentMethod(paymentMethod)
+                .purchaseDate(LocalDateTime.now())
+                .totalPaid(totalToPay)
+                .totalTickets(totalTickets)
+                .build();
+        return purchaseRepository.save(purchase);
+    }
+
+    private void savePurchasedTickets(
+            Purchase purchase,
+            Event event,
+            Map<Integer, Integer> requestedQuantities,
+            Map<Integer, EventTicketType> assignmentByType
+    ) {
+        for (Map.Entry<Integer, Integer> request : requestedQuantities.entrySet()) {
+            EventTicketType assignment = assignmentByType.get(request.getKey());
+            Integer quantity = request.getValue();
+            if (assignment == null || quantity == null || quantity <= 0) {
+                continue;
+            }
+
+            double ticketPrice = resolveTicketPrice(assignment, event);
+            String ticketTypeName = resolveTicketTypeName(assignment);
+            for (int i = 0; i < quantity; i++) {
+                PurchasedTicket ticket = PurchasedTicket.builder()
+                        .purchase(purchase)
+                        .ticketTypeName(ticketTypeName)
+                        .unitPrice(ticketPrice)
+                        .qrCode(generateTicketCode(purchase.getId(), event.getId()))
+                        .build();
+                purchasedTicketRepository.save(ticket);
+            }
+        }
+    }
+
+    private String resolveTicketTypeName(EventTicketType assignment) {
+        return assignment.getTicketType() != null ? assignment.getTicketType().getName() : "Boleto";
     }
 
     private double resolveUnitPrice(Event event) {
@@ -149,6 +208,9 @@ public class PurchaseService {
 
     private String generateTicketCode(Long purchaseId, Integer eventId) {
         return "TK-" + purchaseId + "-" + eventId + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private record PurchaseCalculation(int totalTickets, double totalToPay, Map<String, Integer> ticketTypeBreakdown) {
     }
 
     public record PurchaseCheckoutResult(Long purchaseId, Integer tickets, Long total, String paymentMethod,
