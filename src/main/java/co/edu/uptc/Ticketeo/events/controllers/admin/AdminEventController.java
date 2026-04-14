@@ -43,12 +43,22 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminEventController {
 
     private static final int PAGE_SIZE = 6;
+    private static final int MAX_RESTORED_IMAGE_SIZE = 50 * 1024 * 1024;
+    private static final String UPLOADS_DIR = "uploads";
     private static final Pattern NON_DIGIT_PATTERN = Pattern.compile("[^\\d]");
     private static final String REDIRECT_ADMIN_EVENTS = "redirect:/admin";
     private static final String REDIRECT_ADMIN_INACTIVE = "redirect:/admin/inactive";
+    private static final String REDIRECT_ADMIN_COMPLETED = "redirect:/admin/completed";
     private static final String DEFAULT_OPERATION_ERROR = "No fue posible completar la operacion.";
     private static final String FLASH_SUCCESS_MESSAGE = "successMessage";
     private static final String FLASH_ERROR_MESSAGE = "errorMessage";
+    private static final String VIEW_ADMIN_EVENTS = "events/adminEvents";
+    private static final String VIEW_ADMIN_COMPLETED_EVENTS = "events/adminCompletedEvents";
+    private static final String VIEW_ADMIN_INACTIVE_EVENTS = "events/adminInactiveEvents";
+    private static final String VIEW_EVENT_FORM = "events/adminEventForm";
+    private static final String MESSAGE_EVENT_DEACTIVATED = "Evento desactivado correctamente.";
+    private static final String MESSAGE_EVENT_ACTIVATED = "Evento activado correctamente.";
+    private static final String MESSAGE_EVENT_DELETED = "Evento eliminado correctamente.";
 
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
@@ -60,13 +70,7 @@ public class AdminEventController {
                                    @RequestParam(required = false) Integer categoryId,
                                    Model model) {
         Page<Event> eventPage = eventService.getActiveEventsFiltered(search, categoryId, page, PAGE_SIZE);
-        model.addAttribute("events", eventPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", eventPage.getTotalPages());
-        model.addAttribute("search", search != null ? search : "");
-        model.addAttribute("currentCategory", categoryId);
-        model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "events/adminEvents";
+        return renderEventList(model, page, search, categoryId, eventPage, VIEW_ADMIN_EVENTS);
     }
 
     @GetMapping("/completed")
@@ -75,13 +79,7 @@ public class AdminEventController {
                                       @RequestParam(required = false) Integer categoryId,
                                       Model model) {
         Page<Event> eventPage = eventService.getCompletedEventsFiltered(search, categoryId, page, PAGE_SIZE);
-        model.addAttribute("events", eventPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", eventPage.getTotalPages());
-        model.addAttribute("search", search != null ? search : "");
-        model.addAttribute("currentCategory", categoryId);
-        model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "events/adminCompletedEvents";
+        return renderEventList(model, page, search, categoryId, eventPage, VIEW_ADMIN_COMPLETED_EVENTS);
     }
 
     @GetMapping("/inactive")
@@ -90,13 +88,23 @@ public class AdminEventController {
                                      @RequestParam(required = false) Integer categoryId,
                                      Model model) {
         Page<Event> eventPage = eventService.getInactiveEventsFiltered(search, categoryId, page, PAGE_SIZE);
+        return renderEventList(model, page, search, categoryId, eventPage, VIEW_ADMIN_INACTIVE_EVENTS);
+    }
+
+    private String renderEventList(Model model, int page, String search, Integer categoryId,
+                                   Page<Event> eventPage, String viewName) {
+        populateEventListModel(model, page, search, categoryId, eventPage);
+        return viewName;
+    }
+
+    private void populateEventListModel(Model model, int page, String search,
+                                        Integer categoryId, Page<Event> eventPage) {
         model.addAttribute("events", eventPage.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", eventPage.getTotalPages());
         model.addAttribute("search", search != null ? search : "");
         model.addAttribute("currentCategory", categoryId);
         model.addAttribute("categories", eventCategoryService.getAllCategories());
-        return "events/adminInactiveEvents";
     }
 
     @GetMapping("/event/new")
@@ -104,27 +112,32 @@ public class AdminEventController {
                                  @RequestParam(value = "selectedTicketTypeId", required = false) Integer selectedTicketTypeId,
                                  @RequestParam(value = "selectedCategoryId", required = false) Integer selectedCategoryId,
                                  Model model) {
+        Map<Integer, Integer> ticketQuantities = initializeTicketQuantities(selectedTicketTypeId);
+        Event event = createEventWithCategory(selectedCategoryId);
+        populateEventFormModel(model, event, ticketQuantities, Map.of(), Map.of(),
+                selectedTicketTypeId, selectedCategoryId, draft);
+        return VIEW_EVENT_FORM;
+    }
+
+    private Event createEventWithCategory(Integer selectedCategoryId) {
+        Event event = new Event();
+        applySelectedCategory(event, selectedCategoryId);
+        return event;
+    }
+
+    private Map<Integer, Integer> initializeTicketQuantities(Integer selectedTicketTypeId) {
         Map<Integer, Integer> ticketQuantities = new HashMap<>();
         if (selectedTicketTypeId != null) {
             ticketQuantities.put(selectedTicketTypeId, 1);
         }
+        return ticketQuantities;
+    }
 
-        Event event = new Event();
+    private void applySelectedCategory(Event event, Integer selectedCategoryId) {
         EventCategory selectedCategory = resolveCategoryForSave(selectedCategoryId);
         if (selectedCategory != null) {
             event.setCategory(selectedCategory);
         }
-
-        model.addAttribute("event", event);
-        model.addAttribute("categories", eventCategoryService.getAllCategories());
-        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
-        model.addAttribute("ticketQuantities", ticketQuantities);
-        model.addAttribute("ticketPrices", Map.<Integer, Double>of());
-        model.addAttribute("soldTicketTypes", Map.<Integer, Boolean>of());
-        model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
-        model.addAttribute("newlyCreatedCategoryId", selectedCategoryId);
-        model.addAttribute("draft", draft);
-        return "events/adminEventForm";
     }
 
     @GetMapping("/event/edit/{id}")
@@ -133,43 +146,60 @@ public class AdminEventController {
                                @RequestParam(value = "selectedCategoryId", required = false) Integer selectedCategoryId,
                                Model model) {
         Event event = eventService.getEventById(id);
+        String redirectPath = resolveEditRedirect(event);
+        if (redirectPath != null) {
+            return redirectPath;
+        }
+
+        applySelectedCategory(event, selectedCategoryId);
+        populateEditEventForm(model, event, id, selectedTicketTypeId, selectedCategoryId);
+        return VIEW_EVENT_FORM;
+    }
+
+    private String resolveEditRedirect(Event event) {
         if (event == null) {
-            return "redirect:/admin";
+            return REDIRECT_ADMIN_EVENTS;
         }
-        if (Boolean.TRUE.equals(event.getIsActive()) && event.getDate() != null && event.getDate().isBefore(LocalDate.now())) {
-            return "redirect:/admin/completed";
-        }
+        boolean isCompleted = Boolean.TRUE.equals(event.getIsActive())
+                && event.getDate() != null
+                && event.getDate().isBefore(LocalDate.now());
+        return isCompleted ? REDIRECT_ADMIN_COMPLETED : null;
+    }
 
-        EventCategory selectedCategory = resolveCategoryForSave(selectedCategoryId);
-        if (selectedCategory != null) {
-            event.setCategory(selectedCategory);
-        }
+    private void populateEditEventForm(Model model, Event event, Integer eventId,
+                                       Integer selectedTicketTypeId, Integer selectedCategoryId) {
+        Map<Integer, Integer> ticketQuantities = buildTicketQuantitiesForEdit(eventId, selectedTicketTypeId);
+        Map<Integer, Double> ticketPrices = buildTicketPricesForEdit(eventId);
+        Map<Integer, Boolean> soldTicketTypes = eventService.getSoldTicketTypesForEvent(eventId);
+        boolean draft = !Boolean.TRUE.equals(event.getIsActive());
+        populateEventFormModel(model, event, ticketQuantities, ticketPrices, soldTicketTypes,
+                selectedTicketTypeId, selectedCategoryId, draft);
+    }
 
-        Map<Integer, Integer> ticketQuantities = new HashMap<>();
-        Map<Integer, Integer> existingQuantities = eventService.getTicketTypeQuantitiesForEvent(id);
-        if (existingQuantities != null) {
-            ticketQuantities.putAll(existingQuantities);
-        }
+    private Map<Integer, Integer> buildTicketQuantitiesForEdit(Integer eventId, Integer selectedTicketTypeId) {
+        Map<Integer, Integer> ticketQuantities = copyExistingQuantities(eventId);
         if (selectedTicketTypeId != null) {
             ticketQuantities.putIfAbsent(selectedTicketTypeId, 1);
         }
+        return ticketQuantities;
+    }
 
+    private Map<Integer, Integer> copyExistingQuantities(Integer eventId) {
+        Map<Integer, Integer> ticketQuantities = new HashMap<>();
+        Map<Integer, Integer> existingQuantities = eventService.getTicketTypeQuantitiesForEvent(eventId);
+        if (existingQuantities != null) {
+            ticketQuantities.putAll(existingQuantities);
+        }
+        return ticketQuantities;
+    }
+
+    private Map<Integer, Double> buildTicketPricesForEdit(Integer eventId) {
+        Map<Integer, Double> existingPrices = eventService.getTicketTypePricesForEvent(eventId);
         Map<Integer, Double> ticketPrices = new HashMap<>();
-        Map<Integer, Double> existingPrices = eventService.getTicketTypePricesForEvent(id);
         if (existingPrices != null) {
             ticketPrices.putAll(existingPrices);
         }
-
-        model.addAttribute("event", event);
-        model.addAttribute("categories", eventCategoryService.getAllCategories());
-        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
-        model.addAttribute("ticketQuantities", ticketQuantities);
-        model.addAttribute("ticketPrices", ticketPrices);
-        model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(id));
-        model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
-        model.addAttribute("newlyCreatedCategoryId", selectedCategoryId);
-        model.addAttribute("draft", !Boolean.TRUE.equals(event.getIsActive()));
-        return "events/adminEventForm";
+        return ticketPrices;
     }
 
     @PostMapping("/event/save")
@@ -181,44 +211,83 @@ public class AdminEventController {
                             @RequestParam(value = "draft", defaultValue = "false") boolean draft,
                             Model model,
                             RedirectAttributes redirectAttributes) {
-
         boolean isNewEvent = event.getId() == null;
+        prepareEventForSave(event, image, categoryId, allParams, draft);
+        Map<Integer, Integer> ticketQuantities = extractTicketQuantities(ticketTypeIds, allParams);
+        Map<Integer, Double> ticketPrices = extractTicketPrices(ticketTypeIds, allParams);
+        return saveEventAndBuildResponse(event, ticketQuantities, ticketPrices, draft,
+                isNewEvent, model, redirectAttributes);
+    }
 
+    private void prepareEventForSave(Event event, MultipartFile image, Integer categoryId,
+                                     Map<String, String> allParams, boolean draft) {
         event.setCategory(resolveCategoryForSave(categoryId));
         handleImageUpload(event, image, allParams.get("restoredImageData"));
         preserveActiveStatus(event);
         event.setIsActive(!draft);
+    }
 
-        Map<Integer, Integer> ticketQuantities = extractTicketQuantities(ticketTypeIds, allParams);
-        Map<Integer, Double> ticketPrices = extractTicketPrices(ticketTypeIds, allParams);
-
+    private String saveEventAndBuildResponse(Event event, Map<Integer, Integer> ticketQuantities,
+                                             Map<Integer, Double> ticketPrices, boolean draft,
+                                             boolean isNewEvent, Model model,
+                                             RedirectAttributes redirectAttributes) {
         try {
             eventService.saveEventWithTicketTypes(event, ticketQuantities, ticketPrices);
             redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, buildSaveSuccessMessage(isNewEvent, draft));
             return draft ? REDIRECT_ADMIN_INACTIVE : REDIRECT_ADMIN_EVENTS;
         } catch (IllegalArgumentException ex) {
-            model.addAttribute(FLASH_ERROR_MESSAGE, ex.getMessage());
-            model.addAttribute("event", event);
-            model.addAttribute("categories", eventCategoryService.getAllCategories());
-            model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
-            model.addAttribute("ticketQuantities", ticketQuantities);
-            model.addAttribute("ticketPrices", ticketPrices);
-            model.addAttribute("soldTicketTypes", eventService.getSoldTicketTypesForEvent(event.getId()));
-            model.addAttribute("newlyCreatedTicketTypeId", null);
-            model.addAttribute("newlyCreatedCategoryId", null);
-            model.addAttribute("draft", draft);
-            return "events/adminEventForm";
+            return buildSaveValidationErrorResponse(model, event, ticketQuantities, ticketPrices,
+                    draft, ex.getMessage());
         }
     }
 
+    private String buildSaveValidationErrorResponse(Model model, Event event,
+                                                    Map<Integer, Integer> ticketQuantities,
+                                                    Map<Integer, Double> ticketPrices,
+                                                    boolean draft, String errorMessage) {
+        model.addAttribute(FLASH_ERROR_MESSAGE, errorMessage);
+        Map<Integer, Boolean> soldTicketTypes = eventService.getSoldTicketTypesForEvent(event.getId());
+        populateEventFormModel(model, event, ticketQuantities, ticketPrices, soldTicketTypes,
+                null, null, draft);
+        return VIEW_EVENT_FORM;
+    }
+
+    private void populateEventFormModel(Model model, Event event,
+                                        Map<Integer, Integer> ticketQuantities,
+                                        Map<Integer, Double> ticketPrices,
+                                        Map<Integer, Boolean> soldTicketTypes,
+                                        Integer selectedTicketTypeId,
+                                        Integer selectedCategoryId,
+                                        boolean draft) {
+        addEventFormCoreAttributes(model, event, ticketQuantities, ticketPrices, soldTicketTypes);
+        addEventFormStateAttributes(model, selectedTicketTypeId, selectedCategoryId, draft);
+    }
+
+    private void addEventFormCoreAttributes(Model model, Event event,
+                                            Map<Integer, Integer> ticketQuantities,
+                                            Map<Integer, Double> ticketPrices,
+                                            Map<Integer, Boolean> soldTicketTypes) {
+        model.addAttribute("event", event);
+        model.addAttribute("categories", eventCategoryService.getAllCategories());
+        model.addAttribute("ticketTypes", ticketTypeService.getAllTicketTypes());
+        model.addAttribute("ticketQuantities", ticketQuantities);
+        model.addAttribute("ticketPrices", ticketPrices);
+        model.addAttribute("soldTicketTypes", soldTicketTypes);
+    }
+
+    private void addEventFormStateAttributes(Model model, Integer selectedTicketTypeId,
+                                             Integer selectedCategoryId, boolean draft) {
+        model.addAttribute("newlyCreatedTicketTypeId", selectedTicketTypeId);
+        model.addAttribute("newlyCreatedCategoryId", selectedCategoryId);
+        model.addAttribute("draft", draft);
+    }
+
     private EventCategory resolveCategoryForSave(Integer categoryId) {
-        if (categoryId != null) {
-            EventCategory selected = eventCategoryService.getEventCategoryById(categoryId);
-            if (selected != null) {
-                return selected;
-            }
+        if (categoryId == null) {
+            return null;
         }
-        return null;
+        EventCategory selected = eventCategoryService.getEventCategoryById(categoryId);
+        return selected != null ? selected : null;
     }
 
     @GetMapping("/event/deactivate/{id}")
@@ -227,17 +296,10 @@ public class AdminEventController {
                                   RedirectAttributes redirectAttributes) {
         try {
             eventService.deactivateEvent(id);
-            if (isAjaxRequest(request)) {
-                return ResponseEntity.ok("Evento desactivado correctamente.");
-            }
-            redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, "Evento desactivado correctamente.");
-            return REDIRECT_ADMIN_EVENTS;
+            return buildSuccessResponse(request, redirectAttributes,
+                    MESSAGE_EVENT_DEACTIVATED, REDIRECT_ADMIN_EVENTS);
         } catch (IllegalArgumentException ex) {
-            if (isAjaxRequest(request)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-            }
-            redirectAttributes.addFlashAttribute(FLASH_ERROR_MESSAGE, ex.getMessage());
-            return REDIRECT_ADMIN_EVENTS;
+            return buildErrorResponse(request, redirectAttributes, ex.getMessage(), REDIRECT_ADMIN_EVENTS);
         }
     }
 
@@ -251,17 +313,11 @@ public class AdminEventController {
                                 RedirectAttributes redirectAttributes) {
         try {
             eventService.reactivateEvent(id);
-            if (isAjaxRequest(request)) {
-                return ResponseEntity.ok("Evento activado correctamente.");
-            }
-            redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, "Evento activado correctamente.");
-            return REDIRECT_ADMIN_INACTIVE;
+            return buildSuccessResponse(request, redirectAttributes,
+                    MESSAGE_EVENT_ACTIVATED, REDIRECT_ADMIN_INACTIVE);
         } catch (RuntimeException ex) {
-            if (isAjaxRequest(request)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(DEFAULT_OPERATION_ERROR);
-            }
-            redirectAttributes.addFlashAttribute(FLASH_ERROR_MESSAGE, DEFAULT_OPERATION_ERROR);
-            return REDIRECT_ADMIN_INACTIVE;
+            return buildErrorResponse(request, redirectAttributes,
+                    DEFAULT_OPERATION_ERROR, REDIRECT_ADMIN_INACTIVE);
         }
     }
 
@@ -271,18 +327,34 @@ public class AdminEventController {
                               RedirectAttributes redirectAttributes) {
         try {
             eventService.deleteEvent(id);
-            if (isAjaxRequest(request)) {
-                return ResponseEntity.ok("Evento eliminado correctamente.");
-            }
-            redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, "Evento eliminado correctamente.");
-            return REDIRECT_ADMIN_INACTIVE;
+            return buildSuccessResponse(request, redirectAttributes,
+                    MESSAGE_EVENT_DELETED, REDIRECT_ADMIN_INACTIVE);
         } catch (RuntimeException ex) {
-            if (isAjaxRequest(request)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(DEFAULT_OPERATION_ERROR);
-            }
-            redirectAttributes.addFlashAttribute(FLASH_ERROR_MESSAGE, DEFAULT_OPERATION_ERROR);
-            return REDIRECT_ADMIN_INACTIVE;
+            return buildErrorResponse(request, redirectAttributes,
+                    DEFAULT_OPERATION_ERROR, REDIRECT_ADMIN_INACTIVE);
         }
+    }
+
+    private Object buildSuccessResponse(HttpServletRequest request,
+                                        RedirectAttributes redirectAttributes,
+                                        String successMessage,
+                                        String redirectPath) {
+        if (isAjaxRequest(request)) {
+            return ResponseEntity.ok(successMessage);
+        }
+        redirectAttributes.addFlashAttribute(FLASH_SUCCESS_MESSAGE, successMessage);
+        return redirectPath;
+    }
+
+    private Object buildErrorResponse(HttpServletRequest request,
+                                      RedirectAttributes redirectAttributes,
+                                      String errorMessage,
+                                      String redirectPath) {
+        if (isAjaxRequest(request)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
+        }
+        redirectAttributes.addFlashAttribute(FLASH_ERROR_MESSAGE, errorMessage);
+        return redirectPath;
     }
 
     private String buildSaveSuccessMessage(boolean isNewEvent, boolean draft) {
@@ -294,77 +366,124 @@ public class AdminEventController {
 
     private void handleImageUpload(Event event, MultipartFile image, String restoredImageData) {
         if (!image.isEmpty()) {
-            Path uploadDir = Paths.get("uploads");
-            try {
-                if (!Files.exists(uploadDir)) {
-                    Files.createDirectories(uploadDir);
-                }
-                String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
-                Files.copy(image.getInputStream(), uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
-                event.setImageUrl("/uploads/" + filename);
-            } catch (IOException e) {
-                log.error("Error al guardar imagen del evento", e);
-            }
-        } else if (!tryRestoreImageFromDataUrl(event, restoredImageData) && event.getId() != null) {
-            Event existing = eventService.getEventById(event.getId());
-            if (existing != null) {
-                event.setImageUrl(existing.getImageUrl());
-            }
+            saveUploadedImage(event, image);
+            return;
+        }
+        if (!tryRestoreImageFromDataUrl(event, restoredImageData) && event.getId() != null) {
+            restoreExistingImage(event);
+        }
+    }
+
+    private void saveUploadedImage(Event event, MultipartFile image) {
+        try {
+            String filename = saveMultipartImage(image);
+            event.setImageUrl(buildImageUrl(filename));
+        } catch (IOException e) {
+            log.error("Error al guardar imagen del evento", e);
+        }
+    }
+
+    private String saveMultipartImage(MultipartFile image) throws IOException {
+        Path uploadDir = ensureUploadDirectory();
+        String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
+        Files.copy(image.getInputStream(), uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+        return filename;
+    }
+
+    private void restoreExistingImage(Event event) {
+        Event existing = eventService.getEventById(event.getId());
+        if (existing != null) {
+            event.setImageUrl(existing.getImageUrl());
         }
     }
 
     private boolean tryRestoreImageFromDataUrl(Event event, String restoredImageData) {
-        if (restoredImageData == null || restoredImageData.isBlank()) {
+        String[] parsedData = parseRestoredImageData(restoredImageData);
+        if (parsedData == null) {
             return false;
         }
 
+        byte[] imageBytes = decodeBase64Image(parsedData[1]);
+        if (!isValidImageBytes(imageBytes)) {
+            return false;
+        }
+        return saveRestoredImage(event, imageBytes, resolveImageExtension(parsedData[0]));
+    }
+
+    private String[] parseRestoredImageData(String restoredImageData) {
+        if (restoredImageData == null || restoredImageData.isBlank()) {
+            return null;
+        }
         int commaIndex = restoredImageData.indexOf(',');
         if (commaIndex <= 0) {
-            return false;
+            return null;
         }
-
         String metadata = restoredImageData.substring(0, commaIndex);
-        if (!metadata.startsWith("data:image/") || !metadata.contains(";base64")) {
-            return false;
-        }
-
         String encodedData = restoredImageData.substring(commaIndex + 1);
-        if (encodedData.isBlank()) {
-            return false;
+        if (!isValidRestoredMetadata(metadata, encodedData)) {
+            return null;
         }
+        return new String[] {metadata, encodedData};
+    }
 
-        byte[] imageBytes;
+    private boolean isValidRestoredMetadata(String metadata, String encodedData) {
+        return metadata.startsWith("data:image/")
+                && metadata.contains(";base64")
+                && !encodedData.isBlank();
+    }
+
+    private byte[] decodeBase64Image(String encodedData) {
         try {
-            imageBytes = Base64.getDecoder().decode(encodedData);
+            return Base64.getDecoder().decode(encodedData);
         } catch (IllegalArgumentException ex) {
-            return false;
+            return null;
         }
+    }
 
-        if (imageBytes.length == 0 || imageBytes.length > 50 * 1024 * 1024) {
-            return false;
-        }
+    private boolean isValidImageBytes(byte[] imageBytes) {
+        return imageBytes != null
+                && imageBytes.length > 0
+                && imageBytes.length <= MAX_RESTORED_IMAGE_SIZE;
+    }
 
-        String extension = "jpg";
+    private String resolveImageExtension(String metadata) {
         if (metadata.startsWith("data:image/png")) {
-            extension = "png";
-        } else if (metadata.startsWith("data:image/webp")) {
-            extension = "webp";
+            return "png";
         }
+        if (metadata.startsWith("data:image/webp")) {
+            return "webp";
+        }
+        return "jpg";
+    }
 
-        Path uploadDir = Paths.get("uploads");
+    private boolean saveRestoredImage(Event event, byte[] imageBytes, String extension) {
         try {
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            String filename = UUID.randomUUID() + "_restored." + extension;
-            Files.write(uploadDir.resolve(filename), imageBytes);
-            event.setImageUrl("/uploads/" + filename);
+            String filename = saveImageBytes(imageBytes, "_restored." + extension);
+            event.setImageUrl(buildImageUrl(filename));
             return true;
         } catch (IOException e) {
             log.error("Error al restaurar imagen temporal del evento", e);
             return false;
         }
+    }
+
+    private String saveImageBytes(byte[] imageBytes, String suffix) throws IOException {
+        Path uploadDir = ensureUploadDirectory();
+        String filename = UUID.randomUUID() + suffix;
+        Files.write(uploadDir.resolve(filename), imageBytes);
+        return filename;
+    }
+
+    private Path ensureUploadDirectory() throws IOException {
+        Path uploadDir = Paths.get(UPLOADS_DIR);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+        return uploadDir;
+    }
+
+    private String buildImageUrl(String filename) {
+        return "/uploads/" + filename;
     }
 
     private void preserveActiveStatus(Event event) {
@@ -383,21 +502,25 @@ public class AdminEventController {
         if (ticketTypeIds == null || ticketTypeIds.isEmpty()) {
             return ticketQuantities;
         }
-
         for (Integer ticketTypeId : ticketTypeIds) {
-            String quantityValue = allParams.get("ticketQuantity_" + ticketTypeId);
-            if (quantityValue == null || quantityValue.isBlank()) {
-                continue;
-            }
-            try {
-                int quantity = Integer.parseInt(quantityValue.trim());
-                if (quantity >= 0) {
-                    ticketQuantities.put(ticketTypeId, quantity);
-                }
-            } catch (NumberFormatException ignored) {
+            Integer quantity = parseValidQuantity(allParams.get("ticketQuantity_" + ticketTypeId));
+            if (quantity != null) {
+                ticketQuantities.put(ticketTypeId, quantity);
             }
         }
         return ticketQuantities;
+    }
+
+    private Integer parseValidQuantity(String quantityValue) {
+        if (quantityValue == null || quantityValue.isBlank()) {
+            return null;
+        }
+        try {
+            int quantity = Integer.parseInt(quantityValue.trim());
+            return quantity >= 0 ? quantity : null;
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private Map<Integer, Double> extractTicketPrices(List<Integer> ticketTypeIds, Map<String, String> allParams) {
@@ -405,26 +528,28 @@ public class AdminEventController {
         if (ticketTypeIds == null || ticketTypeIds.isEmpty()) {
             return ticketPrices;
         }
-
         for (Integer ticketTypeId : ticketTypeIds) {
-            String priceValue = allParams.get("ticketPrice_" + ticketTypeId);
-            if (priceValue == null || priceValue.isBlank()) {
-                continue;
-            }
-
-            String normalized = NON_DIGIT_PATTERN.matcher(priceValue).replaceAll("");
-            if (normalized.isBlank()) {
-                continue;
-            }
-
-            try {
-                double price = Double.parseDouble(normalized);
-                if (price >= 0) {
-                    ticketPrices.put(ticketTypeId, price);
-                }
-            } catch (NumberFormatException ignored) {
+            Double price = parseValidPrice(allParams.get("ticketPrice_" + ticketTypeId));
+            if (price != null) {
+                ticketPrices.put(ticketTypeId, price);
             }
         }
         return ticketPrices;
+    }
+
+    private Double parseValidPrice(String priceValue) {
+        if (priceValue == null || priceValue.isBlank()) {
+            return null;
+        }
+        String normalized = NON_DIGIT_PATTERN.matcher(priceValue).replaceAll("");
+        if (normalized.isBlank()) {
+            return null;
+        }
+        try {
+            double price = Double.parseDouble(normalized);
+            return price >= 0 ? price : null;
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 }
