@@ -45,8 +45,5 @@ jobs:
       - name: Dar permisos a mvnw
         run: chmod +x mvnw
 
-      - name: Ejecutar tests y enviar a SonarCloud
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   
-        run: ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=OscarRoa34_Ticketeo -Dsonar.organization=oscarroa34
+      - name: Ejecutar tests
+        run: ./mvnw verify
