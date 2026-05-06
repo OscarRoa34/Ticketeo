@@ -197,7 +197,8 @@
 }
 
 .ticket-qty-input:focus-visible,
-.payment-select:focus-visible {
+.payment-select:focus-visible,
+.card-number-input:focus-visible {
     outline: 3px solid rgba(139, 92, 246, 0.22);
     outline-offset: 1px;
     border-color: rgba(139, 92, 246, 0.55);
@@ -215,6 +216,63 @@
     font-weight: 600;
     color: #1f2240;
     background: #ffffff;
+}
+
+.payment-field {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.payment-field-label {
+    font-weight: 600;
+    color: #1f2240;
+}
+
+.card-brand-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.card-brand-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #dbe3f3;
+    background: #ffffff;
+    font-weight: 600;
+    color: #1f2240;
+}
+
+.card-brand-option input {
+    width: 16px;
+    height: 16px;
+    accent-color: #8b5cf6;
+}
+
+.card-number-input {
+    width: 100%;
+    border: 1px solid #dbe3f3;
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-weight: 600;
+    color: #1f2240;
+    background: #ffffff;
+}
+
+.card-helper {
+    color: #7480a3;
+    font-size: 0.78rem;
+}
+
+.payment-error {
+    margin: 4px 0 0;
+    color: #b91c1c;
+    font-weight: 600;
+    min-height: 18px;
 }
 
 .purchase-summary {

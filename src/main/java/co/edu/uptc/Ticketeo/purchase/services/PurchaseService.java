@@ -81,7 +81,7 @@ public class PurchaseService {
             throw new IllegalArgumentException("No se encontro el evento.");
         }
         if (eventService.isCompletedEvent(event)) {
-            throw new IllegalArgumentException("No se pueden comprar boletas de eventos completados.");
+            throw new IllegalArgumentException("No s{e pueden comprar boletas de eventos completados.");
         }
         return event;
     }
@@ -196,7 +196,8 @@ public class PurchaseService {
     }
 
     private double resolveUnitPrice(Event event) {
-        return event.getPrice() == null ? 0.0 : event.getPrice();
+        Double price = event.getPrice();
+        return price == null ? 0.0 : price;
     }
 
     private double resolveTicketPrice(EventTicketType eventTicketType, Event event) {

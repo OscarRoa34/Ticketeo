@@ -80,6 +80,8 @@ public class EventPurchaseController {
             @PathVariable Integer id,
             @RequestParam Map<String, String> formValues,
             @RequestParam("paymentMethod") String paymentMethod,
+            @RequestParam("cardBrand") String cardBrand,
+            @RequestParam("cardNumber") String cardNumber,
             RedirectAttributes redirectAttributes,
             Authentication authentication
     ) {
@@ -102,6 +104,16 @@ public class EventPurchaseController {
         if (!userService.isProfileComplete(user)) {
             redirectAttributes.addFlashAttribute("errorMessage", "Completa tu perfil antes de comprar boletas.");
             return "redirect:/user/profile?returnUrl=/event/" + id + "/purchase";
+        }
+
+        if (!isValidCardBrand(cardBrand)) {
+            redirectAttributes.addFlashAttribute("purchaseError", "Selecciona Visa o Mastercard.");
+            return "redirect:/event/" + id + "/purchase";
+        }
+
+        if (!isValidCardNumber(cardNumber)) {
+            redirectAttributes.addFlashAttribute("purchaseError", "El numero de tarjeta no es valido.");
+            return "redirect:/event/" + id + "/purchase";
         }
 
         Map<Integer, Integer> requestedQuantities = extractRequestedQuantities(formValues);
@@ -188,6 +200,41 @@ public class EventPurchaseController {
 
     private String normalizePaymentMethod(String paymentMethod) {
         return PAYMENT_METHOD_LABELS.containsKey(paymentMethod) ? paymentMethod : "CARD";
+    }
+
+    private boolean isValidCardBrand(String cardBrand) {
+        if (cardBrand == null) {
+            return false;
+        }
+        String normalized = cardBrand.trim().toUpperCase();
+        return "VISA".equals(normalized) || "MASTERCARD".equals(normalized);
+    }
+
+    private boolean isValidCardNumber(String cardNumber) {
+        if (cardNumber == null) {
+            return false;
+        }
+
+        String digits = cardNumber.replaceAll("\\D", "");
+        if (digits.length() < 13 || digits.length() > 19) {
+            return false;
+        }
+
+        int sum = 0;
+        boolean shouldDouble = false;
+        for (int i = digits.length() - 1; i >= 0; i -= 1) {
+            int digit = digits.charAt(i) - '0';
+            if (shouldDouble) {
+                digit *= 2;
+                if (digit > 9) {
+                    digit -= 9;
+                }
+            }
+            sum += digit;
+            shouldDouble = !shouldDouble;
+        }
+
+        return sum % 10 == 0;
     }
 
     private boolean isAuthenticated(Authentication authentication) {

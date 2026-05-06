@@ -78,7 +78,7 @@ class EventPurchaseControllerTest {
         when(userService.getByUsername("ana")).thenReturn(user);
         when(userService.isProfileComplete(user)).thenReturn(false);
 
-        String view = eventPurchaseController.processPurchase(8, Map.of(), "CARD", redirectAttributes, authentication);
+        String view = eventPurchaseController.processPurchase(8, Map.of(), "CARD", view, view, redirectAttributes, authentication);
 
         assertEquals("redirect:/user/profile?returnUrl=/event/8/purchase", view);
         verify(redirectAttributes).addFlashAttribute("errorMessage", "Completa tu perfil antes de comprar boletas.");

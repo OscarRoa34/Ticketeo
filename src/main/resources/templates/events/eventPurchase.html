@@ -70,14 +70,41 @@
 
             <section class="purchase-section payment-panel">
                 <div class="purchase-section-head">
-                    <h2>Método de pago</h2>
-                    <span class="purchase-section-note">Selecciona cómo deseas pagar</span>
+                    <h2>Pago con tarjeta</h2>
+                    <span class="purchase-section-note">Selecciona la franquicia y confirma el numero</span>
                 </div>
-                <select name="paymentMethod" id="paymentMethod" class="payment-select" required>
-                    <option value="CARD">Tarjeta</option>
-                    <option value="PSE">PSE</option>
-                    <option value="CASH">Efectivo</option>
-                </select>
+                <input type="hidden" name="paymentMethod" value="CARD">
+                <input type="hidden" name="cardBrand" id="cardBrand" value="">
+
+                <div class="payment-field">
+                    <span class="payment-field-label">Franquicia</span>
+                    <div class="card-brand-options" role="group" aria-label="Franquicia de la tarjeta">
+                        <label class="card-brand-option">
+                            <input type="checkbox" name="cardBrandOption" value="VISA" aria-label="Visa">
+                            <span>Visa</span>
+                        </label>
+                        <label class="card-brand-option">
+                            <input type="checkbox" name="cardBrandOption" value="MASTERCARD" aria-label="Mastercard">
+                            <span>Mastercard</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="payment-field">
+                    <label class="payment-field-label" for="cardNumber">Numero de tarjeta</label>
+                    <input class="card-number-input"
+                           type="text"
+                           id="cardNumber"
+                           name="cardNumber"
+                           inputmode="numeric"
+                           autocomplete="cc-number"
+                           maxlength="19"
+                           pattern="[0-9]{13,19}"
+                           placeholder="Ej: 4111111111111111"
+                           required>
+                    <small class="card-helper">Solo digitos, sin espacios ni CVV.</small>
+                </div>
+                <p class="payment-error" id="paymentError" role="alert"></p>
             </section>
 
             <section class="purchase-summary">
@@ -158,6 +185,90 @@
         refreshSummary();
     }
 
+    function setupCardInputs() {
+        const cardBrandInputs = Array.from(document.querySelectorAll('input[name="cardBrandOption"]'));
+        const cardBrandValue = document.getElementById('cardBrand');
+        const cardNumberInput = document.getElementById('cardNumber');
+        const paymentError = document.getElementById('paymentError');
+        const purchaseForm = document.getElementById('purchaseForm');
+
+        function normalizeCardNumber(value) {
+            return (value || '').replace(/\D/g, '');
+        }
+
+        function isValidCardNumber(value) {
+            const digits = normalizeCardNumber(value);
+            if (digits.length < 13 || digits.length > 19) {
+                return false;
+            }
+
+            let sum = 0;
+            let shouldDouble = false;
+            for (let i = digits.length - 1; i >= 0; i -= 1) {
+                let digit = parseInt(digits[i], 10);
+                if (shouldDouble) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+                sum += digit;
+                shouldDouble = !shouldDouble;
+            }
+            return sum % 10 === 0;
+        }
+
+        function updateBrandSelection(selectedInput) {
+            cardBrandInputs.forEach(input => {
+                if (input !== selectedInput) {
+                    input.checked = false;
+                }
+            });
+            cardBrandValue.value = selectedInput && selectedInput.checked ? selectedInput.value : '';
+        }
+
+        cardBrandInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                updateBrandSelection(input);
+                if (paymentError) {
+                    paymentError.textContent = '';
+                }
+            });
+        });
+
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', () => {
+                const normalized = normalizeCardNumber(cardNumberInput.value);
+                cardNumberInput.value = normalized;
+                if (paymentError) {
+                    paymentError.textContent = '';
+                }
+            });
+        }
+
+        if (purchaseForm) {
+            purchaseForm.addEventListener('submit', event => {
+                const selectedBrand = cardBrandValue.value;
+                const cardNumber = cardNumberInput ? cardNumberInput.value : '';
+
+                if (!selectedBrand) {
+                    event.preventDefault();
+                    if (paymentError) {
+                        paymentError.textContent = 'Selecciona Visa o Mastercard.';
+                    }
+                    return;
+                }
+
+                if (!isValidCardNumber(cardNumber)) {
+                    event.preventDefault();
+                    if (paymentError) {
+                        paymentError.textContent = 'El numero de tarjeta no es valido.';
+                    }
+                }
+            });
+        }
+    }
+
     function initHamburger() {
         const pairs = [
             { btn: 'navHamburgerGuest', collapse: 'navCollapseGuest' },
@@ -177,6 +288,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         setupPurchaseForm();
+        setupCardInputs();
         initHamburger();
     });
 </script>
