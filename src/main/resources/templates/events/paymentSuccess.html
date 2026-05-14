@@ -14,18 +14,23 @@
 <div th:replace="~{fragments/navbar :: navbar-user}"></div>
 
 <main class="payment-success-container">
-    <section class="payment-success-card" role="status" aria-live="polite">
+    <section class="payment-success-card" th:classappend="${checkeoStatus} == 'error' ? ' payment-success-card--error' : ''" role="status" aria-live="polite">
         <div class="success-check-wrap" aria-hidden="true">
-            <div class="success-check-icon">✓</div>
+            <div class="success-check-icon" th:text="${checkeoStatus} == 'error' ? '!' : '✓'">✓</div>
         </div>
 
         <header class="success-header">
-            <h1>Pago exitoso</h1>
-            <p class="success-caption">Tu compra fue confirmada correctamente.</p>
+            <h1 th:text="${checkeoStatus} == 'error' ? 'Pago rechazado' : 'Pago exitoso'">Pago exitoso</h1>
+            <p class="success-caption" th:text="${checkeoStatus} == 'error' ? 'El cobro fue rechazado por Checkeo.' : 'Tu compra fue confirmada correctamente.'">Tu compra fue confirmada correctamente.</p>
             <p class="success-event-name" th:text="${event.name}">Nombre del evento</p>
         </header>
 
         <div class="success-divider"></div>
+
+        <div class="checkeo-status" th:classappend="${checkeoStatus} == 'error' ? ' checkeo-status--error' : ' checkeo-status--success'">
+            <strong>Checkeo</strong>
+            <span th:text="${checkeoMessage}">Pago aprobado por Checkeo.</span>
+        </div>
 
         <div class="success-summary">
             <div class="success-row">
