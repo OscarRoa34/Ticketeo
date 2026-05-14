@@ -197,14 +197,33 @@
 }
 
 .ticket-qty-input:focus-visible,
-.payment-select:focus-visible {
+.payment-select:focus-visible,
+.card-number-input:focus-visible {
     outline: 3px solid rgba(139, 92, 246, 0.22);
     outline-offset: 1px;
     border-color: rgba(139, 92, 246, 0.55);
 }
 
 .payment-panel {
-    background: linear-gradient(180deg, #ffffff, #fbfffd);
+    background: linear-gradient(180deg, #ffffff, #f6f9ff);
+    border-color: rgba(139, 92, 246, 0.22);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+}
+
+.payment-panel .purchase-section-head {
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.payment-panel .purchase-section-head h2 {
+    font-size: 1.22rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.payment-panel .purchase-section-note {
+    font-size: 0.78rem;
+    color: #64729b;
 }
 
 .payment-select {
@@ -215,6 +234,78 @@
     font-weight: 600;
     color: #1f2240;
     background: #ffffff;
+}
+
+.payment-field {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.payment-field-label {
+    font-weight: 600;
+    color: #2a2f4f;
+    font-size: 0.9rem;
+}
+
+.card-details {
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    background: #ffffff;
+    box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.card-details-title {
+    font-weight: 700;
+    color: #242949;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.card-brand-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.card-brand-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px;
+}
+
+.card-brand-option input {
+    width: 16px;
+    height: 16px;
+    accent-color: #8b5cf6;
+}
+
+.card-number-input {
+    width: 100%;
+    border: 1px solid #dbe3f3;
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-weight: 600;
+    color: #1f2240;
+    background: #ffffff;
+}
+
+.card-brand-logo {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+}
+
+.payment-error {
+    margin: 4px 0 0;
+    color: #b91c1c;
+    font-weight: 600;
+    min-height: 18px;
 }
 
 .purchase-summary {

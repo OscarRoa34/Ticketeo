@@ -8,5 +8,12 @@
             <property name="max" value="30"/>
             <property name="countEmpty" value="false"/>
         </module>
+
+        <module name="ParameterNumber">
+            <property name="max" value="5"/>
+        </module>
+
+        <module name="UnusedImports"/>
+
     </module>
 </module>
