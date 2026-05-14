@@ -1,5 +1,13 @@
 package co.edu.uptc.Ticketeo.events.controllers.publicview;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +43,7 @@ public class EventPurchaseController {
             PaymentMethod.PSE.name(), PaymentMethod.PSE.getLabel(),
             PaymentMethod.CASH.name(), PaymentMethod.CASH.getLabel()
     );
+        private static final DateTimeFormatter PURCHASE_JSON_DATE = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     private final EventService eventService;
     private final EventTicketTypeRepository eventTicketTypeRepository;
@@ -233,7 +242,65 @@ public class EventPurchaseController {
         redirectAttributes.addAttribute("total", checkoutResult.total());
         redirectAttributes.addAttribute("paymentMethod", checkoutResult.paymentMethod());
         redirectAttributes.addFlashAttribute("ticketTypeBreakdown", checkoutResult.ticketTypeBreakdown());
+        writePurchaseJson(context, formValues, checkoutResult);
         return "redirect:/event/" + context.event().getId() + "/purchase/success";
+    }
+
+    private void writePurchaseJson(PurchaseContext context, Map<String, String> formValues,
+                                   PurchaseService.PurchaseCheckoutResult checkoutResult) {
+        try {
+            Path docsPath = Paths.get("docs");
+            Files.createDirectories(docsPath);
+
+            String cardBrand = cardBrandLabel(formValues.get("cardBrand"));
+            String cardNumber = safeString(formValues.get("cardNumber"));
+            String username = safeString(context.user().getUsername());
+            String totalValue = formatAmount(checkoutResult.total());
+            String timestamp = LocalDateTime.now().format(PURCHASE_JSON_DATE);
+            Path outputFile = docsPath.resolve("purchase_" + timestamp + ".json");
+
+            String json = "{\n"
+                    + "  \"usuario\": \"" + escapeJson(username) + "\",\n"
+                    + "  \"tipo_tarjeta\": \"" + escapeJson(cardBrand) + "\",\n"
+                    + "  \"numero_tarjeta\": \"" + escapeJson(cardNumber) + "\",\n"
+                    + "  \"valor\": " + totalValue + ",\n"
+                    + "  \"empresa_id\": 1\n"
+                    + "}\n";
+
+            Files.writeString(outputFile, json, StandardCharsets.UTF_8);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private String formatAmount(Long total) {
+        BigDecimal value = total == null ? BigDecimal.ZERO : BigDecimal.valueOf(total);
+        return value.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    private String cardBrandLabel(String cardBrand) {
+        if (cardBrand == null) {
+            return "";
+        }
+        String normalized = cardBrand.trim().toUpperCase();
+        if ("VISA".equals(normalized)) {
+            return "Visa";
+        }
+        if ("MASTERCARD".equals(normalized)) {
+            return "Mastercard";
+        }
+        return cardBrand;
+    }
+
+    private String safeString(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String escapeJson(String value) {
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     private Integer parseIntegerParam(Map<String, String> params, String key) {
@@ -274,7 +341,7 @@ public class EventPurchaseController {
         }
 
         String digits = cardNumber.replaceAll("\\D", "");
-        return digits.length() >= 13 && digits.length() <= 19;
+        return digits.length() > 0 && digits.length() <= 19;
     }
 
     private boolean isAuthenticated(Authentication authentication) {
