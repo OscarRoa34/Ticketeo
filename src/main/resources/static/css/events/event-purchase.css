@@ -205,7 +205,25 @@
 }
 
 .payment-panel {
-    background: linear-gradient(180deg, #ffffff, #fbfffd);
+    background: linear-gradient(180deg, #ffffff, #f6f9ff);
+    border-color: rgba(139, 92, 246, 0.22);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+}
+
+.payment-panel .purchase-section-head {
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.payment-panel .purchase-section-head h2 {
+    font-size: 1.22rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.payment-panel .purchase-section-note {
+    font-size: 0.78rem;
+    color: #64729b;
 }
 
 .payment-select {
@@ -226,12 +244,31 @@
 
 .payment-field-label {
     font-weight: 600;
-    color: #1f2240;
+    color: #2a2f4f;
+    font-size: 0.9rem;
+}
+
+.card-details {
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    background: #ffffff;
+    box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06);
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.card-details-title {
+    font-weight: 700;
+    color: #242949;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 
 .card-brand-options {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
@@ -239,12 +276,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid #dbe3f3;
-    background: #ffffff;
-    font-weight: 600;
-    color: #1f2240;
+    padding: 2px 4px;
 }
 
 .card-brand-option input {
@@ -263,9 +295,10 @@
     background: #ffffff;
 }
 
-.card-helper {
-    color: #7480a3;
-    font-size: 0.78rem;
+.card-brand-logo {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
 }
 
 .payment-error {

@@ -71,40 +71,42 @@
             <section class="purchase-section payment-panel">
                 <div class="purchase-section-head">
                     <h2>Pago con tarjeta</h2>
-                    <span class="purchase-section-note">Selecciona la franquicia y confirma el numero</span>
+                    <span class="purchase-section-note">Elige la marca y escribe el numero</span>
                 </div>
                 <input type="hidden" name="paymentMethod" value="CARD">
                 <input type="hidden" name="cardBrand" id="cardBrand" value="">
 
-                <div class="payment-field">
-                    <span class="payment-field-label">Franquicia</span>
-                    <div class="card-brand-options" role="group" aria-label="Franquicia de la tarjeta">
-                        <label class="card-brand-option">
-                            <input type="checkbox" name="cardBrandOption" value="VISA" aria-label="Visa">
-                            <span>Visa</span>
-                        </label>
-                        <label class="card-brand-option">
-                            <input type="checkbox" name="cardBrandOption" value="MASTERCARD" aria-label="Mastercard">
-                            <span>Mastercard</span>
-                        </label>
-                    </div>
-                </div>
+                <div class="card-details">
+                    <div class="card-details-title">Detalles de la tarjeta</div>
 
-                <div class="payment-field">
-                    <label class="payment-field-label" for="cardNumber">Numero de tarjeta</label>
-                    <input class="card-number-input"
-                           type="text"
-                           id="cardNumber"
-                           name="cardNumber"
-                           inputmode="numeric"
-                           autocomplete="cc-number"
-                           maxlength="19"
-                           pattern="[0-9]{13,19}"
-                           placeholder="Ej: 4111111111111111"
-                           required>
-                    <small class="card-helper">Solo digitos, sin espacios ni CVV.</small>
+                    <div class="payment-field">
+                        <span class="payment-field-label">Marca de tarjeta</span>
+                        <div class="card-brand-options" role="group" aria-label="Marca de la tarjeta">
+                            <label class="card-brand-option">
+                                <input type="checkbox" name="cardBrandOption" value="VISA" aria-label="Visa">
+                                <img src="/images/visa.svg" th:src="@{/images/visa.svg}" alt="Visa" class="card-brand-logo">
+                            </label>
+                            <label class="card-brand-option">
+                                <input type="checkbox" name="cardBrandOption" value="MASTERCARD" aria-label="Mastercard">
+                                <img src="/images/mastercard.svg" th:src="@{/images/mastercard.svg}" alt="Mastercard" class="card-brand-logo">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="payment-field">
+                        <label class="payment-field-label" for="cardNumber">Numero de tarjeta</label>
+                        <input class="card-number-input"
+                               type="text"
+                               id="cardNumber"
+                               name="cardNumber"
+                               inputmode="numeric"
+                               autocomplete="cc-number"
+                               maxlength="19"
+                               placeholder="Numero de la tarjeta"
+                               required>
+                    </div>
+                    <p class="payment-error" id="paymentError" role="alert"></p>
                 </div>
-                <p class="payment-error" id="paymentError" role="alert"></p>
             </section>
 
             <section class="purchase-summary">
@@ -198,24 +200,7 @@
 
         function isValidCardNumber(value) {
             const digits = normalizeCardNumber(value);
-            if (digits.length < 13 || digits.length > 19) {
-                return false;
-            }
-
-            let sum = 0;
-            let shouldDouble = false;
-            for (let i = digits.length - 1; i >= 0; i -= 1) {
-                let digit = parseInt(digits[i], 10);
-                if (shouldDouble) {
-                    digit *= 2;
-                    if (digit > 9) {
-                        digit -= 9;
-                    }
-                }
-                sum += digit;
-                shouldDouble = !shouldDouble;
-            }
-            return sum % 10 === 0;
+            return digits.length >= 13 && digits.length <= 19;
         }
 
         function updateBrandSelection(selectedInput) {

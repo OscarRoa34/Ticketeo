@@ -1,16 +1,15 @@
 package co.edu.uptc.Ticketeo.events.controllers.publicview;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.time.LocalDate;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
@@ -30,9 +29,11 @@ class EventPurchaseControllerTest {
     private EventService eventService;
 
     @Mock
+    @SuppressWarnings("unused")
     private EventTicketTypeRepository eventTicketTypeRepository;
 
     @Mock
+    @SuppressWarnings("unused")
     private PurchaseService purchaseService;
 
     @Mock
@@ -78,7 +79,15 @@ class EventPurchaseControllerTest {
         when(userService.getByUsername("ana")).thenReturn(user);
         when(userService.isProfileComplete(user)).thenReturn(false);
 
-        String view = eventPurchaseController.processPurchase(8, Map.of(), "CARD", view, view, redirectAttributes, authentication);
+        String view = eventPurchaseController.processPurchase(
+            8,
+            Map.<String, String>of(),
+            "CARD",
+            "VISA",
+            "4111111111111111",
+            redirectAttributes,
+            authentication
+        );
 
         assertEquals("redirect:/user/profile?returnUrl=/event/8/purchase", view);
         verify(redirectAttributes).addFlashAttribute("errorMessage", "Completa tu perfil antes de comprar boletas.");

@@ -79,65 +79,27 @@ public class EventPurchaseController {
     public String processPurchase(
             @PathVariable Integer id,
             @RequestParam Map<String, String> formValues,
-            @RequestParam("paymentMethod") String paymentMethod,
-            @RequestParam("cardBrand") String cardBrand,
-            @RequestParam("cardNumber") String cardNumber,
             RedirectAttributes redirectAttributes,
             Authentication authentication
     ) {
-        if (!isAuthenticated(authentication)) {
-            return "redirect:/login";
+        PurchaseContext context = resolvePurchaseContext(id, authentication, redirectAttributes);
+        if (context.redirect() != null) {
+            return context.redirect();
         }
 
-        Event event = eventService.getEventById(id);
-        if (event == null) {
-            return "redirect:/?error=notfound";
-        }
-        if (eventService.isCompletedEvent(event)) {
-            return "redirect:/event/" + id;
-        }
-
-        User user = userService.getByUsername(authentication.getName());
-        if (user == null) {
-            return "redirect:/login";
-        }
-        if (!userService.isProfileComplete(user)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Completa tu perfil antes de comprar boletas.");
-            return "redirect:/user/profile?returnUrl=/event/" + id + "/purchase";
-        }
-
-        if (!isValidCardBrand(cardBrand)) {
-            redirectAttributes.addFlashAttribute("purchaseError", "Selecciona Visa o Mastercard.");
+        String cardError = validateCardDetails(formValues);
+        if (cardError != null) {
+            redirectAttributes.addFlashAttribute("purchaseError", cardError);
             return "redirect:/event/" + id + "/purchase";
         }
 
-        if (!isValidCardNumber(cardNumber)) {
-            redirectAttributes.addFlashAttribute("purchaseError", "El numero de tarjeta no es valido.");
-            return "redirect:/event/" + id + "/purchase";
-        }
-
-        Map<Integer, Integer> requestedQuantities = extractRequestedQuantities(formValues);
-        PurchaseService.PurchaseCheckoutResult checkoutResult;
-        try {
-            checkoutResult = purchaseService.processPurchase(id, user.getUsername(), requestedQuantities, paymentMethod);
-        } catch (IllegalArgumentException ex) {
-            redirectAttributes.addFlashAttribute("purchaseError", ex.getMessage());
-            return "redirect:/event/" + id + "/purchase";
-        }
-
-        redirectAttributes.addAttribute("tickets", checkoutResult.tickets());
-        redirectAttributes.addAttribute("total", checkoutResult.total());
-        redirectAttributes.addAttribute("paymentMethod", checkoutResult.paymentMethod());
-        redirectAttributes.addFlashAttribute("ticketTypeBreakdown", checkoutResult.ticketTypeBreakdown());
-        return "redirect:/event/" + id + "/purchase/success";
+        return handleCheckout(context, formValues, redirectAttributes);
     }
 
     @GetMapping("/{id}/purchase/success")
     public String showPaymentSuccess(
             @PathVariable Integer id,
-            @RequestParam("tickets") Integer tickets,
-            @RequestParam("total") Long total,
-            @RequestParam("paymentMethod") String paymentMethod,
+            @RequestParam Map<String, String> params,
             Model model,
             Authentication authentication
     ) {
@@ -150,9 +112,13 @@ public class EventPurchaseController {
             return "redirect:/?error=notfound";
         }
 
+        Integer tickets = parseIntegerParam(params, "tickets");
+        Long total = parseLongParam(params, "total");
+        String paymentMethod = normalizePaymentMethod(params.get("paymentMethod"));
+
         model.addAttribute("event", event);
-        model.addAttribute("tickets", tickets);
-        model.addAttribute("total", total);
+        model.addAttribute("tickets", tickets == null ? 0 : tickets);
+        model.addAttribute("total", total == null ? 0L : total);
         model.addAttribute("paymentMethod", PAYMENT_METHOD_LABELS.getOrDefault(paymentMethod, "Tarjeta"));
         return "events/paymentSuccess";
     }
@@ -178,8 +144,8 @@ public class EventPurchaseController {
             }
 
             try {
-                Integer ticketTypeId = Integer.parseInt(key.substring(4));
-                Integer quantity = Integer.parseInt(formValue.getValue());
+                int ticketTypeId = Integer.parseInt(key.substring(4));
+                int quantity = Integer.parseInt(formValue.getValue());
                 requested.put(ticketTypeId, quantity);
             } catch (NumberFormatException ignored) {
             }
@@ -188,7 +154,8 @@ public class EventPurchaseController {
     }
 
     private double resolveUnitPrice(Event event) {
-        return event.getPrice() == null ? 0.0 : event.getPrice();
+        Double price = event.getPrice();
+        return price == null ? 0.0 : price;
     }
 
     private double resolveTicketPrice(EventTicketType eventTicketType, Event event) {
@@ -199,7 +166,98 @@ public class EventPurchaseController {
     }
 
     private String normalizePaymentMethod(String paymentMethod) {
+        if (paymentMethod == null) {
+            return "CARD";
+        }
         return PAYMENT_METHOD_LABELS.containsKey(paymentMethod) ? paymentMethod : "CARD";
+    }
+
+    private PurchaseContext resolvePurchaseContext(Integer id, Authentication authentication, RedirectAttributes redirectAttributes) {
+        if (!isAuthenticated(authentication)) {
+            return PurchaseContext.redirect("redirect:/login");
+        }
+
+        Event event = eventService.getEventById(id);
+        if (event == null) {
+            return PurchaseContext.redirect("redirect:/?error=notfound");
+        }
+        if (eventService.isCompletedEvent(event)) {
+            return PurchaseContext.redirect("redirect:/event/" + id);
+        }
+
+        User user = userService.getByUsername(authentication.getName());
+        if (user == null) {
+            return PurchaseContext.redirect("redirect:/login");
+        }
+        if (!userService.isProfileComplete(user)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Completa tu perfil antes de comprar boletas.");
+            return PurchaseContext.redirect("redirect:/user/profile?returnUrl=/event/" + id + "/purchase");
+        }
+
+        return new PurchaseContext(event, user, null);
+    }
+
+    private String validateCardDetails(Map<String, String> formValues) {
+        String cardBrand = formValues.get("cardBrand");
+        String cardNumber = formValues.get("cardNumber");
+
+        if (!isValidCardBrand(cardBrand)) {
+            return "Selecciona Visa o Mastercard.";
+        }
+
+        if (!isValidCardNumber(cardNumber)) {
+            return "El numero de tarjeta no es valido.";
+        }
+
+        return null;
+    }
+
+    private String handleCheckout(PurchaseContext context, Map<String, String> formValues, RedirectAttributes redirectAttributes) {
+        Map<Integer, Integer> requestedQuantities = extractRequestedQuantities(formValues);
+        String paymentMethod = normalizePaymentMethod(formValues.get("paymentMethod"));
+
+        PurchaseService.PurchaseCheckoutResult checkoutResult;
+        try {
+            checkoutResult = purchaseService.processPurchase(
+                    context.event().getId(),
+                    context.user().getUsername(),
+                    requestedQuantities,
+                    paymentMethod
+            );
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("purchaseError", ex.getMessage());
+            return "redirect:/event/" + context.event().getId() + "/purchase";
+        }
+
+        redirectAttributes.addAttribute("tickets", checkoutResult.tickets());
+        redirectAttributes.addAttribute("total", checkoutResult.total());
+        redirectAttributes.addAttribute("paymentMethod", checkoutResult.paymentMethod());
+        redirectAttributes.addFlashAttribute("ticketTypeBreakdown", checkoutResult.ticketTypeBreakdown());
+        return "redirect:/event/" + context.event().getId() + "/purchase/success";
+    }
+
+    private Integer parseIntegerParam(Map<String, String> params, String key) {
+        String value = params.get(key);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(value);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private Long parseLongParam(Map<String, String> params, String key) {
+        String value = params.get(key);
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private boolean isValidCardBrand(String cardBrand) {
@@ -216,25 +274,7 @@ public class EventPurchaseController {
         }
 
         String digits = cardNumber.replaceAll("\\D", "");
-        if (digits.length() < 13 || digits.length() > 19) {
-            return false;
-        }
-
-        int sum = 0;
-        boolean shouldDouble = false;
-        for (int i = digits.length() - 1; i >= 0; i -= 1) {
-            int digit = digits.charAt(i) - '0';
-            if (shouldDouble) {
-                digit *= 2;
-                if (digit > 9) {
-                    digit -= 9;
-                }
-            }
-            sum += digit;
-            shouldDouble = !shouldDouble;
-        }
-
-        return sum % 10 == 0;
+        return digits.length() >= 13 && digits.length() <= 19;
     }
 
     private boolean isAuthenticated(Authentication authentication) {
@@ -242,6 +282,12 @@ public class EventPurchaseController {
                 && authentication.isAuthenticated()
                 && authentication.getName() != null
                 && !"anonymousUser".equals(authentication.getName());
+    }
+
+    private record PurchaseContext(Event event, User user, String redirect) {
+        private static PurchaseContext redirect(String redirect) {
+            return new PurchaseContext(null, null, redirect);
+        }
     }
 
     private record TicketOptionView(Integer ticketTypeId, String ticketTypeName, Integer availableQuantity, Double ticketPrice) {
