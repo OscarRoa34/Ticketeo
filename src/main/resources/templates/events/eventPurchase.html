@@ -200,7 +200,7 @@
 
         function isValidCardNumber(value) {
             const digits = normalizeCardNumber(value);
-            return digits.length >= 13 && digits.length <= 19;
+            return digits.length > 0 && digits.length <= 19;
         }
 
         function updateBrandSelection(selectedInput) {

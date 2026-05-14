@@ -82,9 +82,6 @@ class EventPurchaseControllerTest {
         String view = eventPurchaseController.processPurchase(
             8,
             Map.<String, String>of(),
-            "CARD",
-            "VISA",
-            "4111111111111111",
             redirectAttributes,
             authentication
         );

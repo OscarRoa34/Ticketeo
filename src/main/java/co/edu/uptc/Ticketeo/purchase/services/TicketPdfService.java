@@ -1,7 +1,7 @@
 package co.edu.uptc.Ticketeo.purchase.services;
 
-import java.io.ByteArrayOutputStream;
 import java.awt.Color;
+import java.io.ByteArrayOutputStream;
 import java.text.Normalizer;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -22,8 +22,8 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
-import com.lowagie.text.Paragraph;
 import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
@@ -74,97 +74,146 @@ public class TicketPdfService {
             Document document = new Document(PageSize.A6.rotate(), 18, 18, 18, 18);
             PdfWriter.getInstance(document, outputStream);
             document.open();
-
-            Font brandFont = new Font(Font.HELVETICA, 17, Font.BOLD, BRAND_PURPLE);
-            Font titleFont = new Font(Font.HELVETICA, 10, Font.BOLD, new Color(31, 34, 64));
-            Font normalFont = new Font(Font.HELVETICA, 9, Font.NORMAL, new Color(55, 65, 81));
-            Font codeFont = new Font(Font.COURIER, 8, Font.NORMAL, new Color(55, 65, 81));
-            Font minorFont = new Font(Font.HELVETICA, 8, Font.NORMAL, MUTED_TEXT);
-
+            TicketFonts fonts = buildFonts();
             for (int i = 0; i < tickets.size(); i++) {
-                if (i > 0) {
-                    document.newPage();
-                }
-
-                PurchasedTicket ticket = tickets.get(i);
-
-                PdfPTable pageWrapper = new PdfPTable(new float[]{1f});
-                pageWrapper.setWidthPercentage(100);
-
-                PdfPCell wrapperCell = new PdfPCell();
-                wrapperCell.setBorder(Rectangle.NO_BORDER);
-                wrapperCell.setPadding(0f);
-                wrapperCell.setMinimumHeight(250f);
-                wrapperCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-                LineSeparator purpleLine = new LineSeparator(1.6f, 100f, BRAND_PURPLE, Element.ALIGN_LEFT, 0);
-                wrapperCell.addElement(purpleLine);
-
-                PdfPTable headerTable = new PdfPTable(new float[]{1f});
-                headerTable.setWidthPercentage(100);
-                headerTable.setSpacingBefore(8);
-                headerTable.setSpacingAfter(6);
-
-                PdfPCell brandCell = new PdfPCell();
-                brandCell.setBorder(Rectangle.NO_BORDER);
-                brandCell.addElement(new Paragraph("TICKETEO", brandFont));
-                brandCell.addElement(new Paragraph("Boleto digital", minorFont));
-                headerTable.addCell(brandCell);
-                wrapperCell.addElement(headerTable);
-
-                PdfPTable contentTable = new PdfPTable(new float[]{2.2f, 1f});
-                contentTable.setWidthPercentage(100);
-                contentTable.setSpacingBefore(2f);
-
-                PdfPCell detailsCell = new PdfPCell();
-                detailsCell.setBorderColor(BORDER_COLOR);
-                detailsCell.setBorderWidth(0.8f);
-                detailsCell.setPadding(10f);
-                detailsCell.setBackgroundColor(SOFT_BG);
-                detailsCell.addElement(new Paragraph("Evento: " + safe(purchase.getEventName()), titleFont));
-                detailsCell.addElement(new Paragraph("Fecha del evento: " + safeEventDate(purchase), normalFont));
-                detailsCell.addElement(new Paragraph("Comprador: " + safeBuyerFullName(purchase), normalFont));
-                detailsCell.addElement(new Paragraph("Tipo de boleto: " + safe(ticket.getTicketTypeName()), normalFont));
-                detailsCell.addElement(new Paragraph("Metodo: " + purchase.getPaymentMethod().getLabel(), normalFont));
-                detailsCell.addElement(new Paragraph("Emitido: " + safePurchaseDate(purchase), normalFont));
-                detailsCell.addElement(new Paragraph("Compra #: " + safeNumber(purchase.getId()), normalFont));
-                detailsCell.addElement(new Paragraph("Boleto #: " + safeNumber(ticket.getId()), normalFont));
-                detailsCell.addElement(new Paragraph("Codigo: " + ticket.getQrCode(), codeFont));
-                contentTable.addCell(detailsCell);
-
-                Image qrImage = Image.getInstance(generateQrPng(ticket.getQrCode()));
-                qrImage.scaleToFit(94, 94);
-                qrImage.setAlignment(Image.ALIGN_CENTER);
-
-                PdfPCell qrCell = new PdfPCell();
-                qrCell.setBorderColor(BRAND_PURPLE);
-                qrCell.setBorderWidth(0.8f);
-                qrCell.setBackgroundColor(new Color(255, 255, 255));
-                qrCell.setPadding(6f);
-                qrCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                qrCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-                qrCell.addElement(qrImage);
-                contentTable.addCell(qrCell);
-
-                wrapperCell.addElement(contentTable);
-
-                Paragraph entryNotice = new Paragraph("Conserva este boleto para el ingreso", minorFont);
-                entryNotice.setSpacingBefore(8f);
-                entryNotice.setSpacingAfter(7f);
-                wrapperCell.addElement(entryNotice);
-
-                LineSeparator bottomPurpleLine = new LineSeparator(1.6f, 100f, BRAND_PURPLE, Element.ALIGN_LEFT, 0);
-                bottomPurpleLine.setOffset(0f);
-                wrapperCell.addElement(bottomPurpleLine);
-
-                pageWrapper.addCell(wrapperCell);
-                document.add(pageWrapper);
+                addTicketPage(document, purchase, tickets.get(i), fonts, i > 0);
             }
-
             document.close();
             return outputStream.toByteArray();
         } catch (DocumentException | WriterException | java.io.IOException ex) {
             throw new IllegalStateException("No fue posible generar el PDF de boletos.", ex);
+        }
+    }
+
+    private TicketFonts buildFonts() {
+        return new TicketFonts(
+                new Font(Font.HELVETICA, 17, Font.BOLD, BRAND_PURPLE),
+                new Font(Font.HELVETICA, 10, Font.BOLD, new Color(31, 34, 64)),
+                new Font(Font.HELVETICA, 9, Font.NORMAL, new Color(55, 65, 81)),
+                new Font(Font.COURIER, 8, Font.NORMAL, new Color(55, 65, 81)),
+                new Font(Font.HELVETICA, 8, Font.NORMAL, MUTED_TEXT)
+        );
+    }
+
+    private void addTicketPage(Document document, Purchase purchase, PurchasedTicket ticket, TicketFonts fonts, boolean newPage)
+            throws DocumentException, WriterException, java.io.IOException {
+        if (newPage) {
+            document.newPage();
+        }
+        PdfPTable pageWrapper = buildPageWrapper();
+        PdfPCell wrapperCell = buildWrapperCell();
+        wrapperCell.addElement(buildTopLine());
+        wrapperCell.addElement(buildHeaderTable(fonts));
+        wrapperCell.addElement(buildContentTable(purchase, ticket, fonts));
+        wrapperCell.addElement(buildEntryNotice(fonts));
+        wrapperCell.addElement(buildBottomLine());
+        pageWrapper.addCell(wrapperCell);
+        document.add(pageWrapper);
+    }
+
+    private PdfPTable buildPageWrapper() {
+        PdfPTable pageWrapper = new PdfPTable(new float[]{1f});
+        pageWrapper.setWidthPercentage(100);
+        return pageWrapper;
+    }
+
+    private PdfPCell buildWrapperCell() {
+        PdfPCell wrapperCell = new PdfPCell();
+        wrapperCell.setBorder(Rectangle.NO_BORDER);
+        wrapperCell.setPadding(0f);
+        wrapperCell.setMinimumHeight(250f);
+        wrapperCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return wrapperCell;
+    }
+
+    private LineSeparator buildTopLine() {
+        return new LineSeparator(1.6f, 100f, BRAND_PURPLE, Element.ALIGN_LEFT, 0);
+    }
+
+    private PdfPTable buildHeaderTable(TicketFonts fonts) {
+        PdfPTable headerTable = new PdfPTable(new float[]{1f});
+        headerTable.setWidthPercentage(100);
+        headerTable.setSpacingBefore(8);
+        headerTable.setSpacingAfter(6);
+
+        PdfPCell brandCell = new PdfPCell();
+        brandCell.setBorder(Rectangle.NO_BORDER);
+        brandCell.addElement(new Paragraph("TICKETEO", fonts.brandFont));
+        brandCell.addElement(new Paragraph("Boleto digital", fonts.minorFont));
+        headerTable.addCell(brandCell);
+        return headerTable;
+    }
+
+    private PdfPTable buildContentTable(Purchase purchase, PurchasedTicket ticket, TicketFonts fonts)
+            throws WriterException, java.io.IOException, DocumentException {
+        PdfPTable contentTable = new PdfPTable(new float[]{2.2f, 1f});
+        contentTable.setWidthPercentage(100);
+        contentTable.setSpacingBefore(2f);
+        contentTable.addCell(buildDetailsCell(purchase, ticket, fonts));
+        contentTable.addCell(buildQrCell(ticket.getQrCode()));
+        return contentTable;
+    }
+
+    private Paragraph buildEntryNotice(TicketFonts fonts) {
+        Paragraph entryNotice = new Paragraph("Conserva este boleto para el ingreso", fonts.minorFont);
+        entryNotice.setSpacingBefore(8f);
+        entryNotice.setSpacingAfter(7f);
+        return entryNotice;
+    }
+
+    private LineSeparator buildBottomLine() {
+        LineSeparator bottomPurpleLine = new LineSeparator(1.6f, 100f, BRAND_PURPLE, Element.ALIGN_LEFT, 0);
+        bottomPurpleLine.setOffset(0f);
+        return bottomPurpleLine;
+    }
+
+    private PdfPCell buildDetailsCell(Purchase purchase, PurchasedTicket ticket, TicketFonts fonts) {
+        PdfPCell detailsCell = new PdfPCell();
+        detailsCell.setBorderColor(BORDER_COLOR);
+        detailsCell.setBorderWidth(0.8f);
+        detailsCell.setPadding(10f);
+        detailsCell.setBackgroundColor(SOFT_BG);
+        detailsCell.addElement(new Paragraph("Evento: " + safe(purchase.getEventName()), fonts.titleFont));
+        detailsCell.addElement(new Paragraph("Fecha del evento: " + safeEventDate(purchase), fonts.normalFont));
+        detailsCell.addElement(new Paragraph("Comprador: " + safeBuyerFullName(purchase), fonts.normalFont));
+        detailsCell.addElement(new Paragraph("Tipo de boleto: " + safe(ticket.getTicketTypeName()), fonts.normalFont));
+        detailsCell.addElement(new Paragraph("Metodo: " + purchase.getPaymentMethod().getLabel(), fonts.normalFont));
+        detailsCell.addElement(new Paragraph("Emitido: " + safePurchaseDate(purchase), fonts.normalFont));
+        detailsCell.addElement(new Paragraph("Compra #: " + safeNumber(purchase.getId()), fonts.normalFont));
+        detailsCell.addElement(new Paragraph("Boleto #: " + safeNumber(ticket.getId()), fonts.normalFont));
+        detailsCell.addElement(new Paragraph("Codigo: " + ticket.getQrCode(), fonts.codeFont));
+        return detailsCell;
+    }
+
+    private PdfPCell buildQrCell(String qrCode) throws WriterException, java.io.IOException, DocumentException {
+        Image qrImage = Image.getInstance(generateQrPng(qrCode));
+        qrImage.scaleToFit(94, 94);
+        qrImage.setAlignment(Image.ALIGN_CENTER);
+
+        PdfPCell qrCell = new PdfPCell();
+        qrCell.setBorderColor(BRAND_PURPLE);
+        qrCell.setBorderWidth(0.8f);
+        qrCell.setBackgroundColor(new Color(255, 255, 255));
+        qrCell.setPadding(6f);
+        qrCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        qrCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        qrCell.addElement(qrImage);
+        return qrCell;
+    }
+
+    private static class TicketFonts {
+        private final Font brandFont;
+        private final Font titleFont;
+        private final Font normalFont;
+        private final Font codeFont;
+        private final Font minorFont;
+
+        private TicketFonts(Font brandFont, Font titleFont, Font normalFont, Font codeFont, Font minorFont) {
+            this.brandFont = brandFont;
+            this.titleFont = titleFont;
+            this.normalFont = normalFont;
+            this.codeFont = codeFont;
+            this.minorFont = minorFont;
         }
     }
 
