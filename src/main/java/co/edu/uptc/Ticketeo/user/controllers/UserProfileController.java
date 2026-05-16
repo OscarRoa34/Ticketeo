@@ -37,6 +37,7 @@ public class UserProfileController {
         }
 
         model.addAttribute("profile", UserProfileForm.fromUser(user));
+        model.addAttribute("username", user.getUsername());
         model.addAttribute("documentTypes", DocumentType.values());
         model.addAttribute("categories", eventCategoryService.getAllCategories());
         model.addAttribute("returnUrl", sanitizeReturnUrl(returnUrl));
@@ -74,6 +75,7 @@ public class UserProfileController {
             model.addAttribute("documentTypes", DocumentType.values());
             model.addAttribute("returnUrl", sanitizeReturnUrl(returnUrl));
             model.addAttribute("profile", new UserProfileForm(firstName, lastName, documentType, documentNumber));
+            model.addAttribute("username", user.getUsername());
             return "user/userProfile";
         }
 

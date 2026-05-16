@@ -1,0 +1,7 @@
+{
+  "usuario": "x",
+  "tipo_tarjeta": "Mastercard",
+  "numero_tarjeta": "2222222222222222222",
+  "valor": 200000.00,
+  "empresa_id": 1
+}

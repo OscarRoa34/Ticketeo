@@ -30,6 +30,11 @@
 
             <div class="profile-grid">
                 <label class="profile-field">
+                    <span>Nombre de usuario</span>
+                    <input type="text" name="username" th:value="${username}" readonly disabled>
+                </label>
+
+                <label class="profile-field">
                     <span>Nombre</span>
                     <input type="text" name="firstName" required th:value="${profile.firstName}">
                 </label>
