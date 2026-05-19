@@ -294,14 +294,17 @@ public class EventPurchaseController {
 
             String cardBrand = cardBrandLabel(formValues.get("cardBrand"));
             String cardNumber = safeString(formValues.get("cardNumber"));
+                String cardCsv = safeString(formValues.get("cardCvv"));
             String totalValue = formatAmount(preview.totalToPay());
             String timestamp = LocalDateTime.now().format(PURCHASE_JSON_DATE);
             Path outputFile = docsPath.resolve("purchase_" + timestamp + ".json");
 
+                boolean isNu = "NU".equalsIgnoreCase(safeString(formValues.get("cardBrand")));
             String json = "{\n"
                     + "  \"usuario\": \"" + escapeJson(username) + "\",\n"
                     + "  \"tipo_tarjeta\": \"" + escapeJson(cardBrand) + "\",\n"
                     + "  \"numero_tarjeta\": \"" + escapeJson(cardNumber) + "\",\n"
+                    + (isNu ? "  \"csv\": \"" + escapeJson(cardCsv) + "\",\n" : "")
                     + "  \"valor\": " + totalValue + ",\n"
                     + "  \"empresa_id\": 1\n"
                     + "}\n";
@@ -314,6 +317,8 @@ public class EventPurchaseController {
     private CheckeoResult sendPurchaseToCheckeo(String username, Map<String, String> formValues, PurchasePreview preview) {
         try {
             Map<String, Object> payload = buildCheckeoPayload(username, formValues, preview);
+
+            System.out.println("Checkeo payload: " + payload);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -336,15 +341,20 @@ public class EventPurchaseController {
                                                     PurchasePreview preview) {
         String cardBrand = cardBrandLabel(formValues.get("cardBrand"));
         String cardNumber = safeString(formValues.get("cardNumber"));
+        String cardCsv = safeString(formValues.get("cardCvv"));
         double totalValue = parseAmount(preview.totalToPay());
+        boolean isNu = "NU".equalsIgnoreCase(safeString(formValues.get("cardBrand")));
 
-        return Map.of(
-                "usuario", safeString(username),
-                "tipo_tarjeta", cardBrand,
-                "numero_tarjeta", cardNumber,
-                "valor", totalValue,
-                "empresa_id", 1
-        );
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("usuario", safeString(username));
+        payload.put("tipo_tarjeta", cardBrand);
+        payload.put("numero_tarjeta", cardNumber);
+        if (isNu) {
+            payload.put("csv", cardCsv);
+        }
+        payload.put("valor", totalValue);
+        payload.put("empresa_id", 1);
+        return payload;
     }
 
     private String formatAmount(double total) {
@@ -368,6 +378,9 @@ public class EventPurchaseController {
         if ("MASTERCARD".equals(normalized)) {
             return "Mastercard";
         }
+        if ("NU".equals(normalized)) {
+            return "nubank";
+        }
         return cardBrand;
     }
 
@@ -388,7 +401,7 @@ public class EventPurchaseController {
         String cardNumber = formValues.get("cardNumber");
 
         if (!isValidCardBrand(cardBrand)) {
-            return "Selecciona Visa o Mastercard.";
+            return "Selecciona una marca de tarjeta valida.";
         }
 
         if (!isValidCardNumber(cardNumber)) {
@@ -403,7 +416,7 @@ public class EventPurchaseController {
             return false;
         }
         String normalized = cardBrand.trim().toUpperCase();
-        return "VISA".equals(normalized) || "MASTERCARD".equals(normalized);
+        return "VISA".equals(normalized) || "MASTERCARD".equals(normalized) || "NU".equals(normalized);
     }
 
     private boolean isValidCardNumber(String cardNumber) {
