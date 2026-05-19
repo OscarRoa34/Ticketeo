@@ -90,6 +90,10 @@
                                 <input type="checkbox" name="cardBrandOption" value="MASTERCARD" aria-label="Mastercard">
                                 <img src="/images/mastercard.svg" th:src="@{/images/mastercard.svg}" alt="Mastercard" class="card-brand-logo">
                             </label>
+                            <label class="card-brand-option">
+                                <input type="checkbox" name="cardBrandOption" value="NU" aria-label="Nubank">
+                                <img src="/images/nubank.png" th:src="@{/images/nubank.png}" alt="Nubank" class="card-brand-logo">
+                            </label>
                         </div>
                     </div>
 
@@ -103,6 +107,18 @@
                                autocomplete="cc-number"
                                maxlength="19"
                                placeholder="Numero de la tarjeta"
+                               required>
+                    </div>
+                    <div class="payment-field nu-only" id="nuCvvField">
+                        <label class="payment-field-label" for="nuCvv">CSV de Nubank</label>
+                        <input class="card-csv-input"
+                               type="text"
+                               id="nuCvv"
+                               name="cardCvv"
+                               inputmode="numeric"
+                               autocomplete="cc-csc"
+                               maxlength="3"
+                               placeholder="CSV"
                                required>
                     </div>
                     <p class="payment-error" id="paymentError" role="alert"></p>
@@ -191,6 +207,8 @@
         const cardBrandInputs = Array.from(document.querySelectorAll('input[name="cardBrandOption"]'));
         const cardBrandValue = document.getElementById('cardBrand');
         const cardNumberInput = document.getElementById('cardNumber');
+        const nuCvvField = document.getElementById('nuCvvField');
+        const nuCvvInput = document.getElementById('nuCvv');
         const paymentError = document.getElementById('paymentError');
         const purchaseForm = document.getElementById('purchaseForm');
 
@@ -201,6 +219,24 @@
         function isValidCardNumber(value) {
             const digits = normalizeCardNumber(value);
             return digits.length > 0 && digits.length <= 19;
+        }
+
+        function isValidCsv(value) {
+            const digits = normalizeCardNumber(value);
+            return digits.length === 3;
+        }
+
+        function toggleNuCvvField() {
+            const isNu = cardBrandValue.value === 'NU';
+            if (nuCvvField) {
+                nuCvvField.classList.toggle('is-visible', isNu);
+            }
+            if (nuCvvInput) {
+                nuCvvInput.required = isNu;
+                if (!isNu) {
+                    nuCvvInput.value = '';
+                }
+            }
         }
 
         function updateBrandSelection(selectedInput) {
@@ -215,6 +251,7 @@
         cardBrandInputs.forEach(input => {
             input.addEventListener('change', () => {
                 updateBrandSelection(input);
+                toggleNuCvvField();
                 if (paymentError) {
                     paymentError.textContent = '';
                 }
@@ -231,15 +268,25 @@
             });
         }
 
+        if (nuCvvInput) {
+            nuCvvInput.addEventListener('input', () => {
+                const normalized = normalizeCardNumber(nuCvvInput.value).slice(0, 3);
+                nuCvvInput.value = normalized;
+                if (paymentError) {
+                    paymentError.textContent = '';
+                }
+            });
+        }
+
         if (purchaseForm) {
             purchaseForm.addEventListener('submit', event => {
                 const selectedBrand = cardBrandValue.value;
                 const cardNumber = cardNumberInput ? cardNumberInput.value : '';
 
-                if (!selectedBrand) {
+                        if (!selectedBrand) {
                     event.preventDefault();
                     if (paymentError) {
-                        paymentError.textContent = 'Selecciona Visa o Mastercard.';
+                                paymentError.textContent = 'Selecciona Visa, Mastercard o Nubank.';
                     }
                     return;
                 }
@@ -249,9 +296,23 @@
                     if (paymentError) {
                         paymentError.textContent = 'El numero de tarjeta no es valido.';
                     }
+                    return;
+                }
+
+                if (selectedBrand === 'NU') {
+                    const csvValue = nuCvvInput ? nuCvvInput.value : '';
+                    if (!isValidCsv(csvValue)) {
+                        event.preventDefault();
+                        if (paymentError) {
+                            paymentError.textContent = 'El CSV de Nubank no es valido.';
+                        }
+                        return;
+                    }
                 }
             });
         }
+
+        toggleNuCvvField();
     }
 
     function initHamburger() {

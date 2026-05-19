@@ -1,0 +1,8 @@
+{
+  "usuario": "x",
+  "tipo_tarjeta": "nubank",
+  "numero_tarjeta": "1111111111111111111",
+  "csv": "123",
+  "valor": 20000.00,
+  "empresa_id": 1
+}
