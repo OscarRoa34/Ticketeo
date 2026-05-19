@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -44,7 +45,8 @@ public class EventPurchaseController {
     private static final String VIEW_EVENT_PURCHASE = "events/eventPurchase";
     private static final String VIEW_PAYMENT_SUCCESS = "events/paymentSuccess";
     private static final DateTimeFormatter PURCHASE_JSON_DATE = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-    private static final String CHECKEO_BASE_URL = System.getenv().getOrDefault("CHECKEO_SERVICE_URL", "http://localhost:8000");
+    @Value("${checkeo.service.url:http://localhost:8000}")
+    private String checkeoBaseUrl;
 
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
@@ -318,7 +320,7 @@ public class EventPurchaseController {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
             RestTemplate restTemplate = new RestTemplate();
-            restTemplate.postForEntity(CHECKEO_BASE_URL + "/pagos", request, String.class);
+            restTemplate.postForEntity(checkeoBaseUrl + "/pagos", request, String.class);
             return CheckeoResult.success("Pago aprobado por Checkeo.");
         } catch (HttpStatusCodeException ex) {
             if (ex.getStatusCode().value() == 402) {
