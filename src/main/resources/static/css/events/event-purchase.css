@@ -285,7 +285,8 @@
     accent-color: #8b5cf6;
 }
 
-.card-number-input {
+.card-number-input,
+.card-csv-input {
     width: 100%;
     border: 1px solid #dbe3f3;
     border-radius: 10px;
@@ -299,6 +300,14 @@
     height: 32px;
     width: auto;
     object-fit: contain;
+}
+
+.nu-only {
+    display: none;
+}
+
+.nu-only.is-visible {
+    display: grid;
 }
 
 .payment-error {
