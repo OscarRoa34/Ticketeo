@@ -90,6 +90,10 @@
                                 <input type="checkbox" name="cardBrandOption" value="MASTERCARD" aria-label="Mastercard">
                                 <img src="/images/mastercard.svg" th:src="@{/images/mastercard.svg}" alt="Mastercard" class="card-brand-logo">
                             </label>
+                            <label class="card-brand-option">
+                                <input type="checkbox" name="cardBrandOption" value="NU" aria-label="Nubank">
+                                <img src="/images/nubank.png" th:src="@{/images/nubank.png}" alt="Nubank" class="card-brand-logo">
+                            </label>
                         </div>
                     </div>
 
@@ -236,10 +240,10 @@
                 const selectedBrand = cardBrandValue.value;
                 const cardNumber = cardNumberInput ? cardNumberInput.value : '';
 
-                if (!selectedBrand) {
+                        if (!selectedBrand) {
                     event.preventDefault();
                     if (paymentError) {
-                        paymentError.textContent = 'Selecciona Visa o Mastercard.';
+                                paymentError.textContent = 'Selecciona Visa, Mastercard o Nubank.';
                     }
                     return;
                 }
