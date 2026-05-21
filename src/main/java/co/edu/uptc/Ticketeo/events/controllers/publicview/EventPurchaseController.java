@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.models.EventTicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
@@ -325,15 +328,46 @@ public class EventPurchaseController {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
             RestTemplate restTemplate = new RestTemplate();
-            restTemplate.postForEntity(checkeoBaseUrl + "/pagos", request, String.class);
-            return CheckeoResult.success("Pago aprobado por Checkeo.");
+            var response = restTemplate.postForEntity(checkeoBaseUrl + "/pagos", request, String.class);
+            System.out.println("Checkeo response status: " + response.getStatusCode().value());
+            System.out.println("Checkeo response body: " + response.getBody());
+            String message = resolveCheckeoMessage(response.getBody(), "Pago aprobado por Checkeo.", false);
+            return CheckeoResult.success(message);
         } catch (HttpStatusCodeException ex) {
-            if (ex.getStatusCode().value() == 402) {
-                return CheckeoResult.error("Pago rechazado por Checkeo.");
-            }
-            return CheckeoResult.error("No fue posible validar el pago en Checkeo.");
+            System.out.println("Checkeo response status: " + ex.getStatusCode().value());
+            System.out.println("Checkeo response body: " + ex.getResponseBodyAsString());
+            String fallback = ex.getStatusCode().value() == 402
+                    ? "Pago rechazado por Checkeo."
+                    : "No fue posible validar el pago en Checkeo.";
+            String message = resolveCheckeoMessage(ex.getResponseBodyAsString(), fallback, true);
+            return CheckeoResult.error(message);
         } catch (Exception ignored) {
             return CheckeoResult.error("No fue posible validar el pago en Checkeo.");
+        }
+    }
+
+    private String resolveCheckeoMessage(String body, String fallback, boolean errorPayload) {
+        if (body == null || body.isBlank()) {
+            return fallback;
+        }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(body);
+            JsonNode detail = errorPayload ? root.path("detail") : root;
+            String message = detail.path("message").asText(null);
+            if (message == null || message.isBlank()) {
+                return fallback;
+            }
+            String provider = detail.path("provider").asText(null);
+            if (provider != null && !provider.isBlank()) {
+                if (message.toUpperCase().contains(provider.toUpperCase())) {
+                    return message;
+                }
+                return provider + ": " + message;
+            }
+            return message;
+        } catch (Exception ignored) {
+            return fallback;
         }
     }
 
