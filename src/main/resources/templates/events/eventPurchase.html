@@ -61,7 +61,7 @@
                                    type="number"
                                    min="0"
                                    step="1"
-                                   value="0"
+                                   th:value="${prefillQuantities != null and prefillQuantities[option.ticketTypeId] != null ? prefillQuantities[option.ticketTypeId] : 0}"
                                    th:attr="max=${option.availableQuantity},name=${'qty_' + option.ticketTypeId},data-available=${option.availableQuantity},data-unit-price=${option.ticketPrice}">
                         </label>
                     </article>
@@ -74,7 +74,7 @@
                     <span class="purchase-section-note">Elige la marca y escribe el numero</span>
                 </div>
                 <input type="hidden" name="paymentMethod" value="CARD">
-                <input type="hidden" name="cardBrand" id="cardBrand" value="">
+                <input type="hidden" name="cardBrand" id="cardBrand" th:value="${prefillCardBrand}">
 
                 <div class="card-details">
                     <div class="card-details-title">Detalles de la tarjeta</div>
@@ -83,15 +83,18 @@
                         <span class="payment-field-label">Marca de tarjeta</span>
                         <div class="card-brand-options" role="group" aria-label="Marca de la tarjeta">
                             <label class="card-brand-option">
-                                <input type="checkbox" name="cardBrandOption" value="VISA" aria-label="Visa">
+                                <input type="checkbox" name="cardBrandOption" value="VISA" aria-label="Visa"
+                                       th:checked="${prefillCardBrand != null and prefillCardBrand.toUpperCase() == 'VISA'}">
                                 <img src="/images/visa.svg" th:src="@{/images/visa.svg}" alt="Visa" class="card-brand-logo">
                             </label>
                             <label class="card-brand-option">
-                                <input type="checkbox" name="cardBrandOption" value="MASTERCARD" aria-label="Mastercard">
+                                <input type="checkbox" name="cardBrandOption" value="MASTERCARD" aria-label="Mastercard"
+                                       th:checked="${prefillCardBrand != null and prefillCardBrand.toUpperCase() == 'MASTERCARD'}">
                                 <img src="/images/mastercard.svg" th:src="@{/images/mastercard.svg}" alt="Mastercard" class="card-brand-logo">
                             </label>
                             <label class="card-brand-option">
-                                <input type="checkbox" name="cardBrandOption" value="NU" aria-label="Nubank">
+                                <input type="checkbox" name="cardBrandOption" value="NU" aria-label="Nubank"
+                                       th:checked="${prefillCardBrand != null and prefillCardBrand.toUpperCase() == 'NU'}">
                                 <img src="/images/nubank.png" th:src="@{/images/nubank.png}" alt="Nubank" class="card-brand-logo">
                             </label>
                         </div>
@@ -107,6 +110,7 @@
                                autocomplete="cc-number"
                                maxlength="19"
                                placeholder="Numero de la tarjeta"
+                               th:value="${prefillCardNumber}"
                                required>
                     </div>
                     <div class="payment-field nu-only" id="nuCvvField">
@@ -119,6 +123,7 @@
                                autocomplete="cc-csc"
                                maxlength="3"
                                placeholder="CSV"
+                               th:value="${prefillCardCvv}"
                                required>
                     </div>
                     <p class="payment-error" id="paymentError" role="alert"></p>
@@ -257,6 +262,11 @@
                 }
             });
         });
+
+        const preselected = cardBrandInputs.find(input => input.checked);
+        if (preselected) {
+            updateBrandSelection(preselected);
+        }
 
         if (cardNumberInput) {
             cardNumberInput.addEventListener('input', () => {
