@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import co.edu.uptc.Ticketeo.events.models.EventTicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
+import co.edu.uptc.Ticketeo.purchase.models.PaymentMethod;
 import co.edu.uptc.Ticketeo.purchase.services.PaymentProcessingService;
 import co.edu.uptc.Ticketeo.purchase.services.PaymentResult;
 import co.edu.uptc.Ticketeo.purchase.services.PaymentTrackingService;
@@ -44,6 +47,7 @@ public class EventPurchaseController {
     private static final String VIEW_PAYMENT_SUCCESS = "events/paymentSuccess";
     private static final String VIEW_PAYMENT_PROCESSING = "events/paymentProcessing";
     private static final DateTimeFormatter PURCHASE_JSON_DATE = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private static final Duration CHECKEO_TIMEOUT = Duration.ofSeconds(30);
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
     private final EventTicketTypeRepository eventTicketTypeRepository;
@@ -131,7 +135,8 @@ public class EventPurchaseController {
                 params.get("cardCvv"),
                 preview.totalTickets(),
                 preview.totalToPay(),
-                preview.ticketTypeBreakdown()
+            preview.ticketTypeBreakdown(),
+            Instant.now()
         );
         paymentTrackingService.registerPending(trackingId, pending);
         paymentProcessingService.processPayment(trackingId, pending);
@@ -149,7 +154,19 @@ public class EventPurchaseController {
             if (pendingOpt.isEmpty()) {
                 return "redirect:/user";
             }
-            Event event = eventService.getEventById(pendingOpt.get().eventId());
+            PendingPaymentRequest pending = pendingOpt.get();
+            if (isPendingExpired(pending)) {
+                PaymentResult timeoutResult = buildTimeoutResult(pending);
+                paymentTrackingService.complete(trackingId, timeoutResult, true);
+                Event event = eventService.getEventById(timeoutResult.eventId());
+                if (event == null) {
+                    return "redirect:/user";
+                }
+                populatePaymentResult(model, event, timeoutResult);
+                model.addAttribute("trackingId", trackingId);
+                return VIEW_PAYMENT_SUCCESS;
+            }
+            Event event = eventService.getEventById(pending.eventId());
             if (event == null) {
                 return "redirect:/user";
             }
@@ -171,7 +188,37 @@ public class EventPurchaseController {
     @GetMapping("/purchase/result/{trackingId}/ready")
     public ResponseEntity<Map<String, Object>> isResultReady(@PathVariable String trackingId) {
         boolean ready = paymentTrackingService.isReady(trackingId);
+        if (!ready) {
+            paymentTrackingService.getPending(trackingId).ifPresent(pending -> {
+                if (isPendingExpired(pending)) {
+                    PaymentResult timeoutResult = buildTimeoutResult(pending);
+                    paymentTrackingService.complete(trackingId, timeoutResult, true);
+                }
+            });
+            ready = paymentTrackingService.isReady(trackingId);
+        }
         return ResponseEntity.ok(Map.of("ready", ready));
+    }
+
+    private boolean isPendingExpired(PendingPaymentRequest pending) {
+        if (pending == null || pending.createdAt() == null) {
+            return false;
+        }
+        return Instant.now().isAfter(pending.createdAt().plus(CHECKEO_TIMEOUT));
+    }
+
+    private PaymentResult buildTimeoutResult(PendingPaymentRequest pending) {
+        return new PaymentResult(
+                false,
+                pending.eventId(),
+                "error",
+                "No fue posible contactar Checkeo. Intenta de nuevo.",
+                null,
+                pending.totalTickets(),
+                PaymentMethod.fromValue(pending.paymentMethodValue()).getLabel(),
+                pending.ticketTypeBreakdown(),
+                Math.round(pending.totalToPay())
+        );
     }
 
     private void populatePurchaseModel(Model model, Event event, String purchaseError) {

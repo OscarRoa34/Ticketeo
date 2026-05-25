@@ -48,6 +48,7 @@
 <script>
     const RESULT_POLL_MS = 800;
     const RESULT_TIMEOUT_MS = 60000;
+    const NO_EVENT_TIMEOUT_MS = 12000;
     const PHASE_ORDER = ['recepcion', 'validacion_empresa', 'transaccion', 'validacion_proveedor', 'resultado'];
     const PHASE_LABELS = {
         recepcion: 'Solicitud recibida',
@@ -56,6 +57,8 @@
         validacion_proveedor: 'Validando tarjeta',
         resultado: 'Resultado final'
     };
+    let lastEventAt = Date.now();
+    let pollingStarted = false;
 
     function updateLiveStatus(text, type) {
         const statusEl = document.getElementById('checkeoLiveStatus');
@@ -163,6 +166,10 @@
     }
 
     function waitForResult(trackingId) {
+        if (pollingStarted) {
+            return;
+        }
+        pollingStarted = true;
         const start = Date.now();
 
         function poll() {
@@ -208,6 +215,8 @@
 
         stompClient.connect({}, () => {
             updateLiveStatus('Conectado. Esperando eventos...', 'success');
+            lastEventAt = Date.now();
+            startNoEventWatchdog(trackingId);
             stompClient.subscribe('/topic/purchases/' + trackingId, (frame) => {
                 try {
                     const payload = JSON.parse(frame.body);
@@ -216,6 +225,7 @@
                     const message = payload.message || 'Actualizacion recibida';
                     const friendlyPhase = PHASE_LABELS[phase] || 'Actualizacion';
                     const friendlyStatus = status === 'error' ? 'Algo salio mal' : 'Avanzando';
+                    lastEventAt = Date.now();
                     updateTimeline(phase, status, message);
                     updateLiveStatus(friendlyPhase + ' · ' + friendlyStatus, status === 'error' ? 'error' : 'success');
                     if (status === 'error' || phase === 'resultado') {
@@ -230,6 +240,15 @@
             updateLiveStatus('Sin conexion al canal.', 'error');
             waitForResult(trackingId);
         });
+    }
+
+    function startNoEventWatchdog(trackingId) {
+        setInterval(() => {
+            if (Date.now() - lastEventAt > NO_EVENT_TIMEOUT_MS) {
+                updateLiveStatus('Sin respuesta de Checkeo. Verificando...', 'error');
+                waitForResult(trackingId);
+            }
+        }, 2000);
     }
 
     document.addEventListener('DOMContentLoaded', () => {

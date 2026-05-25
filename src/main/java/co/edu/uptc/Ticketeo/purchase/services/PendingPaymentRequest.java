@@ -1,5 +1,6 @@
 package co.edu.uptc.Ticketeo.purchase.services;
 
+import java.time.Instant;
 import java.util.Map;
 
 public record PendingPaymentRequest(
@@ -12,6 +13,7 @@ public record PendingPaymentRequest(
         String cardCvv,
         int totalTickets,
         double totalToPay,
-        Map<String, Integer> ticketTypeBreakdown
+        Map<String, Integer> ticketTypeBreakdown,
+        Instant createdAt
 ) {
 }
