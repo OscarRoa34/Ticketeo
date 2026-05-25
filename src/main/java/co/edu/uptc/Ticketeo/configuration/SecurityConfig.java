@@ -15,9 +15,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/ws/**", "/api/checkeo/**"))
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/images/**", "/js/**", "/uploads/**", 
-                                 "/authentication/css/**", "/events/css/**", "/reports/css/**", "/user/css/**").permitAll()
+                .requestMatchers("/css/**", "/images/**", "/js/**", "/uploads/**",
+                                 "/authentication/css/**", "/events/css/**", "/reports/css/**", "/user/css/**",
+                                 "/ws/**", "/api/checkeo/**").permitAll()
             .requestMatchers("/admin", "/admin/**", "/categories", "/categories/**", "/reports", "/reports/**").hasRole("ADMIN")
                 .requestMatchers("/event/interest/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/user/profile/**", "/user/interests/**", "/user/purchases/**", "/user/tickets/**").hasAnyRole("USER", "ADMIN")
