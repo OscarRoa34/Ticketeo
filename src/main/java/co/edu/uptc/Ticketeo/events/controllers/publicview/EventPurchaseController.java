@@ -12,11 +12,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,19 +23,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.edu.uptc.Ticketeo.events.models.Event;
 import co.edu.uptc.Ticketeo.events.models.EventTicketType;
 import co.edu.uptc.Ticketeo.events.repositories.EventTicketTypeRepository;
 import co.edu.uptc.Ticketeo.events.services.EventCategoryService;
 import co.edu.uptc.Ticketeo.events.services.EventService;
-import co.edu.uptc.Ticketeo.purchase.models.PaymentMethod;
-import co.edu.uptc.Ticketeo.purchase.services.PurchaseService;
+import co.edu.uptc.Ticketeo.purchase.services.PaymentProcessingService;
+import co.edu.uptc.Ticketeo.purchase.services.PaymentResult;
+import co.edu.uptc.Ticketeo.purchase.services.PaymentTrackingService;
+import co.edu.uptc.Ticketeo.purchase.services.PendingPaymentRequest;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -47,17 +42,19 @@ public class EventPurchaseController {
 
     private static final String VIEW_EVENT_PURCHASE = "events/eventPurchase";
     private static final String VIEW_PAYMENT_SUCCESS = "events/paymentSuccess";
+    private static final String VIEW_PAYMENT_PROCESSING = "events/paymentProcessing";
     private static final DateTimeFormatter PURCHASE_JSON_DATE = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-    @Value("${checkeo.service.url:http://localhost:8000}")
-    private String checkeoBaseUrl;
-
     private final EventService eventService;
     private final EventCategoryService eventCategoryService;
     private final EventTicketTypeRepository eventTicketTypeRepository;
-    private final PurchaseService purchaseService;
+    private final PaymentProcessingService paymentProcessingService;
+    private final PaymentTrackingService paymentTrackingService;
 
     @GetMapping("/{id}/purchase")
-    public String showPurchaseForm(@PathVariable Integer id, Authentication authentication, Model model) {
+    public String showPurchaseForm(@PathVariable Integer id,
+                                   @RequestParam(required = false) String trackingId,
+                                   Authentication authentication,
+                                   Model model) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
         }
@@ -75,6 +72,16 @@ public class EventPurchaseController {
         }
 
         populatePurchaseModel(model, event, purchaseError);
+        if (trackingId != null && !trackingId.isBlank()) {
+            paymentTrackingService.getPending(trackingId).ifPresent(pending -> {
+                if (pending.eventId() != null && pending.eventId().equals(id)) {
+                    model.addAttribute("prefillQuantities", pending.quantities());
+                    model.addAttribute("prefillCardBrand", pending.cardBrand());
+                    model.addAttribute("prefillCardNumber", pending.cardNumber());
+                    model.addAttribute("prefillCardCvv", pending.cardCvv());
+                }
+            });
+        }
         return VIEW_EVENT_PURCHASE;
     }
 
@@ -111,24 +118,60 @@ public class EventPurchaseController {
             return VIEW_EVENT_PURCHASE;
         }
 
-        writePurchaseJson(authentication.getName(), params, preview);
-        CheckeoResult checkeoResult = sendPurchaseToCheckeo(authentication.getName(), params, preview);
-        if ("error".equals(checkeoResult.status())) {
-            return populatePaymentFeedback(model, event, preview, paymentMethodValue, checkeoResult);
+        String trackingId = UUID.randomUUID().toString();
+        writePurchaseJson(authentication.getName(), params, preview, trackingId);
+
+        PendingPaymentRequest pending = new PendingPaymentRequest(
+                id,
+                authentication.getName(),
+                quantities,
+                paymentMethodValue,
+                params.get("cardBrand"),
+                params.get("cardNumber"),
+                params.get("cardCvv"),
+                preview.totalTickets(),
+                preview.totalToPay(),
+                preview.ticketTypeBreakdown()
+        );
+        paymentTrackingService.registerPending(trackingId, pending);
+        paymentProcessingService.processPayment(trackingId, pending);
+
+        model.addAttribute("event", event);
+        model.addAttribute("trackingId", trackingId);
+        return VIEW_PAYMENT_PROCESSING;
+    }
+
+    @GetMapping("/purchase/result/{trackingId}")
+    public String showPurchaseResult(@PathVariable String trackingId, Model model) {
+        var resultOpt = paymentTrackingService.getResult(trackingId);
+        if (resultOpt.isEmpty()) {
+            var pendingOpt = paymentTrackingService.getPending(trackingId);
+            if (pendingOpt.isEmpty()) {
+                return "redirect:/user";
+            }
+            Event event = eventService.getEventById(pendingOpt.get().eventId());
+            if (event == null) {
+                return "redirect:/user";
+            }
+            model.addAttribute("event", event);
+            model.addAttribute("trackingId", trackingId);
+            return VIEW_PAYMENT_PROCESSING;
         }
 
-        try {
-            PurchaseService.PurchaseCheckoutResult result = purchaseService.processPurchase(
-                    id,
-                    authentication.getName(),
-                    quantities,
-                    paymentMethodValue
-            );
-            return populatePaymentSuccess(model, event, result, checkeoResult);
-        } catch (IllegalArgumentException ex) {
-            populatePurchaseModel(model, event, ex.getMessage());
-            return VIEW_EVENT_PURCHASE;
+        PaymentResult result = resultOpt.get();
+        Event event = eventService.getEventById(result.eventId());
+        if (event == null) {
+            return "redirect:/user";
         }
+        populatePaymentResult(model, event, result);
+        model.addAttribute("trackingId", trackingId);
+        return VIEW_PAYMENT_SUCCESS;
+    }
+
+    @GetMapping("/purchase/result/{trackingId}/ready")
+    public ResponseEntity<Map<String, Object>> isResultReady(@PathVariable String trackingId) {
+        boolean ready = paymentTrackingService.isReady(trackingId);
+        return ResponseEntity.ok(Map.of("ready", ready));
     }
 
     private void populatePurchaseModel(Model model, Event event, String purchaseError) {
@@ -140,28 +183,14 @@ public class EventPurchaseController {
         }
     }
 
-    private String populatePaymentSuccess(Model model, Event event, PurchaseService.PurchaseCheckoutResult result,
-                                          CheckeoResult checkeoResult) {
+    private void populatePaymentResult(Model model, Event event, PaymentResult result) {
         model.addAttribute("event", event);
-        model.addAttribute("checkeoStatus", checkeoResult.status());
-        model.addAttribute("checkeoMessage", checkeoResult.message());
+        model.addAttribute("checkeoStatus", result.checkeoStatus());
+        model.addAttribute("checkeoMessage", result.checkeoMessage());
         model.addAttribute("tickets", result.tickets());
-        model.addAttribute("paymentMethod", PaymentMethod.fromValue(result.paymentMethod()).getLabel());
+        model.addAttribute("paymentMethod", result.paymentMethodLabel());
         model.addAttribute("ticketTypeBreakdown", result.ticketTypeBreakdown());
         model.addAttribute("total", result.total());
-        return VIEW_PAYMENT_SUCCESS;
-    }
-
-    private String populatePaymentFeedback(Model model, Event event, PurchasePreview preview, String paymentMethodValue,
-                                           CheckeoResult checkeoResult) {
-        model.addAttribute("event", event);
-        model.addAttribute("checkeoStatus", checkeoResult.status());
-        model.addAttribute("checkeoMessage", checkeoResult.message());
-        model.addAttribute("tickets", preview.totalTickets());
-        model.addAttribute("paymentMethod", PaymentMethod.fromValue(paymentMethodValue).getLabel());
-        model.addAttribute("ticketTypeBreakdown", preview.ticketTypeBreakdown());
-        model.addAttribute("total", Math.round(preview.totalToPay()));
-        return VIEW_PAYMENT_SUCCESS;
     }
 
     private List<TicketOption> buildTicketOptions(Event event) {
@@ -290,7 +319,7 @@ public class EventPurchaseController {
         return new PurchasePreview(totalTickets, totalToPay, breakdown, null);
     }
 
-    private void writePurchaseJson(String username, Map<String, String> formValues, PurchasePreview preview) {
+    private void writePurchaseJson(String username, Map<String, String> formValues, PurchasePreview preview, String trackingId) {
         try {
             Path docsPath = Paths.get("docs");
             Files.createDirectories(docsPath);
@@ -303,13 +332,14 @@ public class EventPurchaseController {
             Path outputFile = docsPath.resolve("purchase_" + timestamp + ".json");
 
                 boolean isNu = "NU".equalsIgnoreCase(safeString(formValues.get("cardBrand")));
-            String json = "{\n"
+                String json = "{\n"
                     + "  \"usuario\": \"" + escapeJson(username) + "\",\n"
                     + "  \"tipo_tarjeta\": \"" + escapeJson(cardBrand) + "\",\n"
                     + "  \"numero_tarjeta\": \"" + escapeJson(cardNumber) + "\",\n"
                     + (isNu ? "  \"csv\": \"" + escapeJson(cardCsv) + "\",\n" : "")
                     + "  \"valor\": " + totalValue + ",\n"
-                    + "  \"empresa_id\": 1\n"
+                    + "  \"empresa_id\": 1,\n"
+                    + "  \"tracking_id\": \"" + escapeJson(trackingId) + "\"\n"
                     + "}\n";
 
             Files.writeString(outputFile, json, StandardCharsets.UTF_8);
@@ -317,88 +347,9 @@ public class EventPurchaseController {
         }
     }
 
-    private CheckeoResult sendPurchaseToCheckeo(String username, Map<String, String> formValues, PurchasePreview preview) {
-        try {
-            Map<String, Object> payload = buildCheckeoPayload(username, formValues, preview);
-
-            System.out.println("Checkeo payload: " + payload);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-
-            RestTemplate restTemplate = new RestTemplate();
-            var response = restTemplate.postForEntity(checkeoBaseUrl + "/pagos", request, String.class);
-            System.out.println("Checkeo response status: " + response.getStatusCode().value());
-            System.out.println("Checkeo response body: " + response.getBody());
-            String message = resolveCheckeoMessage(response.getBody(), "Pago aprobado por Checkeo.", false);
-            return CheckeoResult.success(message);
-        } catch (HttpStatusCodeException ex) {
-            System.out.println("Checkeo response status: " + ex.getStatusCode().value());
-            System.out.println("Checkeo response body: " + ex.getResponseBodyAsString());
-            String fallback = ex.getStatusCode().value() == 402
-                    ? "Pago rechazado por Checkeo."
-                    : "No fue posible validar el pago en Checkeo.";
-            String message = resolveCheckeoMessage(ex.getResponseBodyAsString(), fallback, true);
-            return CheckeoResult.error(message);
-        } catch (Exception ignored) {
-            return CheckeoResult.error("No fue posible validar el pago en Checkeo.");
-        }
-    }
-
-    private String resolveCheckeoMessage(String body, String fallback, boolean errorPayload) {
-        if (body == null || body.isBlank()) {
-            return fallback;
-        }
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(body);
-            JsonNode detail = errorPayload ? root.path("detail") : root;
-            String message = detail.path("message").asText(null);
-            if (message == null || message.isBlank()) {
-                return fallback;
-            }
-            String provider = detail.path("provider").asText(null);
-            if (provider != null && !provider.isBlank()) {
-                if (message.toUpperCase().contains(provider.toUpperCase())) {
-                    return message;
-                }
-                return provider + ": " + message;
-            }
-            return message;
-        } catch (Exception ignored) {
-            return fallback;
-        }
-    }
-
-    private Map<String, Object> buildCheckeoPayload(String username, Map<String, String> formValues,
-                                                    PurchasePreview preview) {
-        String cardBrand = cardBrandLabel(formValues.get("cardBrand"));
-        String cardNumber = safeString(formValues.get("cardNumber"));
-        String cardCsv = safeString(formValues.get("cardCvv"));
-        double totalValue = parseAmount(preview.totalToPay());
-        boolean isNu = "NU".equalsIgnoreCase(safeString(formValues.get("cardBrand")));
-
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("usuario", safeString(username));
-        payload.put("tipo_tarjeta", cardBrand);
-        payload.put("numero_tarjeta", cardNumber);
-        if (isNu) {
-            payload.put("csv", cardCsv);
-        }
-        payload.put("valor", totalValue);
-        payload.put("empresa_id", 1);
-        return payload;
-    }
-
     private String formatAmount(double total) {
         BigDecimal value = BigDecimal.valueOf(total);
         return value.setScale(2, RoundingMode.HALF_UP).toPlainString();
-    }
-
-    private double parseAmount(double total) {
-        BigDecimal value = BigDecimal.valueOf(total);
-        return value.setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
     private String cardBrandLabel(String cardBrand) {
@@ -472,13 +423,4 @@ public class EventPurchaseController {
         }
     }
 
-    private record CheckeoResult(String status, String message) {
-        private static CheckeoResult success(String message) {
-            return new CheckeoResult("success", message);
-        }
-
-        private static CheckeoResult error(String message) {
-            return new CheckeoResult("error", message);
-        }
-    }
 }
