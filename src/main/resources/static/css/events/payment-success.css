@@ -16,6 +16,10 @@
     overflow: hidden;
 }
 
+.payment-success-card--processing {
+    max-width: 860px;
+}
+
 .payment-success-card--error {
     border-color: rgba(239, 68, 68, 0.3);
     box-shadow: 0 16px 32px rgba(185, 28, 28, 0.16);
@@ -188,6 +192,165 @@
     gap: 6px;
 }
 
+    .checkeo-live {
+        border: 1px dashed rgba(59, 130, 246, 0.4);
+        border-radius: 16px;
+        padding: 18px;
+        margin: 14px 0 18px;
+        background: rgba(239, 246, 255, 0.75);
+    }
+
+    .checkeo-live--processing {
+        background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(240, 253, 244, 0.85));
+    }
+
+    .checkeo-live-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        color: #1e3a8a;
+    }
+
+    .checkeo-live-status {
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .checkeo-live-status.is-success {
+        color: #166534;
+    }
+
+    .checkeo-live-status.is-error {
+        color: #991b1b;
+    }
+
+    .checkeo-live-status.is-muted {
+        color: #64748b;
+    }
+
+
+    .checkeo-timeline {
+        list-style: none;
+        margin: 10px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+    }
+
+    .checkeo-timeline--horizontal {
+        grid-template-columns: repeat(5, minmax(140px, 1fr));
+        gap: 12px;
+        position: relative;
+        padding-top: 12px;
+    }
+
+    .checkeo-timeline--horizontal::before {
+        content: '';
+        position: absolute;
+        left: 6%;
+        right: 6%;
+        top: 24px;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(148, 163, 184, 0.55), rgba(148, 163, 184, 0.2));
+        z-index: 0;
+    }
+
+    .timeline-item {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        row-gap: 6px;
+        align-items: center;
+        text-align: center;
+        padding: 12px 12px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: #ffffff;
+        position: relative;
+        z-index: 1;
+        transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease, background 0.35s ease;
+    }
+
+    .timeline-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        margin: 0 auto;
+        background: rgba(226, 232, 240, 0.85);
+        color: #475569;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8), 0 8px 18px rgba(15, 23, 42, 0.08);
+        transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease, color 0.35s ease;
+    }
+
+    .timeline-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .timeline-text {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.9rem;
+    }
+
+    .timeline-note {
+        font-size: 0.76rem;
+        color: #64748b;
+    }
+
+    .timeline-item.is-success {
+        border-color: rgba(34, 197, 94, 0.4);
+        background: rgba(240, 253, 244, 0.85);
+        box-shadow: 0 10px 26px rgba(22, 163, 74, 0.14);
+        transform: translateY(-2px);
+    }
+
+    .timeline-item.is-success .timeline-icon {
+        border-color: rgba(22, 163, 74, 0.4);
+        background: rgba(34, 197, 94, 0.2);
+        color: #166534;
+        box-shadow: 0 12px 24px rgba(22, 163, 74, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+    }
+
+    .timeline-item.is-success .timeline-note {
+        color: #166534;
+    }
+
+    .timeline-item.is-error {
+        border-color: rgba(248, 113, 113, 0.4);
+        background: rgba(254, 242, 242, 0.92);
+        box-shadow: 0 10px 26px rgba(220, 38, 38, 0.16);
+    }
+
+    .timeline-item.is-error .timeline-icon {
+        border-color: rgba(220, 38, 38, 0.5);
+        background: rgba(248, 113, 113, 0.2);
+        color: #991b1b;
+        box-shadow: 0 12px 24px rgba(220, 38, 38, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+    }
+
+    .timeline-item.is-pending {
+        background: rgba(248, 250, 252, 0.9);
+        border-color: rgba(148, 163, 184, 0.25);
+    }
+
+    .timeline-item.is-pending .timeline-icon {
+        background: rgba(226, 232, 240, 0.75);
+        color: #64748b;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+    }
+
+    .timeline-item.is-error .timeline-note {
+        color: #991b1b;
+    }
+
+
 .success-breakdown-item {
     display: flex;
     justify-content: space-between;
@@ -227,7 +390,9 @@
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 20px;
+    align-items: center;
 }
+
 
 .success-actions .btn-primary,
 .success-actions .btn-secondary {
@@ -254,10 +419,23 @@
         padding: 24px;
     }
 
+    .payment-success-card--processing {
+        max-width: 600px;
+    }
+
     .success-check-icon {
         width: 74px;
         height: 74px;
         font-size: 2rem;
+    }
+
+    .checkeo-timeline--horizontal {
+        grid-template-columns: 1fr;
+        padding-top: 0;
+    }
+
+    .checkeo-timeline--horizontal::before {
+        display: none;
     }
 
     .success-actions {

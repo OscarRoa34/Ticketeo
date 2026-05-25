@@ -32,6 +32,7 @@
             <span th:text="${checkeoMessage}">Pago aprobado por Checkeo.</span>
         </div>
 
+
         <div class="success-summary">
             <div class="success-row">
                 <span>Boletos comprados</span>
@@ -60,6 +61,7 @@
 
         <div class="success-actions">
             <a th:href="@{/user}" class="btn-primary" id="closeNowBtn">Volver ahora</a>
+            <a th:if="${checkeoStatus} == 'error'" th:href="@{/event/{id}/purchase(id=${event.id},trackingId=${trackingId})}" class="btn-secondary">Reintentar pago</a>
             <a th:href="@{/event/{id}(id=${event.id})}" class="btn-secondary">Volver al evento</a>
         </div>
     </section>
@@ -68,6 +70,65 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script>
+
+    function buildTimeline() {
+        const timeline = document.getElementById('checkeoTimeline');
+        if (!timeline) {
+            return;
+        }
+        const phases = [
+            { key: 'recepcion', label: 'Recepcion' },
+            { key: 'validacion_empresa', label: 'Validacion empresa' },
+            { key: 'transaccion', label: 'Transaccion registrada' },
+            { key: 'validacion_proveedor', label: 'Validacion proveedor' },
+            { key: 'resultado', label: 'Resultado final' }
+        ];
+
+        timeline.innerHTML = '';
+        phases.forEach((phase) => {
+            const item = document.createElement('li');
+            item.className = 'timeline-item is-pending';
+            item.setAttribute('data-phase', phase.key);
+
+            const dot = document.createElement('span');
+            dot.className = 'timeline-dot';
+
+            const text = document.createElement('span');
+            text.className = 'timeline-text';
+            text.textContent = phase.label;
+
+            const note = document.createElement('span');
+            note.className = 'timeline-note';
+            note.textContent = 'Pendiente';
+
+            item.appendChild(dot);
+            item.appendChild(text);
+            item.appendChild(note);
+            timeline.appendChild(item);
+        });
+    }
+
+    function updateTimeline(phase, status, message) {
+        const timeline = document.getElementById('checkeoTimeline');
+        if (!timeline) {
+            return;
+        }
+        const item = timeline.querySelector('[data-phase="' + phase + '"]');
+        if (!item) {
+            return;
+        }
+        item.classList.remove('is-pending', 'is-success', 'is-error');
+        if (status === 'error') {
+            item.classList.add('is-error');
+        } else {
+            item.classList.add('is-success');
+        }
+
+        const note = item.querySelector('.timeline-note');
+        if (note) {
+            note.textContent = message || (status === 'error' ? 'Error' : 'Completado');
+        }
+    }
     function formatTotal() {
         const totalElement = document.getElementById('successTotal');
         const raw = totalElement ? parseFloat(totalElement.getAttribute('data-total') || '0') : 0;
