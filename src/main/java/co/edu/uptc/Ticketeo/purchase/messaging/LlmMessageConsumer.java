@@ -2,6 +2,8 @@ package co.edu.uptc.Ticketeo.purchase.messaging;
 
 import java.util.Map;
 
+import co.edu.uptc.Ticketeo.purchase.services.PaymentResult;
+import co.edu.uptc.Ticketeo.purchase.services.PaymentTrackingService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class LlmMessageConsumer {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final PaymentTrackingService trackingService;
 
     @RabbitListener(queues = RabbitMQConfig.MENSAJES_LLM_QUEUE)
     public void consume(Map<String, Object> mensaje) {
@@ -27,6 +30,23 @@ public class LlmMessageConsumer {
                 ? (Map<String, Object>) mensaje.get("detail")
                 : Map.of();
 
+        // Actualizar el mensaje en el resultado guardado
+        trackingService.getResult(trackingId).ifPresent(result -> {
+            PaymentResult updated = new PaymentResult(
+                    result.success(),
+                    result.eventId(),
+                    result.checkeoStatus(),
+                    message,
+                    result.purchaseId(),
+                    result.tickets(),
+                    result.paymentMethodLabel(),
+                    result.ticketTypeBreakdown(),
+                    result.total()
+            );
+            trackingService.complete(trackingId, updated, !result.success());
+        });
+
+
         PurchaseStatusUpdate update = new PurchaseStatusUpdate(
                 trackingId,
                 "resultado_final",
@@ -36,6 +56,8 @@ public class LlmMessageConsumer {
                 null
         );
 
+        trackingService.markLlmReady(trackingId);
+        
         messagingTemplate.convertAndSend("/topic/purchases/" + trackingId, update);
     }
 }

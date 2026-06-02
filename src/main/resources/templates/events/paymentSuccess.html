@@ -68,7 +68,8 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 <script>
 
     function buildTimeline() {
@@ -173,13 +174,38 @@
         });
     }
 
+    function connectLlmMessage() {
+        const trackingId = /*[[${trackingId}]]*/ null;
+        if (!trackingId) return;
+
+        const socket = new SockJS('/ws');
+        const stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        stompClient.connect({}, () => {
+            stompClient.subscribe('/topic/purchases/' + trackingId, (frame) => {
+                try {
+                    const payload = JSON.parse(frame.body);
+                    if (payload.phase === 'resultado_final' && payload.message) {
+                        const msgEl = document.querySelector('.checkeo-status span');
+                        if (msgEl) {
+                            msgEl.textContent = payload.message;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error procesando mensaje LLM', err);
+                }
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         formatTotal();
         setupCountdown();
         initHamburger();
+        connectLlmMessage();
     });
 </script>
-
 </body>
 
 </html>
