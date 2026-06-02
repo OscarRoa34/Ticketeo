@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import co.edu.uptc.Ticketeo.purchase.messaging.PaymentEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PaymentProcessingService {
 
     private final PurchaseService purchaseService;
     private final PaymentTrackingService trackingService;
+    private final PaymentEventPublisher paymentEventPublisher;
 
     @Async
     public void processPayment(String trackingId, PendingPaymentRequest request) {
@@ -43,6 +45,7 @@ public class PaymentProcessingService {
                     Math.round(request.totalToPay())
             );
                 trackingService.complete(trackingId, result, true);
+                paymentEventPublisher.publish(trackingId, result);
             return;
         }
 
@@ -65,6 +68,7 @@ public class PaymentProcessingService {
                     purchase.total()
             );
             trackingService.complete(trackingId, result, false);
+            paymentEventPublisher.publish(trackingId, result);
         } catch (IllegalArgumentException ex) {
             PaymentResult result = new PaymentResult(
                     false,
@@ -78,6 +82,7 @@ public class PaymentProcessingService {
                     Math.round(request.totalToPay())
             );
             trackingService.complete(trackingId, result, true);
+            paymentEventPublisher.publish(trackingId, result);
         }
     }
 

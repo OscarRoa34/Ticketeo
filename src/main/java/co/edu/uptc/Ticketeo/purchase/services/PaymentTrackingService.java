@@ -11,9 +11,11 @@ public class PaymentTrackingService {
 
     private final Map<String, PendingPaymentRequest> pending = new ConcurrentHashMap<>();
     private final Map<String, PaymentResult> results = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> llmReady = new ConcurrentHashMap<>();
 
     public void registerPending(String trackingId, PendingPaymentRequest request) {
         pending.put(trackingId, request);
+        llmReady.put(trackingId, false);
     }
 
     public Optional<PendingPaymentRequest> getPending(String trackingId) {
@@ -27,11 +29,15 @@ public class PaymentTrackingService {
         }
     }
 
+    public void markLlmReady(String trackingId) {
+        llmReady.put(trackingId, true);
+    }
+
     public Optional<PaymentResult> getResult(String trackingId) {
         return Optional.ofNullable(results.get(trackingId));
     }
 
     public boolean isReady(String trackingId) {
-        return results.containsKey(trackingId);
+        return results.containsKey(trackingId) && Boolean.TRUE.equals(llmReady.get(trackingId));
     }
 }
