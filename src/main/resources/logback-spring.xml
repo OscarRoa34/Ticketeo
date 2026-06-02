@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <springProperty scope="context" name="PURCHASE_LOG_PATH" source="purchase.log.path" defaultValue="logs/checkeo.log"/>
+
+    <appender name="PURCHASE_FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${PURCHASE_LOG_PATH}</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="PURCHASE_TRACKER" level="INFO" additivity="false">
+        <appender-ref ref="PURCHASE_FILE"/>
+        <appender-ref ref="CONSOLE"/> </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

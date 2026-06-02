@@ -5,9 +5,8 @@ import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import co.edu.uptc.Ticketeo.purchase.messaging.PaymentEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Async; // Asegúrate de crear este paquete/clase
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +14,8 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import co.edu.uptc.Ticketeo.purchase.logging.PurchaseLogger;
+import co.edu.uptc.Ticketeo.purchase.messaging.PaymentEventPublisher;
 import co.edu.uptc.Ticketeo.purchase.models.PaymentMethod;
 import lombok.RequiredArgsConstructor;
 
@@ -28,11 +29,33 @@ public class PaymentProcessingService {
     private final PurchaseService purchaseService;
     private final PaymentTrackingService trackingService;
     private final PaymentEventPublisher paymentEventPublisher;
+    private final PurchaseLogger purchaseLogger; // <-- Inyección del componente de logs estructurados
 
     @Async
     public void processPayment(String trackingId, PendingPaymentRequest request) {
+        // [FASE 1] CLICK EN PAGAR: Registro del inicio del proceso asíncrono
+        Map<String, Object> extraInicio = Map.of(
+            "trackingId", trackingId,
+            "eventId", request.eventId(),
+            "username", safeString(request.username()),
+            "totalToPay", request.totalToPay(),
+            "paymentMethod", request.paymentMethodValue()
+        );
+        purchaseLogger.log("INFO", "Click en pagar: Iniciando procesamiento asíncrono de la orden", extraInicio);
+
         CheckeoResult checkeoResult = sendPurchaseToCheckeo(request, trackingId);
+        
+        // Contexto compartido para el resultado de la pasarela
+        Map<String, Object> extraCheckeo = Map.of(
+            "trackingId", trackingId,
+            "checkeoStatus", checkeoResult.status(),
+            "checkeoMessage", checkeoResult.message()
+        );
+
         if ("error".equals(checkeoResult.status())) {
+            // [FASE 2B] ERROR EN PASARELA
+            purchaseLogger.log("ERROR", "Proceso interrumpido: Pago rechazado o fallido en Checkeo API", extraCheckeo);
+
             PaymentResult result = new PaymentResult(
                     false,
                     request.eventId(),
@@ -44,10 +67,13 @@ public class PaymentProcessingService {
                     request.ticketTypeBreakdown(),
                     Math.round(request.totalToPay())
             );
-                trackingService.complete(trackingId, result, true);
-                paymentEventPublisher.publish(trackingId, result);
+            trackingService.complete(trackingId, result, true);
+            paymentEventPublisher.publish(trackingId, result);
             return;
         }
+
+        // [FASE 2A] PASARELA APROBADA
+        purchaseLogger.log("INFO", "Validación exitosa: Pago aprobado por Checkeo API", extraCheckeo);
 
         try {
             PurchaseService.PurchaseCheckoutResult purchase = purchaseService.processPurchase(
@@ -56,6 +82,17 @@ public class PaymentProcessingService {
                     request.quantities(),
                     request.paymentMethodValue()
             );
+
+            // [FASE 3A] PROCESO LOCAL EXITOSO
+            Map<String, Object> extraExitoLocal = Map.of(
+                "trackingId", trackingId,
+                "purchaseId", purchase.purchaseId(),
+                "totalTickets", purchase.tickets(),
+                "totalPaid", purchase.total(),
+                "breakdown", purchase.ticketTypeBreakdown()
+            );
+            purchaseLogger.log("INFO", "Transacción completada: Compra asentada y tickets generados en DB", extraExitoLocal);
+
             PaymentResult result = new PaymentResult(
                     true,
                     request.eventId(),
@@ -69,7 +106,16 @@ public class PaymentProcessingService {
             );
             trackingService.complete(trackingId, result, false);
             paymentEventPublisher.publish(trackingId, result);
+
         } catch (IllegalArgumentException ex) {
+            // [FASE 3B] ERROR DE NEGOCIO LOCAL (Ej: Se agotaron los boletos en el milisegundo intermedio)
+            Map<String, Object> extraErrorLocal = Map.of(
+                "trackingId", trackingId,
+                "errorDetail", safeString(ex.getMessage()),
+                "eventId", request.eventId()
+            );
+            purchaseLogger.log("ERROR", "Fallo de consistencia: No se pudo registrar la compra localmente", extraErrorLocal);
+
             PaymentResult result = new PaymentResult(
                     false,
                     request.eventId(),
@@ -87,6 +133,9 @@ public class PaymentProcessingService {
     }
 
     private CheckeoResult sendPurchaseToCheckeo(PendingPaymentRequest request, String trackingId) {
+        // Registro previo al envío de datos sensibles a la API externa
+        purchaseLogger.log("INFO", "Conectando con pasarela externa: Enviando POST a /pagos", Map.of("trackingId", trackingId));
+
         try {
             Map<String, Object> payload = buildCheckeoPayload(request, trackingId);
 

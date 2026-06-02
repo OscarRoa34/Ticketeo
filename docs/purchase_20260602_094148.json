@@ -1,0 +1,8 @@
+{
+  "usuario": "oscar",
+  "tipo_tarjeta": "Visa",
+  "numero_tarjeta": "1111111111111111111",
+  "valor": 300000.00,
+  "empresa_id": 1,
+  "tracking_id": "cc4d78ca-2919-4622-9a17-a8ae42d1998f"
+}
