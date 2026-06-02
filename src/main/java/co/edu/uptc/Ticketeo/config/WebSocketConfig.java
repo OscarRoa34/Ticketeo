@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.configuration;
+package co.edu.uptc.Ticketeo.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
