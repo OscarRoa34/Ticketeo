@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.configuration;
+package co.edu.uptc.Ticketeo.config;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;

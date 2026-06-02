@@ -1,4 +1,4 @@
-package co.edu.uptc.Ticketeo.configuration;
+package co.edu.uptc.Ticketeo.config;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
